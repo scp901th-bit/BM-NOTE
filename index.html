@@ -35,6 +35,92 @@
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 body{background:var(--bg);color:var(--text);font-family:'Sarabun',sans-serif;font-size:15px;min-height:100vh;padding-bottom:80px;transition:background .3s,color .3s;overscroll-behavior:none}
 
+/* ── PC LAYOUT ── */
+@media (min-width: 900px) {
+  body { padding-bottom: 0; font-size: 15px; }
+
+  /* Sidebar nav on PC */
+  .bottom-nav {
+    position: fixed;
+    left: 0; top: 0; bottom: 0; right: auto;
+    flex-direction: column;
+    width: 200px;
+    border-top: none;
+    border-right: 1px solid var(--border);
+    padding: 80px 0 24px;
+    box-shadow: 4px 0 24px rgba(0,0,0,.15);
+  }
+  .nav-item {
+    flex-direction: row;
+    justify-content: flex-start;
+    padding: 12px 20px;
+    gap: 12px;
+    font-size: 13px;
+    border-radius: 0;
+  }
+  .nav-icon { font-size: 18px; }
+  .nav-item.active {
+    background: var(--accent-dim);
+    border-left: 3px solid var(--accent);
+  }
+
+  /* Top bar adjusts for sidebar */
+  .top-bar {
+    left: 200px;
+    right: 0;
+    padding: 12px 24px;
+  }
+
+  /* Main content shifts right */
+  .main {
+    margin-left: 200px;
+    padding: 24px 32px;
+    max-width: none;
+  }
+
+  /* Auth screen centered */
+  .auth-screen { padding-left: 0; }
+  .auth-card { max-width: 440px; }
+
+  /* 2-column layout for dashboard stats */
+  .card { border-radius: 20px; }
+  .quick-stats { grid-template-columns: repeat(3, 1fr); }
+  .stats-grid { grid-template-columns: repeat(4, 1fr); }
+
+  /* Wider form layout */
+  .date-row { grid-template-columns: repeat(3, 1fr); gap: 12px; }
+
+  /* Search overlay adjust */
+  .search-overlay { left: 200px; }
+  .search-box { padding: 16px 24px; }
+
+  /* Modal wider on PC */
+  .modal-box {
+    border-radius: 20px;
+    max-width: 520px;
+    max-height: 85vh;
+    margin-bottom: 40px;
+  }
+  .modal-overlay { align-items: center; }
+
+  /* Toast above bottom */
+  .toast { bottom: 24px; }
+
+  /* Record grid on PC */
+  #records-list { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .record-item { margin-bottom: 0; }
+
+  /* Report output wider */
+  .report-output { font-size: 13px; }
+}
+
+@media (min-width: 1200px) {
+  .bottom-nav { width: 220px; }
+  .top-bar { left: 220px; }
+  .main { margin-left: 220px; padding: 28px 40px; }
+  .search-overlay { left: 220px; }
+}
+
 /* AUTH SCREEN */
 .auth-screen{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:24px;background:var(--bg)}
 .auth-logo{font-family:'Space Mono',monospace;font-size:22px;font-weight:700;color:var(--accent);letter-spacing:3px;margin-bottom:6px}
@@ -1405,20 +1491,17 @@ window.generateReport = function(){
 
   // Cashier order for expense: C1->C3->C2
   const CASHIER_ORDER = ['C1','C3','C2'];
-  let allowedCashiers = null;
+  let expFromCashier = null, expToCashier = null;
   if(rptCat==='expense'){
-    const cf = document.getElementById('exp-cashier-from').value;
-    const ct = document.getElementById('exp-cashier-to').value;
-    const fi = CASHIER_ORDER.indexOf(cf), ti = CASHIER_ORDER.indexOf(ct);
-    if(fi<=ti) allowedCashiers = CASHIER_ORDER.slice(fi, ti+1);
-    else allowedCashiers = [...CASHIER_ORDER.slice(fi), ...CASHIER_ORDER.slice(0, ti+1)];
+    expFromCashier = document.getElementById('exp-cashier-from').value;
+    expToCashier = document.getElementById('exp-cashier-to').value;
   }
 
+  // Get all matching days first (no cashier filter yet)
   let recs=allRecords.filter(r=>{
     const k=r.dateKey||(r.date?dKey(r.date):0);
     if(k<from||k>to||r.type!==rptCat) return false;
     if(rptCat==='income') return rptCashier==='all'||r.cashier===rptCashier;
-    if(allowedCashiers) return allowedCashiers.includes(r.cashier);
     return true;
   });
   if(sel)recs=recs.map(r=>{const fi={};sel.forEach(k=>{if(r.items?.[k])fi[k]=r.items[k];});return {...r,items:fi};}).filter(r=>Object.keys(r.items||{}).length);
@@ -1454,9 +1537,22 @@ window.generateReport = function(){
     const ceD=`${String(lastD?.d).padStart(2,'0')}/${String(lastD?.m).padStart(2,'0')}/${(lastD?.y||2569)-543+2000}`;
     text+=`เบิกเงินคืน ${ceD}\n\n`;
     let runTotal=0;
-    sorted.forEach(([,day])=>{
+    const CO=['C1','C3','C2'];
+    const fi2=CO.indexOf(expFromCashier||'C1'),ti2=CO.indexOf(expToCashier||'C2');
+    sorted.forEach(([,day],dayIdx)=>{
       let dayT=0;
-      ['C1','C3','C2'].forEach(c=>{if(day.cashiers[c]){text+=`วันที่ ${day.date?.d}/${day.date?.m}/${day.date?.y} (${c})\n`;Object.entries(day.cashiers[c]).forEach(([k,v])=>{const lbl=k==='ต้นทุนค่าข้าว'?'จ่ายค่าทุนข้าว':k==='ค่าน้ำแข็ง'?'จ่ายค่าน้ำแข็ง':k;text+=`${lbl} ${fmtN(v)}\n`;dayT+=v;});}});
+      let dayCashiers;
+      if(sorted.length===1){
+        if(fi2<=ti2) dayCashiers=CO.slice(fi2,ti2+1);
+        else dayCashiers=[...CO.slice(fi2),...CO.slice(0,ti2+1)];
+      } else if(dayIdx===0){
+        dayCashiers=CO.slice(fi2);
+      } else if(dayIdx===sorted.length-1){
+        dayCashiers=CO.slice(0,ti2+1);
+      } else {
+        dayCashiers=CO;
+      }
+      dayCashiers.forEach(c=>{if(day.cashiers[c]){text+=`วันที่ ${day.date?.d}/${day.date?.m}/${day.date?.y} (${c})\n`;Object.entries(day.cashiers[c]).forEach(([k,v])=>{const lbl=k==='ต้นทุนค่าข้าว'?'จ่ายค่าทุนข้าว':k==='ค่าน้ำแข็ง'?'จ่ายค่าน้ำแข็ง':k;text+=`${lbl} ${fmtN(v)}\n`;dayT+=v;});});
       runTotal+=dayT;text+=`รวมโอน (${day.date?.d}/${day.date?.m}) = ${fmtN(dayT)}\n\n`;
     });
     text+=`ยอดโอนรวมสุทธิ = ${fmtN(runTotal)} บาท\n\nหมายเหตุ\n\n${appSettings.name}\nธนาคาร ${appSettings.bank}\n${appSettings.account}`;
