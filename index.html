@@ -129,7 +129,7 @@ body{background:var(--bg);color:var(--text);font-family:'Sarabun',sans-serif;fon
 .auth-tabs{display:flex;gap:0;margin-bottom:20px;border-radius:12px;overflow:hidden;border:1px solid var(--border)}
 .auth-tab{flex:1;padding:10px;text-align:center;cursor:pointer;font-size:14px;font-weight:700;transition:all .2s;background:var(--surface2);color:var(--text2)}
 .auth-tab.active{background:var(--accent);color:#000}
-.auth-error{background:rgba(255,61,113,.15);border:1px solid var(--red);color:#ff6b8e;padding:12px 14px;border-radius:12px;font-size:13px;margin-bottom:12px;display:none;font-weight:600;line-height:1.5}
+.auth-error{background:var(--red-dim);border:1px solid var(--red);color:var(--red);padding:10px 14px;border-radius:12px;font-size:13px;margin-bottom:12px;display:none}
 .auth-error.show{display:block}
 
 /* TOP BAR */
@@ -306,17 +306,6 @@ body{background:var(--bg);color:var(--text);font-family:'Sarabun',sans-serif;fon
 .conflict-option h4{font-size:14px;margin-bottom:4px}
 .conflict-option p{font-size:12px;color:var(--text2)}
 
-/* GOOGLE BTN */
-.btn-google{
-  background:#fff;color:#3c4043;border:1px solid #dadce0;
-  font-weight:600;gap:10px;width:100%;justify-content:center;
-  margin-top:10px;transition:box-shadow .2s;
-}
-.btn-google:hover{box-shadow:0 2px 8px rgba(0,0,0,.15);}
-.btn-google img{width:20px;height:20px;}
-.auth-divider{display:flex;align-items:center;gap:10px;margin:14px 0;color:var(--text2);font-size:12px;}
-.auth-divider::before,.auth-divider::after{content:'';flex:1;border-top:1px solid var(--border);}
-
 /* SYNC STATUS */
 .sync-dot{width:8px;height:8px;border-radius:50%;display:inline-block;margin-right:4px}
 .sync-dot.online{background:var(--green)}
@@ -346,11 +335,6 @@ body{background:var(--bg);color:var(--text);font-family:'Sarabun',sans-serif;fon
         <input class="form-input" id="login-pass" type="password" placeholder="รหัสผ่าน"/>
       </div>
       <button class="btn btn-primary btn-full mt8" onclick="doLogin()" id="btn-login">🔑 เข้าสู่ระบบ</button>
-      <div class="auth-divider">หรือ</div>
-      <button class="btn btn-google" onclick="doGoogleLogin()" id="btn-google-login">
-        <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google"/>
-        เข้าสู่ระบบด้วย Google
-      </button>
     </div>
     <!-- REGISTER -->
     <div id="form-register" style="display:none">
@@ -367,11 +351,6 @@ body{background:var(--bg);color:var(--text);font-family:'Sarabun',sans-serif;fon
         <input class="form-input" id="reg-pass" type="password" placeholder="อย่างน้อย 6 ตัวอักษร"/>
       </div>
       <button class="btn btn-primary btn-full mt8" onclick="doRegister()" id="btn-register">✅ สมัครสมาชิก</button>
-      <div class="auth-divider">หรือ</div>
-      <button class="btn btn-google" onclick="doGoogleLogin()">
-        <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google"/>
-        สมัคร/เข้าสู่ระบบด้วย Google
-      </button>
     </div>
   </div>
 </div>
@@ -714,7 +693,7 @@ body{background:var(--bg);color:var(--text);font-family:'Sarabun',sans-serif;fon
 <!-- Firebase -->
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, updateProfile, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, updateProfile } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 import { getFirestore, collection, doc, addDoc, getDoc, getDocs, setDoc, updateDoc, deleteDoc, onSnapshot, query, orderBy, where, serverTimestamp, writeBatch } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 const firebaseConfig = {
@@ -783,7 +762,6 @@ function showAuthError(msg) {
   const el = document.getElementById('auth-error');
   el.textContent = msg;
   el.classList.add('show');
-  el.scrollIntoView({behavior:'smooth', block:'center'});
 }
 
 window.doLogin = async function() {
@@ -791,20 +769,12 @@ window.doLogin = async function() {
   const pass = document.getElementById('login-pass').value;
   if(!email||!pass){showAuthError('กรุณากรอกข้อมูลให้ครบ');return}
   const btn = document.getElementById('btn-login');
-  btn.disabled = true; btn.innerHTML = '<span style="display:inline-block;width:16px;height:16px;border:2px solid #000;border-top-color:transparent;border-radius:50%;animation:spin .7s linear infinite"></span> กำลังเข้าสู่ระบบ...';
+  btn.disabled = true; btn.textContent = 'กำลังเข้าสู่ระบบ...';
   try {
     await signInWithEmailAndPassword(auth, email, pass);
   } catch(e) {
-    console.error('Login error:', e.code, e.message);
-    const msgs = {
-      'auth/user-not-found':'ไม่พบบัญชีนี้ กรุณาสมัครสมาชิกก่อน',
-      'auth/wrong-password':'รหัสผ่านไม่ถูกต้อง',
-      'auth/invalid-email':'อีเมลไม่ถูกต้อง',
-      'auth/invalid-credential':'อีเมลหรือรหัสผ่านไม่ถูกต้อง',
-      'auth/too-many-requests':'ลองผิดหลายครั้งเกินไป กรุณารอสักครู่',
-      'auth/network-request-failed':'ไม่มีการเชื่อมต่ออินเทอร์เน็ต'
-    };
-    showAuthError(msgs[e.code]||'เกิดข้อผิดพลาด ['+e.code+']: '+e.message);
+    const msgs = {'auth/user-not-found':'ไม่พบบัญชีนี้','auth/wrong-password':'รหัสผ่านไม่ถูกต้อง','auth/invalid-email':'อีเมลไม่ถูกต้อง','auth/invalid-credential':'อีเมลหรือรหัสผ่านไม่ถูกต้อง'};
+    showAuthError(msgs[e.code]||'เกิดข้อผิดพลาด: '+e.message);
     btn.disabled=false; btn.textContent='🔑 เข้าสู่ระบบ';
   }
 }
@@ -816,26 +786,17 @@ window.doRegister = async function() {
   if(!name||!email||!pass){showAuthError('กรุณากรอกข้อมูลให้ครบ');return}
   if(pass.length<6){showAuthError('รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร');return}
   const btn = document.getElementById('btn-register');
-  btn.disabled=true; btn.innerHTML='<span style="display:inline-block;width:16px;height:16px;border:2px solid #000;border-top-color:transparent;border-radius:50%;animation:spin .7s linear infinite"></span> กำลังสมัคร...';
+  btn.disabled=true; btn.textContent='กำลังสมัคร...';
   try {
     const cred = await createUserWithEmailAndPassword(auth, email, pass);
     await updateProfile(cred.user, {displayName: name});
-    try {
-      await setDoc(doc(db,'users',cred.user.uid), {
-        name, email, role:'member', createdAt: serverTimestamp()
-      });
-    } catch(dbErr) {
-      console.warn('Firestore write failed (non-critical):', dbErr);
-    }
+    // Save user profile to Firestore
+    await setDoc(doc(db,'users',cred.user.uid), {
+      name, email, role:'member', createdAt: serverTimestamp()
+    });
   } catch(e) {
-    console.error('Register error:', e.code, e.message);
-    const msgs = {
-      'auth/email-already-in-use':'อีเมลนี้ถูกใช้แล้ว กรุณาเข้าสู่ระบบแทน',
-      'auth/invalid-email':'อีเมลไม่ถูกต้อง',
-      'auth/weak-password':'รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร',
-      'auth/network-request-failed':'ไม่มีการเชื่อมต่ออินเทอร์เน็ต'
-    };
-    showAuthError(msgs[e.code]||'เกิดข้อผิดพลาด ['+e.code+']: '+e.message);
+    const msgs = {'auth/email-already-in-use':'อีเมลนี้ถูกใช้แล้ว','auth/invalid-email':'อีเมลไม่ถูกต้อง','auth/weak-password':'รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร'};
+    showAuthError(msgs[e.code]||'เกิดข้อผิดพลาด: '+e.message);
     btn.disabled=false; btn.textContent='✅ สมัครสมาชิก';
   }
 }
@@ -844,38 +805,6 @@ window.doLogout = async function() {
   if(!confirm('ออกจากระบบ?')) return;
   if(unsubRecords) unsubRecords();
   await signOut(auth);
-}
-
-// ============================================================
-// GOOGLE LOGIN
-// ============================================================
-window.doGoogleLogin = async function() {
-  const provider = new GoogleAuthProvider();
-  provider.setCustomParameters({ prompt: 'select_account' });
-  try {
-    const result = await signInWithPopup(auth, provider);
-    const user = result.user;
-    // Check if user doc exists, if not create it
-    const userRef = doc(db, 'users', user.uid);
-    const userSnap = await getDoc(userRef);
-    if (!userSnap.exists()) {
-      await setDoc(userRef, {
-        name: user.displayName || 'Google User',
-        email: user.email,
-        role: 'member',
-        createdAt: serverTimestamp()
-      });
-    }
-  } catch(e) {
-    const msgs = {
-      'auth/popup-closed-by-user': 'ปิด popup ก่อนเข้าสู่ระบบ',
-      'auth/popup-blocked': 'Browser บล็อก popup กรุณาอนุญาต popup แล้วลองใหม่',
-      'auth/cancelled-popup-request': '',
-    };
-    const msg = msgs[e.code];
-    if(msg) showAuthError(msg);
-    else if(e.code !== 'auth/cancelled-popup-request') showAuthError('เกิดข้อผิดพลาด: ' + e.message);
-  }
 }
 
 // ============================================================
