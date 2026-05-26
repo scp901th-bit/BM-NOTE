@@ -129,7 +129,7 @@ body{background:var(--bg);color:var(--text);font-family:'Sarabun',sans-serif;fon
 .auth-tabs{display:flex;gap:0;margin-bottom:20px;border-radius:12px;overflow:hidden;border:1px solid var(--border)}
 .auth-tab{flex:1;padding:10px;text-align:center;cursor:pointer;font-size:14px;font-weight:700;transition:all .2s;background:var(--surface2);color:var(--text2)}
 .auth-tab.active{background:var(--accent);color:#000}
-.auth-error{background:var(--red-dim);border:1px solid var(--red);color:var(--red);padding:10px 14px;border-radius:12px;font-size:13px;margin-bottom:12px;display:none}
+.auth-error{background:rgba(255,61,113,.15);border:1px solid var(--red);color:#ff6b8e;padding:12px 14px;border-radius:12px;font-size:13px;margin-bottom:12px;display:none;font-weight:600;line-height:1.5}
 .auth-error.show{display:block}
 
 /* TOP BAR */
@@ -783,6 +783,7 @@ function showAuthError(msg) {
   const el = document.getElementById('auth-error');
   el.textContent = msg;
   el.classList.add('show');
+  el.scrollIntoView({behavior:'smooth', block:'center'});
 }
 
 window.doLogin = async function() {
@@ -790,12 +791,20 @@ window.doLogin = async function() {
   const pass = document.getElementById('login-pass').value;
   if(!email||!pass){showAuthError('กรุณากรอกข้อมูลให้ครบ');return}
   const btn = document.getElementById('btn-login');
-  btn.disabled = true; btn.textContent = 'กำลังเข้าสู่ระบบ...';
+  btn.disabled = true; btn.innerHTML = '<span style="display:inline-block;width:16px;height:16px;border:2px solid #000;border-top-color:transparent;border-radius:50%;animation:spin .7s linear infinite"></span> กำลังเข้าสู่ระบบ...';
   try {
     await signInWithEmailAndPassword(auth, email, pass);
   } catch(e) {
-    const msgs = {'auth/user-not-found':'ไม่พบบัญชีนี้','auth/wrong-password':'รหัสผ่านไม่ถูกต้อง','auth/invalid-email':'อีเมลไม่ถูกต้อง','auth/invalid-credential':'อีเมลหรือรหัสผ่านไม่ถูกต้อง'};
-    showAuthError(msgs[e.code]||'เกิดข้อผิดพลาด: '+e.message);
+    console.error('Login error:', e.code, e.message);
+    const msgs = {
+      'auth/user-not-found':'ไม่พบบัญชีนี้ กรุณาสมัครสมาชิกก่อน',
+      'auth/wrong-password':'รหัสผ่านไม่ถูกต้อง',
+      'auth/invalid-email':'อีเมลไม่ถูกต้อง',
+      'auth/invalid-credential':'อีเมลหรือรหัสผ่านไม่ถูกต้อง',
+      'auth/too-many-requests':'ลองผิดหลายครั้งเกินไป กรุณารอสักครู่',
+      'auth/network-request-failed':'ไม่มีการเชื่อมต่ออินเทอร์เน็ต'
+    };
+    showAuthError(msgs[e.code]||'เกิดข้อผิดพลาด ['+e.code+']: '+e.message);
     btn.disabled=false; btn.textContent='🔑 เข้าสู่ระบบ';
   }
 }
@@ -807,17 +816,26 @@ window.doRegister = async function() {
   if(!name||!email||!pass){showAuthError('กรุณากรอกข้อมูลให้ครบ');return}
   if(pass.length<6){showAuthError('รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร');return}
   const btn = document.getElementById('btn-register');
-  btn.disabled=true; btn.textContent='กำลังสมัคร...';
+  btn.disabled=true; btn.innerHTML='<span style="display:inline-block;width:16px;height:16px;border:2px solid #000;border-top-color:transparent;border-radius:50%;animation:spin .7s linear infinite"></span> กำลังสมัคร...';
   try {
     const cred = await createUserWithEmailAndPassword(auth, email, pass);
     await updateProfile(cred.user, {displayName: name});
-    // Save user profile to Firestore
-    await setDoc(doc(db,'users',cred.user.uid), {
-      name, email, role:'member', createdAt: serverTimestamp()
-    });
+    try {
+      await setDoc(doc(db,'users',cred.user.uid), {
+        name, email, role:'member', createdAt: serverTimestamp()
+      });
+    } catch(dbErr) {
+      console.warn('Firestore write failed (non-critical):', dbErr);
+    }
   } catch(e) {
-    const msgs = {'auth/email-already-in-use':'อีเมลนี้ถูกใช้แล้ว','auth/invalid-email':'อีเมลไม่ถูกต้อง','auth/weak-password':'รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร'};
-    showAuthError(msgs[e.code]||'เกิดข้อผิดพลาด: '+e.message);
+    console.error('Register error:', e.code, e.message);
+    const msgs = {
+      'auth/email-already-in-use':'อีเมลนี้ถูกใช้แล้ว กรุณาเข้าสู่ระบบแทน',
+      'auth/invalid-email':'อีเมลไม่ถูกต้อง',
+      'auth/weak-password':'รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร',
+      'auth/network-request-failed':'ไม่มีการเชื่อมต่ออินเทอร์เน็ต'
+    };
+    showAuthError(msgs[e.code]||'เกิดข้อผิดพลาด ['+e.code+']: '+e.message);
     btn.disabled=false; btn.textContent='✅ สมัครสมาชิก';
   }
 }
