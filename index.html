@@ -122,12 +122,14 @@ body{background:var(--bg);color:var(--text);font-family:'Sarabun',sans-serif;fon
 }
 
 /* SVG ICONS */
-svg{display:inline-block;vertical-align:middle;flex-shrink:0}
+svg{display:inline-block;vertical-align:middle;flex-shrink:0;max-width:100%;overflow:hidden;pointer-events:none}
 .nav-icon svg{width:22px;height:22px}
 .icon-btn svg{width:18px;height:18px}
 .card-title svg{width:16px;height:16px}
 .btn svg{width:16px;height:16px}
 .badge svg{width:12px;height:12px}
+/* Prevent rogue SVG from escaping containers */
+*:not(svg):not(use) > svg:not([class]):not([id]){display:none!important}
 
 /* AUTH SCREEN */
 .auth-screen{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:24px;background:var(--bg)}
@@ -1724,7 +1726,7 @@ window.showToast = function(msg,type=''){
   if(_tt){clearTimeout(_tt);_tt=null;}
   t.classList.remove('show');
   void t.offsetWidth;
-  t.textContent=msg;t.className='toast'+(type?' '+type:'');
+  t.innerHTML=msg;t.className='toast'+(type?' '+type:'');
   requestAnimationFrame(()=>{t.classList.add('show');_tt=setTimeout(()=>{t.classList.remove('show');_tt=null;},2500);});
 }
 
