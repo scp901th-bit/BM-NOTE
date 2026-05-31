@@ -121,6 +121,14 @@ body{background:var(--bg);color:var(--text);font-family:'Sarabun',sans-serif;fon
   .search-overlay { left: 220px; }
 }
 
+/* SVG ICONS */
+svg{display:inline-block;vertical-align:middle;flex-shrink:0}
+.nav-icon svg{width:22px;height:22px}
+.icon-btn svg{width:18px;height:18px}
+.card-title svg{width:16px;height:16px}
+.btn svg{width:16px;height:16px}
+.badge svg{width:12px;height:12px}
+
 /* AUTH SCREEN */
 .auth-screen{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:24px;background:var(--bg)}
 .auth-logo{font-family:'Space Mono',monospace;font-size:22px;font-weight:700;color:var(--accent);letter-spacing:3px;margin-bottom:6px}
@@ -141,7 +149,7 @@ body{background:var(--bg);color:var(--text);font-family:'Sarabun',sans-serif;fon
 .role-badge.member{background:var(--accent-dim);color:var(--accent);border:1px solid var(--accent)}
 
 /* ICON BUTTON */
-.icon-btn{width:38px;height:38px;display:flex;align-items:center;justify-content:center;background:var(--surface2);border:1px solid var(--border);border-radius:50%;color:var(--text2);cursor:pointer;font-size:16px;transition:all .2s;flex-shrink:0}
+.icon-btn{width:38px;height:38px;display:flex;align-items:center;justify-content:center;background:var(--surface2);border:1px solid var(--border);border-radius:50%;color:var(--text2);cursor:pointer;font-size:16px;transition:all .2s;flex-shrink:0;line-height:1}
 .icon-btn:active{transform:scale(.92)}
 
 /* SEARCH OVERLAY */
@@ -157,7 +165,7 @@ body{background:var(--bg);color:var(--text);font-family:'Sarabun',sans-serif;fon
 /* BOTTOM NAV */
 .bottom-nav{position:fixed;bottom:0;left:0;right:0;background:var(--nav-bg);border-top:1px solid var(--border);display:flex;z-index:300;padding-bottom:env(safe-area-inset-bottom);box-shadow:0 -4px 24px rgba(0,0,0,.2);transition:background .3s}
 .nav-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:10px 4px 8px;cursor:pointer;color:var(--text3);font-size:10px;font-weight:600;letter-spacing:.3px;gap:3px;transition:all .2s}
-.nav-icon{font-size:20px;transition:transform .2s}
+.nav-icon{font-size:20px;transition:transform .2s;display:flex;align-items:center;justify-content:center;width:24px;height:24px}
 .nav-item.active{color:var(--accent)}
 .nav-item.active .nav-icon{transform:scale(1.12)}
 .nav-item:active .nav-icon{transform:scale(.9)}
@@ -345,7 +353,7 @@ body{background:var(--bg);color:var(--text);font-family:'Sarabun',sans-serif;fon
         <div class="form-label">รหัสผ่าน</div>
         <input class="form-input" id="login-pass" type="password" placeholder="รหัสผ่าน"/>
       </div>
-      <button class="btn btn-primary btn-full mt8" onclick="doLogin()" id="btn-login">🔑 เข้าสู่ระบบ</button>
+      <button class="btn btn-primary btn-full mt8" onclick="doLogin()" id="btn-login"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg> เข้าสู่ระบบ</button>
       <div class="auth-divider">หรือ</div>
       <button class="btn btn-google" onclick="doGoogleLogin()" id="btn-google-login">
         <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google"/>
@@ -366,7 +374,7 @@ body{background:var(--bg);color:var(--text);font-family:'Sarabun',sans-serif;fon
         <div class="form-label">รหัสผ่าน</div>
         <input class="form-input" id="reg-pass" type="password" placeholder="อย่างน้อย 6 ตัวอักษร"/>
       </div>
-      <button class="btn btn-primary btn-full mt8" onclick="doRegister()" id="btn-register">✅ สมัครสมาชิก</button>
+      <button class="btn btn-primary btn-full mt8" onclick="doRegister()" id="btn-register"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> สมัครสมาชิก</button>
       <div class="auth-divider">หรือ</div>
       <button class="btn btn-google" onclick="doGoogleLogin()">
         <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google"/>
@@ -383,8 +391,8 @@ body{background:var(--bg);color:var(--text);font-family:'Sarabun',sans-serif;fon
 <div class="top-bar">
   <div class="logo">BP SNK NOTE<span id="user-role-sub">ระบบบันทึกรายรับ-รายเบิก</span></div>
   <span class="role-badge" id="role-badge-top"></span>
-  <button class="icon-btn" id="theme-btn" onclick="toggleTheme()">🌙</button>
-  <button class="icon-btn" onclick="openSearch()">🔍</button>
+  <button class="icon-btn" id="theme-btn" onclick="toggleTheme()"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg></button>
+  <button class="icon-btn" onclick="openSearch()"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></button>
 </div>
 
 <!-- SEARCH OVERLAY -->
@@ -394,7 +402,7 @@ body{background:var(--bg);color:var(--text);font-family:'Sarabun',sans-serif;fon
     <input class="search-input-el" id="search-input" placeholder="ค้นหา เช่น รายรับ 1/5, เบิก C1..." oninput="doSearch(this.value)" autocomplete="off"/>
   </div>
   <div class="search-results-list" id="search-list">
-    <div class="s-empty">พิมพ์เพื่อค้นหา 🔍</div>
+    <div class="s-empty">พิมพ์เพื่อค้นหา <svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></div>
   </div>
 </div>
 
@@ -403,7 +411,7 @@ body{background:var(--bg);color:var(--text);font-family:'Sarabun',sans-serif;fon
 <!-- DASHBOARD -->
 <div class="section active" id="tab-dashboard">
   <div class="card">
-    <div class="card-title">📅 ช่วงวันที่</div>
+    <div class="card-title"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg> ช่วงวันที่</div>
     <div class="date-row">
       <div class="form-row"><div class="form-label">จาก วัน</div><select class="form-select" id="d-fd"></select></div>
       <div class="form-row"><div class="form-label">เดือน</div><select class="form-select" id="d-fm"></select></div>
@@ -414,18 +422,18 @@ body{background:var(--bg);color:var(--text);font-family:'Sarabun',sans-serif;fon
       <div class="form-row"><div class="form-label">เดือน</div><select class="form-select" id="d-tm"></select></div>
       <div class="form-row"><div class="form-label">ปี พ.ศ.</div><select class="form-select" id="d-ty"></select></div>
     </div>
-    <button class="btn btn-primary btn-full mt8" onclick="renderDashboard()">🔄 อัปเดต</button>
+    <button class="btn btn-primary btn-full mt8" onclick="renderDashboard()"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg> อัปเดต</button>
   </div>
   <div id="qs-wrap"></div>
-  <div class="card"><div class="card-title">📈 รายรับรายวัน</div><div class="chart-wrap"><canvas id="ch-bar" height="200"></canvas></div><div class="chart-legend" id="lg-bar"></div></div>
-  <div class="card"><div class="card-title">🍩 สัดส่วนแคชเชียร์</div><div style="max-width:260px;margin:0 auto"><div class="chart-wrap"><canvas id="ch-dc" height="260"></canvas></div></div><div class="chart-legend" id="lg-dc"></div></div>
-  <div class="card"><div class="card-title">🍩 ประเภทรายรับ</div><div style="max-width:260px;margin:0 auto"><div class="chart-wrap"><canvas id="ch-dt" height="260"></canvas></div></div><div class="chart-legend" id="lg-dt"></div></div>
-  <div class="card"><div class="card-title">🍩 สัดส่วนรายเบิก</div><div style="max-width:260px;margin:0 auto"><div class="chart-wrap"><canvas id="ch-de" height="260"></canvas></div></div><div class="chart-legend" id="lg-de"></div></div>
+  <div class="card"><div class="card-title"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg> รายรับรายวัน</div><div class="chart-wrap"><canvas id="ch-bar" height="200"></canvas></div><div class="chart-legend" id="lg-bar"></div></div>
+  <div class="card"><div class="card-title"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/></svg> สัดส่วนแคชเชียร์</div><div style="max-width:260px;margin:0 auto"><div class="chart-wrap"><canvas id="ch-dc" height="260"></canvas></div></div><div class="chart-legend" id="lg-dc"></div></div>
+  <div class="card"><div class="card-title"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/></svg> ประเภทรายรับ</div><div style="max-width:260px;margin:0 auto"><div class="chart-wrap"><canvas id="ch-dt" height="260"></canvas></div></div><div class="chart-legend" id="lg-dt"></div></div>
+  <div class="card"><div class="card-title"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/></svg> สัดส่วนรายเบิก</div><div style="max-width:260px;margin:0 auto"><div class="chart-wrap"><canvas id="ch-de" height="260"></canvas></div></div><div class="chart-legend" id="lg-de"></div></div>
   <div class="card">
-    <div class="card-title">📊 รายรับ vs รายเบิก รายวัน</div>
+    <div class="card-title"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="18" y="3" width="4" height="18"/><rect x="10" y="8" width="4" height="13"/><rect x="2" y="13" width="4" height="8"/></svg> รายรับ vs รายเบิก รายวัน</div>
     <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px">
-      <button class="filter-chip active" id="toggle-income-line" onclick="toggleLineChart('income')">💚 รายรับ</button>
-      <button class="filter-chip active" id="toggle-expense-line" onclick="toggleLineChart('expense')">❤️ รายเบิก</button>
+      <button class="filter-chip active" id="toggle-income-line" onclick="toggleLineChart('income')"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="14" height="14" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M12 21.593c-.525-.438-9.993-8.008-9.993-13.368 0-3.397 2.75-6.225 6.243-6.225 2.021 0 3.799.95 4.75 2.393C14 2.95 15.778 2 17.75 2c3.493 0 6.25 2.828 6.25 6.225 0 5.36-9.467 12.93-10 13.368z"/></svg> รายรับ</button>
+      <button class="filter-chip active" id="toggle-expense-line" onclick="toggleLineChart('expense')"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="14" height="14" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M12 21.593c-.525-.438-9.993-8.008-9.993-13.368 0-3.397 2.75-6.225 6.243-6.225 2.021 0 3.799.95 4.75 2.393C14 2.95 15.778 2 17.75 2c3.493 0 6.25 2.828 6.25 6.225 0 5.36-9.467 12.93-10 13.368z"/></svg> รายเบิก</button>
     </div>
     <div class="chart-wrap"><canvas id="ch-line" height="220"></canvas></div>
     <div class="chart-legend" id="lg-line"></div>
@@ -435,7 +443,7 @@ body{background:var(--bg);color:var(--text);font-family:'Sarabun',sans-serif;fon
 <!-- ADD (ADMIN + MEMBER) -->
 <div class="section" id="tab-add">
   <div class="card">
-    <div class="card-title">📅 วันที่บันทึก</div>
+    <div class="card-title"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg> วันที่บันทึก</div>
     <div class="date-row">
       <div class="form-row"><div class="form-label">วัน</div><select class="form-select" id="add-day"></select></div>
       <div class="form-row"><div class="form-label">เดือน</div><select class="form-select" id="add-month"></select></div>
@@ -443,7 +451,7 @@ body{background:var(--bg);color:var(--text);font-family:'Sarabun',sans-serif;fon
     </div>
   </div>
   <div class="card">
-    <div class="card-title">🎱 แคชเชียร์</div>
+    <div class="card-title"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="4"/></svg> แคชเชียร์</div>
     <div class="cashier-group" id="add-cashier-group">
       <button class="cashier-btn active" data-c="C1" onclick="toggleCashier(this)">C1</button>
       <button class="cashier-btn" data-c="C2" onclick="toggleCashier(this)">C2</button>
@@ -451,14 +459,14 @@ body{background:var(--bg);color:var(--text);font-family:'Sarabun',sans-serif;fon
     </div>
   </div>
   <div class="card">
-    <div class="card-title">📂 ประเภท</div>
+    <div class="card-title"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg> ประเภท</div>
     <div class="cat-group">
-      <button class="cat-btn income active" id="cat-income" onclick="setCat('income')">💚 รายรับ</button>
-      <button class="cat-btn expense" id="cat-expense" onclick="setCat('expense')">❤️ รายเบิก</button>
+      <button class="cat-btn income active" id="cat-income" onclick="setCat('income')"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="14" height="14" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M12 21.593c-.525-.438-9.993-8.008-9.993-13.368 0-3.397 2.75-6.225 6.243-6.225 2.021 0 3.799.95 4.75 2.393C14 2.95 15.778 2 17.75 2c3.493 0 6.25 2.828 6.25 6.225 0 5.36-9.467 12.93-10 13.368z"/></svg> รายรับ</button>
+      <button class="cat-btn expense" id="cat-expense" onclick="setCat('expense')"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="14" height="14" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M12 21.593c-.525-.438-9.993-8.008-9.993-13.368 0-3.397 2.75-6.225 6.243-6.225 2.021 0 3.799.95 4.75 2.393C14 2.95 15.778 2 17.75 2c3.493 0 6.25 2.828 6.25 6.225 0 5.36-9.467 12.93-10 13.368z"/></svg> รายเบิก</button>
     </div>
   </div>
   <div class="card">
-    <div class="card-title">📝 รายการ</div>
+    <div class="card-title"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg> รายการ</div>
     <div class="items-grid" id="items-grid"></div>
     <div class="add-item-row mt8">
       <input class="form-input" id="new-item-name" placeholder="เพิ่มหัวข้อใหม่..."/>
@@ -466,16 +474,16 @@ body{background:var(--bg);color:var(--text);font-family:'Sarabun',sans-serif;fon
     </div>
   </div>
   <div class="card">
-    <div class="card-title">📌 หมายเหตุ <span style="font-size:10px;color:var(--text2);font-weight:400;text-transform:none">(ไม่บังคับ)</span></div>
+    <div class="card-title"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg> หมายเหตุ <span style="font-size:10px;color:var(--text2);font-weight:400;text-transform:none">(ไม่บังคับ)</span></div>
     <textarea class="form-textarea" id="add-note" placeholder="เหตุสุดวิสัย เหตุการณ์พิเศษ หรือรายละเอียดเพิ่มเติม..."></textarea>
   </div>
-  <button class="btn btn-primary btn-full" onclick="confirmSave()">💾 บันทึกรายการ</button>
+  <button class="btn btn-primary btn-full" onclick="confirmSave()"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> บันทึกรายการ</button>
 </div>
 
 <!-- RECORDS -->
 <div class="section" id="tab-records">
   <div class="card">
-    <div class="card-title">🔍 กรอง</div>
+    <div class="card-title"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg> กรอง</div>
     <div class="filter-row" id="fc">
       <div class="filter-chip active" data-v="all" onclick="setFilter('c','all',this)">ทั้งหมด</div>
       <div class="filter-chip" data-v="C1" onclick="setFilter('c','C1',this)">C1</div>
@@ -484,8 +492,8 @@ body{background:var(--bg);color:var(--text);font-family:'Sarabun',sans-serif;fon
     </div>
     <div class="filter-row" id="ft">
       <div class="filter-chip active" data-v="all" onclick="setFilter('t','all',this)">ทั้งหมด</div>
-      <div class="filter-chip" data-v="income" onclick="setFilter('t','income',this)">💚 รายรับ</div>
-      <div class="filter-chip" data-v="expense" onclick="setFilter('t','expense',this)">❤️ รายเบิก</div>
+      <div class="filter-chip" data-v="income" onclick="setFilter('t','income',this)"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="14" height="14" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M12 21.593c-.525-.438-9.993-8.008-9.993-13.368 0-3.397 2.75-6.225 6.243-6.225 2.021 0 3.799.95 4.75 2.393C14 2.95 15.778 2 17.75 2c3.493 0 6.25 2.828 6.25 6.225 0 5.36-9.467 12.93-10 13.368z"/></svg> รายรับ</div>
+      <div class="filter-chip" data-v="expense" onclick="setFilter('t','expense',this)"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="14" height="14" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M12 21.593c-.525-.438-9.993-8.008-9.993-13.368 0-3.397 2.75-6.225 6.243-6.225 2.021 0 3.799.95 4.75 2.393C14 2.95 15.778 2 17.75 2c3.493 0 6.25 2.828 6.25 6.225 0 5.36-9.467 12.93-10 13.368z"/></svg> รายเบิก</div>
     </div>
   </div>
   <div id="records-list"><div class="loading-wrap"><div class="spinner"></div> กำลังโหลด...</div></div>
@@ -494,7 +502,7 @@ body{background:var(--bg);color:var(--text);font-family:'Sarabun',sans-serif;fon
 <!-- REPORT (ADMIN ONLY full, MEMBER read-only) -->
 <div class="section" id="tab-report">
   <div class="card">
-    <div class="card-title">📅 ช่วงวันที่</div>
+    <div class="card-title"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg> ช่วงวันที่</div>
     <div class="date-row">
       <div class="form-row"><div class="form-label">จาก วัน</div><select class="form-select" id="rfd"></select></div>
       <div class="form-row"><div class="form-label">เดือน</div><select class="form-select" id="rfm"></select></div>
@@ -507,7 +515,7 @@ body{background:var(--bg);color:var(--text);font-family:'Sarabun',sans-serif;fon
     </div>
   </div>
   <div class="card" id="rpt-cashier-card">
-    <div class="card-title">🎱 แคชเชียร์</div>
+    <div class="card-title"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="4"/></svg> แคชเชียร์</div>
     <!-- รายรับ: เลือกแคชเชียร์เดียว -->
     <div id="cashier-income-section">
       <div class="cashier-group" id="rpt-cashier-group">
@@ -519,7 +527,7 @@ body{background:var(--bg);color:var(--text);font-family:'Sarabun',sans-serif;fon
     </div>
     <!-- รายเบิก: เลือกช่วง (เริ่ม→จบ) พร้อมแคชเชียร์ -->
     <div id="cashier-expense-section" style="display:none">
-      <div class="form-label" style="margin-bottom:8px">ช่วงแคชเชียร์ (ลำดับ C1 → C3 → C2)</div>
+      <div class="form-label" style="margin-bottom:8px">ลำดับ: C1 → C3 → C2 (เริ่มมีผลวันแรก, จบมีผลวันสุดท้าย)</div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
         <div>
           <div class="form-label">เริ่มที่</div>
@@ -541,10 +549,10 @@ body{background:var(--bg);color:var(--text);font-family:'Sarabun',sans-serif;fon
     </div>
   </div>
   <div class="card">
-    <div class="card-title">📂 ประเภท</div>
+    <div class="card-title"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg> ประเภท</div>
     <div class="cat-group" style="margin-bottom:12px">
-      <button class="cat-btn income active" id="rpt-income" onclick="setRptCat('income')">💚 รายรับ</button>
-      <button class="cat-btn expense" id="rpt-expense" onclick="setRptCat('expense')">❤️ รายเบิก</button>
+      <button class="cat-btn income active" id="rpt-income" onclick="setRptCat('income')"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="14" height="14" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M12 21.593c-.525-.438-9.993-8.008-9.993-13.368 0-3.397 2.75-6.225 6.243-6.225 2.021 0 3.799.95 4.75 2.393C14 2.95 15.778 2 17.75 2c3.493 0 6.25 2.828 6.25 6.225 0 5.36-9.467 12.93-10 13.368z"/></svg> รายรับ</button>
+      <button class="cat-btn expense" id="rpt-expense" onclick="setRptCat('expense')"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="14" height="14" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M12 21.593c-.525-.438-9.993-8.008-9.993-13.368 0-3.397 2.75-6.225 6.243-6.225 2.021 0 3.799.95 4.75 2.393C14 2.95 15.778 2 17.75 2c3.493 0 6.25 2.828 6.25 6.225 0 5.36-9.467 12.93-10 13.368z"/></svg> รายเบิก</button>
     </div>
     <div class="cat-group">
       <button class="cat-btn neutral active" id="rpt-all" style="font-size:13px" onclick="setRptDetail('all')">ทุกอย่าง</button>
@@ -552,12 +560,12 @@ body{background:var(--bg);color:var(--text);font-family:'Sarabun',sans-serif;fon
     </div>
     <div id="rpt-custom-items" style="display:none;margin-top:12px"></div>
   </div>
-  <button class="btn btn-primary btn-full" onclick="generateReport()">📊 สร้างรายงาน</button>
+  <button class="btn btn-primary btn-full" onclick="generateReport()"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="18" y="3" width="4" height="18"/><rect x="10" y="8" width="4" height="13"/><rect x="2" y="13" width="4" height="8"/></svg> สร้างรายงาน</button>
   <div class="card mt12" id="rpt-result" style="display:none">
-    <div class="card-title">📋 ผลลัพธ์</div>
+    <div class="card-title"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></svg> ผลลัพธ์</div>
     <div class="stats-grid" id="rpt-stats"></div>
     <div class="report-output" id="rpt-output"></div>
-    <button class="btn btn-ghost btn-full mt8" onclick="copyReport()">📋 คัดลอก</button>
+    <button class="btn btn-ghost btn-full mt8" onclick="copyReport()"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></svg> คัดลอก</button>
   </div>
 </div>
 
@@ -566,35 +574,35 @@ body{background:var(--bg);color:var(--text);font-family:'Sarabun',sans-serif;fon
   <!-- Admin view -->
   <div id="inbox-admin" style="display:none">
     <div class="card">
-      <div class="card-title">📥 คำขอลบรายการ <span id="pending-count" class="badge badge-pending" style="margin-left:4px"></span></div>
-      <div id="delete-requests-list"><div class="empty">ไม่มีคำขอรอการอนุมัติ ✅</div></div>
+      <div class="card-title"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> คำขอลบรายการ <span id="pending-count" class="badge badge-pending" style="margin-left:4px"></span></div>
+      <div id="delete-requests-list"><div class="empty">ไม่มีคำขอรอการอนุมัติ <svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div></div>
     </div>
     <div class="card mt12">
-      <div class="card-title">💬 ข้อความจากสมาชิก</div>
+      <div class="card-title"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> ข้อความจากสมาชิก</div>
       <div id="messages-list"><div class="empty">ยังไม่มีข้อความ</div></div>
     </div>
   </div>
   <!-- Member view -->
   <div id="inbox-member" style="display:none">
     <div class="card">
-      <div class="card-title">📤 ส่งข้อความถึง Admin</div>
+      <div class="card-title"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg> ส่งข้อความถึง Admin</div>
       <div class="form-row">
         <div class="form-label">ประเภท</div>
         <select class="form-select" id="msg-type">
-          <option value="suggestion">💡 ข้อเสนอแนะ</option>
-          <option value="question">❓ คำถาม</option>
-          <option value="report">⚠️ รายงานปัญหา</option>
-          <option value="other">📝 อื่นๆ</option>
+          <option value="suggestion"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="9" y1="18" x2="15" y2="18"/><line x1="10" y1="22" x2="14" y2="22"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14"/></svg> ข้อเสนอแนะ</option>
+          <option value="question"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> คำถาม</option>
+          <option value="report"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> รายงานปัญหา</option>
+          <option value="other"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg> อื่นๆ</option>
         </select>
       </div>
       <div class="form-row">
         <div class="form-label">ข้อความ</div>
         <textarea class="form-textarea" id="msg-content" placeholder="พิมพ์ข้อความของคุณ..." style="min-height:100px"></textarea>
       </div>
-      <button class="btn btn-primary btn-full mt8" onclick="sendMessage()">📤 ส่งข้อความ</button>
+      <button class="btn btn-primary btn-full mt8" onclick="sendMessage()"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg> ส่งข้อความ</button>
     </div>
     <div class="card mt12">
-      <div class="card-title">📋 ประวัติการส่ง</div>
+      <div class="card-title"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></svg> ประวัติการส่ง</div>
       <div id="my-messages-list"><div class="loading-wrap"><div class="spinner"></div></div></div>
     </div>
   </div>
@@ -603,29 +611,29 @@ body{background:var(--bg);color:var(--text);font-family:'Sarabun',sans-serif;fon
 <!-- SETTINGS -->
 <div class="section" id="tab-settings">
   <div class="card">
-    <div class="card-title">👤 บัญชีของฉัน</div>
+    <div class="card-title"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> บัญชีของฉัน</div>
     <div id="user-info-card"></div>
-    <button class="btn btn-ghost btn-sm mt8" onclick="doLogout()">🚪 ออกจากระบบ</button>
+    <button class="btn btn-ghost btn-sm mt8" onclick="doLogout()"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg> ออกจากระบบ</button>
   </div>
   <div class="card">
-    <div class="card-title">🌗 ธีม</div>
+    <div class="card-title"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20z"/><path d="M12 2v20"/></svg> ธีม</div>
     <div class="cat-group">
-      <button class="cat-btn neutral" id="th-auto" onclick="setThemeMode('auto')">🔄 อัตโนมัติ</button>
-      <button class="cat-btn neutral" id="th-light" onclick="setThemeMode('light')">☀️ กลางวัน</button>
-      <button class="cat-btn neutral active" id="th-dark" onclick="setThemeMode('dark')">🌙 กลางคืน</button>
+      <button class="cat-btn neutral" id="th-auto" onclick="setThemeMode('auto')"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg> อัตโนมัติ</button>
+      <button class="cat-btn neutral" id="th-light" onclick="setThemeMode('light')"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg> กลางวัน</button>
+      <button class="cat-btn neutral active" id="th-dark" onclick="setThemeMode('dark')"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg> กลางคืน</button>
     </div>
   </div>
   <!-- Admin only settings -->
   <div id="admin-settings" style="display:none">
     <div class="card">
-      <div class="card-title">💳 บัญชีรับโอน</div>
+      <div class="card-title"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg> บัญชีรับโอน</div>
       <div class="form-row"><div class="form-label">ชื่อผู้รับ</div><input class="form-input" id="set-name"/></div>
       <div class="form-row"><div class="form-label">ธนาคาร</div><input class="form-input" id="set-bank"/></div>
       <div class="form-row"><div class="form-label">เลขบัญชี</div><input class="form-input" id="set-account" inputmode="numeric"/></div>
-      <button class="btn btn-primary mt8" onclick="saveSettings()">💾 บันทึก</button>
+      <button class="btn btn-primary mt8" onclick="saveSettings()"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> บันทึก</button>
     </div>
     <div class="card">
-      <div class="card-title">📝 หัวข้อรายรับ</div>
+      <div class="card-title"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg> หัวข้อรายรับ</div>
       <div id="income-items-list"></div>
       <div class="add-item-row mt8">
         <input class="form-input" id="new-income-item" placeholder="เพิ่มหัวข้อรายรับ..."/>
@@ -633,7 +641,7 @@ body{background:var(--bg);color:var(--text);font-family:'Sarabun',sans-serif;fon
       </div>
     </div>
     <div class="card">
-      <div class="card-title">📝 หัวข้อรายเบิก</div>
+      <div class="card-title"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg> หัวข้อรายเบิก</div>
       <div id="expense-items-list"></div>
       <div class="add-item-row mt8">
         <input class="form-input" id="new-expense-item" placeholder="เพิ่มหัวข้อรายเบิก..."/>
@@ -641,10 +649,10 @@ body{background:var(--bg);color:var(--text);font-family:'Sarabun',sans-serif;fon
       </div>
     </div>
     <div class="card">
-      <div class="card-title" style="color:var(--accent)">📦 Export / Import</div>
+      <div class="card-title" style="color:var(--accent)"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16.5 9.4l-9-5.19"/><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg> Export / Import</div>
       <div class="flex gap8" style="flex-wrap:wrap">
-        <button class="btn btn-ghost btn-sm" onclick="exportData()">📤 Export JSON</button>
-        <button class="btn btn-ghost btn-sm" onclick="document.getElementById('import-file').click()">📥 Import JSON</button>
+        <button class="btn btn-ghost btn-sm" onclick="exportData()"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg> Export JSON</button>
+        <button class="btn btn-ghost btn-sm" onclick="document.getElementById('import-file').click()"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Import JSON</button>
       </div>
       <input type="file" id="import-file" accept=".json" style="display:none" onchange="handleImport(this)"/>
     </div>
@@ -656,22 +664,22 @@ body{background:var(--bg);color:var(--text);font-family:'Sarabun',sans-serif;fon
 <!-- BOTTOM NAV -->
 <nav class="bottom-nav" id="bottom-nav">
   <div class="nav-item active" id="nav-dashboard" onclick="switchTab('dashboard')">
-    <div class="nav-icon">📊</div><div>ภาพรวม</div>
+    <div class="nav-icon"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="18" y="3" width="4" height="18"/><rect x="10" y="8" width="4" height="13"/><rect x="2" y="13" width="4" height="8"/></svg></div><div>ภาพรวม</div>
   </div>
   <div class="nav-item" id="nav-add" onclick="switchTab('add')">
-    <div class="nav-icon">➕</div><div>บันทึก</div>
+    <div class="nav-icon"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></div><div>บันทึก</div>
   </div>
   <div class="nav-item" id="nav-records" onclick="switchTab('records')">
-    <div class="nav-icon">📋</div><div>รายการ</div>
+    <div class="nav-icon"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></svg></div><div>รายการ</div>
   </div>
   <div class="nav-item" id="nav-report" onclick="switchTab('report')">
-    <div class="nav-icon">📄</div><div>รายงาน</div>
+    <div class="nav-icon"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg></div><div>รายงาน</div>
   </div>
   <div class="nav-item" id="nav-inbox" onclick="switchTab('inbox')">
-    <div class="nav-icon">📥</div><div id="inbox-nav-label">กล่องข้อความ</div>
+    <div class="nav-icon"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></div><div id="inbox-nav-label">กล่องข้อความ</div>
   </div>
   <div class="nav-item" id="nav-settings" onclick="switchTab('settings')">
-    <div class="nav-icon">⚙️</div><div>ตั้งค่า</div>
+    <div class="nav-icon"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></div><div>ตั้งค่า</div>
   </div>
 </nav>
 
@@ -681,11 +689,11 @@ body{background:var(--bg);color:var(--text);font-family:'Sarabun',sans-serif;fon
 <div class="modal-overlay" id="modal-confirm">
   <div class="modal-box">
     <div class="modal-handle"></div>
-    <div class="modal-title">✅ ยืนยันการบันทึก</div>
+    <div class="modal-title"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> ยืนยันการบันทึก</div>
     <div id="mc-content"></div>
     <div class="modal-actions">
       <button class="btn btn-ghost" style="flex:1" onclick="closeModal('modal-confirm')">ยกเลิก</button>
-      <button class="btn btn-primary" style="flex:1" onclick="doSave()">✅ ยืนยัน</button>
+      <button class="btn btn-primary" style="flex:1" onclick="doSave()"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> ยืนยัน</button>
     </div>
   </div>
 </div>
@@ -693,7 +701,7 @@ body{background:var(--bg);color:var(--text);font-family:'Sarabun',sans-serif;fon
 <div class="modal-overlay" id="modal-edit">
   <div class="modal-box">
     <div class="modal-handle"></div>
-    <div class="modal-title">✏️ แก้ไขรายการ</div>
+    <div class="modal-title"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg> แก้ไขรายการ</div>
     <div id="me-content"></div>
     <div class="modal-actions" id="me-actions"></div>
   </div>
@@ -702,7 +710,7 @@ body{background:var(--bg);color:var(--text);font-family:'Sarabun',sans-serif;fon
 <div class="modal-overlay" id="modal-conflict">
   <div class="modal-box">
     <div class="modal-handle"></div>
-    <div class="modal-title">⚠️ พบข้อมูลซ้ำ</div>
+    <div class="modal-title"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> พบข้อมูลซ้ำ</div>
     <div id="conflict-content"></div>
     <div id="conflict-options"></div>
   </div>
@@ -805,7 +813,7 @@ window.doLogin = async function() {
       'auth/network-request-failed':'ไม่มีการเชื่อมต่ออินเทอร์เน็ต'
     };
     showAuthError(msgs[e.code]||'เกิดข้อผิดพลาด ['+e.code+']: '+e.message);
-    btn.disabled=false; btn.textContent='🔑 เข้าสู่ระบบ';
+    btn.disabled=false; btn.textContent='<svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg> เข้าสู่ระบบ';
   }
 }
 
@@ -836,7 +844,7 @@ window.doRegister = async function() {
       'auth/network-request-failed':'ไม่มีการเชื่อมต่ออินเทอร์เน็ต'
     };
     showAuthError(msgs[e.code]||'เกิดข้อผิดพลาด ['+e.code+']: '+e.message);
-    btn.disabled=false; btn.textContent='✅ สมัครสมาชิก';
+    btn.disabled=false; btn.textContent='<svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> สมัครสมาชิก';
   }
 }
 
@@ -937,7 +945,7 @@ function setupRoleUI() {
       <div>
         <div style="font-weight:700;font-size:15px">${currentUser.displayName||'ผู้ใช้'}</div>
         <div style="font-size:12px;color:var(--text2)">${currentUser.email}</div>
-        <span class="badge ${currentRole==='admin'?'badge-admin':'badge-income'}" style="margin-top:4px">${currentRole==='admin'?'👑 Admin':'👤 Member'}</span>
+        <span class="badge ${currentRole==='admin'?'badge-admin':'badge-income'}" style="margin-top:4px">${currentRole==='admin'?'<svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 20h20M4 20l2-10 6 5 6-5 2 10"/><circle cx="12" cy="7" r="2"/></svg> Admin':'<svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> Member'}</span>
       </div>
     </div>`;
 
@@ -986,7 +994,7 @@ window.saveSettings = async function() {
       transferAccount: appSettings.account, incomeItems, expenseItems,
       updatedAt: serverTimestamp()
     });
-    showToast('✅ บันทึกแล้ว');
+    showToast('<svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> บันทึกแล้ว');
   } catch(e){ showToast('เกิดข้อผิดพลาด','error'); }
 }
 
@@ -1049,7 +1057,7 @@ function applyTheme() {
   const mode = localStorage.getItem('themeMode')||'dark';
   let theme = mode==='auto'?(window.matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light'):mode;
   document.documentElement.setAttribute('data-theme',theme);
-  document.getElementById('theme-btn').textContent = theme==='dark'?'🌙':'☀️';
+  document.getElementById('theme-btn').textContent = theme==='dark'?'<svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>':'<svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>';
 }
 
 window.toggleTheme = function() {
@@ -1115,11 +1123,11 @@ window.openSearch = function(){
 window.closeSearch = function(){
   document.getElementById('search-overlay').classList.remove('open');
   document.getElementById('search-input').value='';
-  document.getElementById('search-list').innerHTML='<div class="s-empty">พิมพ์เพื่อค้นหา 🔍</div>';
+  document.getElementById('search-list').innerHTML='<div class="s-empty">พิมพ์เพื่อค้นหา <svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></div>';
 }
 window.doSearch = function(q){
   const list=document.getElementById('search-list');
-  if(!q.trim()){list.innerHTML='<div class="s-empty">พิมพ์เพื่อค้นหา 🔍</div>';return;}
+  if(!q.trim()){list.innerHTML='<div class="s-empty">พิมพ์เพื่อค้นหา <svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></div>';return;}
   const ql=q.toLowerCase();
   const matches=allRecords.filter(r=>{
     const ds=`${r.date?.d}/${r.date?.m}`;
@@ -1128,7 +1136,7 @@ window.doSearch = function(q){
       Object.values(r.items||{}).reduce((a,b)=>a+b,0).toString()].join(' ').toLowerCase();
     return all.includes(ql);
   }).slice(0,25);
-  if(!matches.length){list.innerHTML='<div class="s-empty">ไม่พบข้อมูล 🔍</div>';return;}
+  if(!matches.length){list.innerHTML='<div class="s-empty">ไม่พบข้อมูล <svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></div>';return;}
   list.innerHTML=matches.map(r=>{
     const total=Object.values(r.items||{}).reduce((a,b)=>a+b,0);
     const detail=Object.entries(r.items||{}).map(([k,v])=>`${k} ${fmtN(v)}`).join(' · ');
@@ -1183,12 +1191,12 @@ window.confirmSave = function(){
   pendingSave=data;
   const total=Object.values(data.items).reduce((a,b)=>a+b,0);
   const rows=Object.entries(data.items).map(([k,v])=>`<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--border)"><span>${k}</span><span class="text-mono">${fmtN(v)} ฿</span></div>`).join('');
-  const noteHtml=data.note?`<div style="margin-top:10px;padding:10px;background:var(--surface2);border-radius:14px;font-size:13px;color:var(--yellow)">📌 ${data.note}</div>`:'';
+  const noteHtml=data.note?`<div style="margin-top:10px;padding:10px;background:var(--surface2);border-radius:14px;font-size:13px;color:var(--yellow)"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg> ${data.note}</div>`:'';
   document.getElementById('mc-content').innerHTML=`
     <div style="margin-bottom:12px;display:flex;gap:8px;flex-wrap:wrap;align-items:center">
       <span class="text-mono" style="font-size:12px;color:var(--text2)">${data.date.d}/${data.date.m}/${data.date.y}</span>
       <span class="badge badge-${data.cashier.toLowerCase()}">${data.cashier}</span>
-      <span class="badge ${data.type==='income'?'badge-income':'badge-expense'}">${data.type==='income'?'💚 รายรับ':'❤️ รายเบิก'}</span>
+      <span class="badge ${data.type==='income'?'badge-income':'badge-expense'}">${data.type==='income'?'<svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="14" height="14" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M12 21.593c-.525-.438-9.993-8.008-9.993-13.368 0-3.397 2.75-6.225 6.243-6.225 2.021 0 3.799.95 4.75 2.393C14 2.95 15.778 2 17.75 2c3.493 0 6.25 2.828 6.25 6.225 0 5.36-9.467 12.93-10 13.368z"/></svg> รายรับ':'<svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="14" height="14" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M12 21.593c-.525-.438-9.993-8.008-9.993-13.368 0-3.397 2.75-6.225 6.243-6.225 2.021 0 3.799.95 4.75 2.393C14 2.95 15.778 2 17.75 2c3.493 0 6.25 2.828 6.25 6.225 0 5.36-9.467 12.93-10 13.368z"/></svg> รายเบิก'}</span>
     </div>
     ${rows}
     <div style="display:flex;justify-content:space-between;padding:10px 0;font-weight:700">
@@ -1208,7 +1216,7 @@ window.doSave = async function(){
       createdAt: serverTimestamp()
     });
     closeModal('modal-confirm');
-    showToast('✅ บันทึกเรียบร้อย');
+    showToast('<svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> บันทึกเรียบร้อย');
     document.querySelectorAll('#items-grid .item-input').forEach(i=>i.value='');
     document.getElementById('add-note').value='';
     pendingSave=null;
@@ -1234,7 +1242,7 @@ function renderRecords(){
   list.innerHTML=recs.map(r=>{
     const total=Object.values(r.items||{}).reduce((a,b)=>a+b,0);
     const detail=Object.entries(r.items||{}).map(([k,v])=>`${k} ${fmtN(v)}`).join(' · ');
-    const noteHtml=r.note?`<div class="record-note">📌 ${r.note}</div>`:'';
+    const noteHtml=r.note?`<div class="record-note"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg> ${r.note}</div>`:'';
     const byHtml=`<div class="record-by">บันทึกโดย: ${r.createdByName||'ไม่ระบุ'}</div>`;
     return `<div class="record-item" onclick="openEdit('${r.id}')">
       <div class="record-header">
@@ -1267,28 +1275,28 @@ window.openEdit = function(id){
     <div style="margin-bottom:12px;display:flex;gap:8px;flex-wrap:wrap;align-items:center">
       <span class="text-mono" style="font-size:12px;color:var(--text2)">${r.date?.d}/${r.date?.m}/${r.date?.y}</span>
       <span class="badge badge-${r.cashier?.toLowerCase()}">${r.cashier}</span>
-      <span class="badge ${r.type==='income'?'badge-income':'badge-expense'}">${r.type==='income'?'💚 รายรับ':'❤️ รายเบิก'}</span>
+      <span class="badge ${r.type==='income'?'badge-income':'badge-expense'}">${r.type==='income'?'<svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="14" height="14" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M12 21.593c-.525-.438-9.993-8.008-9.993-13.368 0-3.397 2.75-6.225 6.243-6.225 2.021 0 3.799.95 4.75 2.393C14 2.95 15.778 2 17.75 2c3.493 0 6.25 2.828 6.25 6.225 0 5.36-9.467 12.93-10 13.368z"/></svg> รายรับ':'<svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="14" height="14" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M12 21.593c-.525-.438-9.993-8.008-9.993-13.368 0-3.397 2.75-6.225 6.243-6.225 2.021 0 3.799.95 4.75 2.393C14 2.95 15.778 2 17.75 2c3.493 0 6.25 2.828 6.25 6.225 0 5.36-9.467 12.93-10 13.368z"/></svg> รายเบิก'}</span>
       <span class="text-mono ml-auto" style="color:${r.type==='income'?'var(--green)':'var(--red)'};">${fmtN(total)} ฿</span>
     </div>
     ${rows}
-    ${canEdit?`<div class="form-row mt8"><div class="form-label">📌 หมายเหตุ</div><textarea class="form-textarea" id="edit-note">${r.note||''}</textarea></div>`:''}
+    ${canEdit?`<div class="form-row mt8"><div class="form-label"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg> หมายเหตุ</div><textarea class="form-textarea" id="edit-note">${r.note||''}</textarea></div>`:''}
     ${!canEdit?'<div style="font-size:12px;color:var(--text2);text-align:center;padding:8px">👁️ ดูเท่านั้น — ส่งคำขอลบถ้าต้องการลบ</div>':''}`;
 
   // Actions
   const actionsEl = document.getElementById('me-actions');
   if(currentRole==='admin') {
     actionsEl.innerHTML=`
-      <button class="btn btn-danger btn-sm" onclick="adminDeleteRecord()">🗑️ ลบ</button>
+      <button class="btn btn-danger btn-sm" onclick="adminDeleteRecord()"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg> ลบ</button>
       <button class="btn btn-ghost" style="flex:1" onclick="closeModal('modal-edit')">ยกเลิก</button>
-      <button class="btn btn-primary" style="flex:1" onclick="doEdit()">💾 บันทึก</button>`;
+      <button class="btn btn-primary" style="flex:1" onclick="doEdit()"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> บันทึก</button>`;
   } else if(isOwner) {
     actionsEl.innerHTML=`
-      <button class="btn btn-ghost btn-sm" onclick="requestDelete('${id}')">🗑️ ขอลบ</button>
+      <button class="btn btn-ghost btn-sm" onclick="requestDelete('${id}')"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg> ขอลบ</button>
       <button class="btn btn-ghost" style="flex:1" onclick="closeModal('modal-edit')">ยกเลิก</button>
-      <button class="btn btn-primary" style="flex:1" onclick="doEdit()">💾 บันทึก</button>`;
+      <button class="btn btn-primary" style="flex:1" onclick="doEdit()"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> บันทึก</button>`;
   } else {
     actionsEl.innerHTML=`
-      <button class="btn btn-ghost btn-sm" onclick="requestDelete('${id}')">🗑️ ขอลบ</button>
+      <button class="btn btn-ghost btn-sm" onclick="requestDelete('${id}')"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg> ขอลบ</button>
       <button class="btn btn-ghost" style="flex:1" onclick="closeModal('modal-edit')">ปิด</button>`;
   }
   showModal('modal-edit');
@@ -1301,7 +1309,7 @@ window.doEdit = async function(){
   const note=document.getElementById('edit-note')?.value.trim()||'';
   try {
     await updateDoc(doc(db,'records',editingId),{items:newItems,note,updatedAt:serverTimestamp(),updatedBy:currentUser.uid});
-    closeModal('modal-edit');showToast('✅ แก้ไขเรียบร้อย');
+    closeModal('modal-edit');showToast('<svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> แก้ไขเรียบร้อย');
   } catch(e){showToast('เกิดข้อผิดพลาด','error');}
 }
 
@@ -1309,7 +1317,7 @@ window.adminDeleteRecord = async function(){
   if(!confirm('ลบรายการนี้?'))return;
   try {
     await deleteDoc(doc(db,'records',editingId));
-    closeModal('modal-edit');showToast('🗑️ ลบเรียบร้อย');
+    closeModal('modal-edit');showToast('<svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg> ลบเรียบร้อย');
   } catch(e){showToast('เกิดข้อผิดพลาด','error');}
 }
 
@@ -1327,7 +1335,7 @@ window.requestDelete = async function(recordId){
       reason:reason||'', requestedBy:currentUser.uid, requestedByName:currentUser.displayName||currentUser.email,
       status:'pending', createdAt:serverTimestamp()
     });
-    showToast('📤 ส่งคำขอลบแล้ว รอ Admin อนุมัติ','info');
+    showToast('<svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg> ส่งคำขอลบแล้ว รอ Admin อนุมัติ','info');
   } catch(e){showToast('เกิดข้อผิดพลาด','error');}
 }
 
@@ -1340,7 +1348,7 @@ async function loadDeleteRequests(){
     const snap=await getDocs(q);
     const list=document.getElementById('delete-requests-list');
     const count=document.getElementById('pending-count');
-    if(snap.empty){list.innerHTML='<div class="empty">ไม่มีคำขอรอการอนุมัติ ✅</div>';count.style.display='none';return;}
+    if(snap.empty){list.innerHTML='<div class="empty">ไม่มีคำขอรอการอนุมัติ <svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>';count.style.display='none';return;}
     count.textContent=snap.size;count.style.display='inline-block';
     list.innerHTML=snap.docs.map(d=>{
       const req=d.data();
@@ -1349,10 +1357,10 @@ async function loadDeleteRequests(){
           <span class="badge badge-pending">รอการอนุมัติ</span>
           <span style="font-size:12px;color:var(--text2)">${req.requestedByName}</span>
         </div>
-        <div class="inbox-msg">🗑️ ขอลบ: <strong>${req.recordSummary}</strong>${req.reason?`<br>เหตุผล: ${req.reason}`:''}</div>
+        <div class="inbox-msg"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg> ขอลบ: <strong>${req.recordSummary}</strong>${req.reason?`<br>เหตุผล: ${req.reason}`:''}</div>
         <div class="inbox-actions">
-          <button class="btn btn-primary btn-sm" onclick="approveDelete('${d.id}','${req.recordId}')">✅ อนุมัติลบ</button>
-          <button class="btn btn-ghost btn-sm" onclick="rejectDelete('${d.id}')">❌ ปฏิเสธ</button>
+          <button class="btn btn-primary btn-sm" onclick="approveDelete('${d.id}','${req.recordId}')"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> อนุมัติลบ</button>
+          <button class="btn btn-ghost btn-sm" onclick="rejectDelete('${d.id}')"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg> ปฏิเสธ</button>
         </div>
       </div>`;
     }).join('');
@@ -1366,7 +1374,7 @@ window.approveDelete = async function(reqId, recordId){
     batch.delete(doc(db,'records',recordId));
     batch.update(doc(db,'deleteRequests',reqId),{status:'approved',approvedAt:serverTimestamp(),approvedBy:currentUser.uid});
     await batch.commit();
-    showToast('✅ ลบรายการแล้ว');
+    showToast('<svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> ลบรายการแล้ว');
     loadDeleteRequests();
   } catch(e){showToast('เกิดข้อผิดพลาด','error');}
 }
@@ -1374,7 +1382,7 @@ window.approveDelete = async function(reqId, recordId){
 window.rejectDelete = async function(reqId){
   try {
     await updateDoc(doc(db,'deleteRequests',reqId),{status:'rejected',rejectedAt:serverTimestamp()});
-    showToast('❌ ปฏิเสธคำขอแล้ว');
+    showToast('<svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg> ปฏิเสธคำขอแล้ว');
     loadDeleteRequests();
   } catch(e){showToast('เกิดข้อผิดพลาด','error');}
 }
@@ -1392,7 +1400,7 @@ window.sendMessage = async function(){
       sentByEmail:currentUser.email, status:'unread', createdAt:serverTimestamp()
     });
     document.getElementById('msg-content').value='';
-    showToast('📤 ส่งข้อความแล้ว','info');
+    showToast('<svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg> ส่งข้อความแล้ว','info');
     loadMyMessages();
   } catch(e){showToast('เกิดข้อผิดพลาด','error');}
 }
@@ -1403,7 +1411,7 @@ async function loadMessages(){
     const snap=await getDocs(q);
     const list=document.getElementById('messages-list');
     if(snap.empty){list.innerHTML='<div class="empty">ยังไม่มีข้อความ</div>';return;}
-    const typeLabels={'suggestion':'💡 ข้อเสนอแนะ','question':'❓ คำถาม','report':'⚠️ รายงานปัญหา','other':'📝 อื่นๆ'};
+    const typeLabels={'suggestion':'<svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="9" y1="18" x2="15" y2="18"/><line x1="10" y1="22" x2="14" y2="22"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14"/></svg> ข้อเสนอแนะ','question':'<svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> คำถาม','report':'<svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> รายงานปัญหา','other':'<svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg> อื่นๆ'};
     list.innerHTML=snap.docs.map(d=>{
       const msg=d.data();
       return `<div class="inbox-item">
@@ -1413,7 +1421,7 @@ async function loadMessages(){
           ${msg.status==='unread'?'<span class="badge badge-pending">ใหม่</span>':''}
         </div>
         <div class="inbox-msg">${msg.content}</div>
-        ${msg.status==='unread'?`<button class="btn btn-ghost btn-sm" onclick="markRead('${d.id}')">✅ อ่านแล้ว</button>`:''}
+        ${msg.status==='unread'?`<button class="btn btn-ghost btn-sm" onclick="markRead('${d.id}')"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> อ่านแล้ว</button>`:''}
       </div>`;
     }).join('');
   } catch(e){console.error(e);}
@@ -1433,7 +1441,7 @@ async function loadMyMessages(){
     const list=document.getElementById('my-messages-list');
     if(!list)return;
     if(snap.empty){list.innerHTML='<div class="empty">ยังไม่มีประวัติการส่ง</div>';return;}
-    const typeLabels={'suggestion':'💡 ข้อเสนอแนะ','question':'❓ คำถาม','report':'⚠️ รายงานปัญหา','other':'📝 อื่นๆ'};
+    const typeLabels={'suggestion':'<svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="9" y1="18" x2="15" y2="18"/><line x1="10" y1="22" x2="14" y2="22"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14"/></svg> ข้อเสนอแนะ','question':'<svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> คำถาม','report':'<svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> รายงานปัญหา','other':'<svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg> อื่นๆ'};
     list.innerHTML=snap.docs.map(d=>{
       const msg=d.data();
       return `<div class="inbox-item">
@@ -1634,7 +1642,7 @@ window.generateReport = function(){
   document.getElementById('rpt-result').scrollIntoView({behavior:'smooth'});
 }
 
-window.copyReport = function(){navigator.clipboard.writeText(document.getElementById('rpt-output').textContent).then(()=>showToast('📋 คัดลอกแล้ว'));}
+window.copyReport = function(){navigator.clipboard.writeText(document.getElementById('rpt-output').textContent).then(()=>showToast('<svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></svg> คัดลอกแล้ว'));}
 
 // ============================================================
 // EXPORT / IMPORT (ADMIN)
@@ -1643,7 +1651,7 @@ window.exportData = function(){
   const data={records:allRecords,settings:appSettings,incomeItems,expenseItems,exportedAt:new Date().toISOString()};
   const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
   const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`bpsnk_backup_${Date.now()}.json`;a.click();
-  showToast('📤 Export เรียบร้อย');
+  showToast('<svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg> Export เรียบร้อย');
 }
 
 window.handleImport = function(input){
@@ -1664,10 +1672,10 @@ window.handleImport = function(input){
 
 function showConflictModal(dups,total){
   const dates=[...new Set(dups.map(r=>`${r.date?.d}/${r.date?.m}/${r.date?.y} (${r.cashier})` ))].slice(0,6);
-  document.getElementById('conflict-content').innerHTML=`<p style="font-size:14px;margin-bottom:10px">พบรายการซ้ำ <strong style="color:var(--yellow)">${dups.length} รายการ</strong> จากทั้งหมด ${total}</p><div style="background:var(--surface2);border:1px solid var(--border);border-radius:14px;padding:12px;margin-bottom:16px"><div style="font-size:11px;font-weight:700;color:var(--accent);margin-bottom:8px">วันที่ที่ซ้ำ</div>${dates.map(d=>`<div style="font-size:12px;color:var(--text2);padding:3px 0">⚠️ ${d}</div>`).join('')}</div>`;
+  document.getElementById('conflict-content').innerHTML=`<p style="font-size:14px;margin-bottom:10px">พบรายการซ้ำ <strong style="color:var(--yellow)">${dups.length} รายการ</strong> จากทั้งหมด ${total}</p><div style="background:var(--surface2);border:1px solid var(--border);border-radius:14px;padding:12px;margin-bottom:16px"><div style="font-size:11px;font-weight:700;color:var(--accent);margin-bottom:8px">วันที่ที่ซ้ำ</div>${dates.map(d=>`<div style="font-size:12px;color:var(--text2);padding:3px 0"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> ${d}</div>`).join('')}</div>`;
   document.getElementById('conflict-options').innerHTML=`
-    <div class="conflict-option" onclick="resolveConflict('add')"><h4>➕ นำเข้าทั้งหมด</h4><p>เพิ่มทุกรายการรวมถึงซ้ำ</p></div>
-    <div class="conflict-option" onclick="resolveConflict('replace')"><h4>🔄 แทนที่รายการซ้ำ</h4><p>ใช้ข้อมูลใหม่ทับเดิม</p></div>
+    <div class="conflict-option" onclick="resolveConflict('add')"><h4><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> นำเข้าทั้งหมด</h4><p>เพิ่มทุกรายการรวมถึงซ้ำ</p></div>
+    <div class="conflict-option" onclick="resolveConflict('replace')"><h4><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg> แทนที่รายการซ้ำ</h4><p>ใช้ข้อมูลใหม่ทับเดิม</p></div>
     <div class="conflict-option" onclick="resolveConflict('skip')"><h4>⏭️ ข้ามรายการซ้ำ</h4><p>เพิ่มเฉพาะรายการใหม่</p></div>
     <button class="btn btn-ghost btn-full mt8" onclick="closeModal('modal-conflict')">ยกเลิก</button>`;
   showModal('modal-conflict');
@@ -1700,7 +1708,7 @@ async function importRecords(data,mode){
       });count++;
     }catch(e){}
   }
-  showToast(`📥 Import ${count} รายการสำเร็จ`,'info');
+  showToast(`<svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Import ${count} รายการสำเร็จ`,'info');
 }
 
 // ============================================================
