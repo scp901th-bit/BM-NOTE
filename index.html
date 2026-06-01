@@ -565,7 +565,16 @@ svg{display:inline-block;vertical-align:middle;flex-shrink:0}
     <div class="card-title"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></svg> ผลลัพธ์</div>
     <div class="stats-grid" id="rpt-stats"></div>
     <div class="report-output" id="rpt-output"></div>
-    <button class="btn btn-ghost btn-full mt8" onclick="copyReport()"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></svg> คัดลอก</button>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:8px">
+      <button class="btn btn-ghost" onclick="copyReport('all')">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></svg>
+        คัดลอกรวม
+      </button>
+      <button class="btn btn-ghost" onclick="copyReport('daily')">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        คัดลอกรายวัน
+      </button>
+    </div>
   </div>
 </div>
 
@@ -813,7 +822,7 @@ window.doLogin = async function() {
       'auth/network-request-failed':'ไม่มีการเชื่อมต่ออินเทอร์เน็ต'
     };
     showAuthError(msgs[e.code]||'เกิดข้อผิดพลาด ['+e.code+']: '+e.message);
-    btn.disabled=false; btn.innerHTML='<svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg> เข้าสู่ระบบ';
+    btn.disabled=false; btn.textContent='<svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg> เข้าสู่ระบบ';
   }
 }
 
@@ -844,7 +853,7 @@ window.doRegister = async function() {
       'auth/network-request-failed':'ไม่มีการเชื่อมต่ออินเทอร์เน็ต'
     };
     showAuthError(msgs[e.code]||'เกิดข้อผิดพลาด ['+e.code+']: '+e.message);
-    btn.disabled=false; btn.innerHTML='<svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> สมัครสมาชิก';
+    btn.disabled=false; btn.textContent='<svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> สมัครสมาชิก';
   }
 }
 
@@ -1057,7 +1066,7 @@ function applyTheme() {
   const mode = localStorage.getItem('themeMode')||'dark';
   let theme = mode==='auto'?(window.matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light'):mode;
   document.documentElement.setAttribute('data-theme',theme);
-  document.getElementById('theme-btn').innerHTML = theme==='dark'?'<svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>':'<svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>';
+  document.getElementById('theme-btn').innerHTML = theme==='dark'?'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>':'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/></svg>';
 }
 
 window.toggleTheme = function() {
@@ -1344,8 +1353,15 @@ window.requestDelete = async function(recordId){
 // ============================================================
 async function loadDeleteRequests(){
   try {
-    const q=query(collection(db,'deleteRequests'),where('status','==','pending'),orderBy('createdAt','desc'));
-    const snap=await getDocs(q);
+    let snap;
+    try {
+      const q=query(collection(db,'deleteRequests'),where('status','==','pending'),orderBy('createdAt','desc'));
+      snap=await getDocs(q);
+    } catch(idxErr) {
+      console.warn('Index missing, fetching without order');
+      const q2=query(collection(db,'deleteRequests'),where('status','==','pending'));
+      snap=await getDocs(q2);
+    }
     const list=document.getElementById('delete-requests-list');
     const count=document.getElementById('pending-count');
     if(snap.empty){list.innerHTML='<div class="empty">ไม่มีคำขอรอการอนุมัติ <svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>';count.style.display='none';return;}
@@ -1407,31 +1423,45 @@ window.sendMessage = async function(){
 
 async function loadMessages(){
   try {
-    const q=query(collection(db,'messages'),orderBy('createdAt','desc'));
-    const snap=await getDocs(q);
+    let snap;
+    try {
+      const q=query(collection(db,'messages'),orderBy('createdAt','desc'));
+      snap=await getDocs(q);
+    } catch(e) {
+      snap=await getDocs(collection(db,'messages'));
+    }
     const list=document.getElementById('messages-list');
+    if(!list) return;
     if(snap.empty){list.innerHTML='<div class="empty">ยังไม่มีข้อความ</div>';return;}
-    const typeLabels={'suggestion':'<svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="9" y1="18" x2="15" y2="18"/><line x1="10" y1="22" x2="14" y2="22"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14"/></svg> ข้อเสนอแนะ','question':'<svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> คำถาม','report':'<svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> รายงานปัญหา','other':'<svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg> อื่นๆ'};
+    const tL={'suggestion':'ข้อเสนอแนะ','question':'คำถาม','report':'รายงานปัญหา','other':'อื่นๆ'};
     list.innerHTML=snap.docs.map(d=>{
       const msg=d.data();
-      return `<div class="inbox-item">
+      const replyHtml='';
+      return `<div class="inbox-item" id="msg-${d.id}">
         <div class="inbox-header">
-          <span class="badge badge-income">${typeLabels[msg.type]||msg.type}</span>
-          <span style="font-size:12px;color:var(--text2)">${msg.sentByName}</span>
-          ${msg.status==='unread'?'<span class="badge badge-pending">ใหม่</span>':''}
+          <span class="badge badge-income">${tL[msg.type]||msg.type}</span>
+          <span style="font-size:12px;color:var(--text2);font-weight:600">${msg.sentByName}</span>
+          <span class="badge ${msg.status==='read'?'badge-approved':'badge-pending'}">${msg.status==='read'?'อ่านแล้ว':'ใหม่'}</span>
+          <span class="ml-auto" style="display:flex;gap:6px;flex-wrap:wrap">
+            ${msg.status==='unread'?`<button class="btn btn-ghost btn-sm" onclick="markRead('${d.id}')">อ่านแล้ว</button>`:''}
+            
+            <button class="btn btn-danger btn-sm" onclick="deleteMsg('${d.id}')"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M9 6V4h6v2"/></svg></button>
+          </span>
         </div>
         <div class="inbox-msg">${msg.content}</div>
-        ${msg.status==='unread'?`<button class="btn btn-ghost btn-sm" onclick="markRead('${d.id}')"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> อ่านแล้ว</button>`:''}
+        ${replyHtml}
       </div>`;
     }).join('');
-  } catch(e){console.error(e);}
+  } catch(e){console.error('loadMessages:',e);}
 }
 
-window.markRead = async function(msgId){
+}
+window.deleteMsg = async function(msgId) {
+  if(!confirm('ลบข้อความนี้?')) return;
   try {
-    await updateDoc(doc(db,'messages',msgId),{status:'read',readAt:serverTimestamp()});
-    loadMessages();
-  } catch(e){}
+    await deleteDoc(doc(db,'messages',msgId));
+    showToast('ลบแล้ว'); loadMessages();
+  } catch(e){showToast('เกิดข้อผิดพลาด','error');}
 }
 
 async function loadMyMessages(){
@@ -1450,6 +1480,7 @@ async function loadMyMessages(){
           <span class="badge ${msg.status==='read'?'badge-approved':'badge-pending'}">${msg.status==='read'?'อ่านแล้ว':'รอการอ่าน'}</span>
         </div>
         <div class="inbox-msg">${msg.content}</div>
+        
       </div>`;
     }).join('');
   } catch(e){console.error(e);}
@@ -1545,6 +1576,28 @@ window.toggleLineChart = function(type) {
   charts.line.update();
 }
 
+window.copyReport = function(mode='all'){
+  const fullText = document.getElementById('rpt-output').textContent;
+  if(!fullText.trim()){showToast('ยังไม่มีรายงาน','error');return;}
+  if(mode === 'all' || rptCat === 'expense') {
+    navigator.clipboard.writeText(fullText).then(()=>showToast('คัดลอกแล้ว'));
+    return;
+  }
+  // Daily mode - ask which day
+  const dayInput = prompt('คัดลอกวันที่เท่าไหร่? (พิมพ์ตัวเลข เช่น 27)','');
+  if(!dayInput) return;
+  const day = dayInput.trim();
+  const lines = fullText.split('\n');
+  let section = [], inSection = false;
+  for(const line of lines) {
+    if(new RegExp('^'+day+' \\S+\\.:\\s').test(line)) { inSection = true; }
+    else if(inSection && /^\d+ \S+\.:\s/.test(line)) { break; }
+    if(inSection) section.push(line);
+  }
+  const text = section.join('\n').trim();
+  if(!text){ showToast('ไม่พบข้อมูลวันที่ '+day,'error'); return; }
+  navigator.clipboard.writeText(text).then(()=>showToast('คัดลอกวันที่ '+day+' แล้ว'));
+}
 window.renderDashboard = renderDashboard;
 
 // ============================================================
@@ -1642,7 +1695,7 @@ window.generateReport = function(){
   document.getElementById('rpt-result').scrollIntoView({behavior:'smooth'});
 }
 
-window.copyReport = function(){navigator.clipboard.writeText(document.getElementById('rpt-output').textContent).then(()=>showToast('<svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></svg> คัดลอกแล้ว'));}
+window.copyReport = function(){navigator.clipboard.writeText(document.getElementById('rpt-output').textContent).then(()=>showToast('คัดลอกแล้ว'));}
 
 // ============================================================
 // EXPORT / IMPORT (ADMIN)
@@ -1724,7 +1777,7 @@ window.showToast = function(msg,type=''){
   if(_tt){clearTimeout(_tt);_tt=null;}
   t.classList.remove('show');
   void t.offsetWidth;
-  t.innerHTML=msg;t.className='toast'+(type?' '+type:'');
+  t.textContent=msg;t.className='toast'+(type?' '+type:'');
   requestAnimationFrame(()=>{t.classList.add('show');_tt=setTimeout(()=>{t.classList.remove('show');_tt=null;},2500);});
 }
 
