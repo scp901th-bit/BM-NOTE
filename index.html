@@ -1044,7 +1044,7 @@ function setupRoleUI() {
         <button class="btn btn-ghost btn-sm" onclick="document.getElementById('rename-self-form').style.display='none'">ยกเลิก</button>
       </div>
     </div>
-    <button class="btn btn-ghost btn-sm" onclick="document.getElementById('rename-self-form').style.display='flex';document.getElementById('rename-self-input').value='${currentUser.displayName||''}';document.getElementById('rename-self-input').focus()">
+    <button class="btn btn-ghost btn-sm" id="btn-rename-self" onclick="openRenameSelf()">
       <svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg> เปลี่ยนชื่อ
     </button>`;
 
@@ -2010,6 +2010,14 @@ window.renderDashboard = renderDashboard;
 // ============================================================
 // RENAME SELF
 // ============================================================
+window.openRenameSelf = function() {
+  const form = document.getElementById('rename-self-form');
+  const inp = document.getElementById('rename-self-input');
+  inp.value = currentUser.displayName || '';
+  form.style.display = 'flex';
+  inp.focus();
+}
+
 window.doRenameSelf = async function() {
   const inp = document.getElementById('rename-self-input');
   const newName = inp.value.trim();
