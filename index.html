@@ -147,6 +147,7 @@ svg{display:inline-block;vertical-align:middle;flex-shrink:0}
 .role-badge{font-size:9px;font-weight:700;padding:2px 8px;border-radius:20px;letter-spacing:.5px}
 .role-badge.admin{background:rgba(255,170,0,.15);color:var(--yellow);border:1px solid var(--yellow)}
 .role-badge.member{background:var(--accent-dim);color:var(--accent);border:1px solid var(--accent)}
+.role-badge.test{background:rgba(180,75,255,.15);color:var(--purple);border:1px solid var(--purple)}
 
 /* ICON BUTTON */
 .icon-btn{width:38px;height:38px;display:flex;align-items:center;justify-content:center;background:var(--surface2);border:1px solid var(--border);border-radius:50%;color:var(--text2);cursor:pointer;font-size:16px;transition:all .2s;flex-shrink:0;line-height:1}
@@ -562,18 +563,30 @@ svg{display:inline-block;vertical-align:middle;flex-shrink:0}
   </div>
   <button class="btn btn-primary btn-full" onclick="generateReport()"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="18" y="3" width="4" height="18"/><rect x="10" y="8" width="4" height="13"/><rect x="2" y="13" width="4" height="8"/></svg> สร้างรายงาน</button>
   <div class="card mt12" id="rpt-result" style="display:none">
-    <div class="card-title"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></svg> ผลลัพธ์</div>
+    <div class="card-title">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></svg>
+      ผลลัพธ์
+    </div>
     <div class="stats-grid" id="rpt-stats"></div>
-    <div class="report-output" id="rpt-output"></div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:8px">
-      <button class="btn btn-ghost" onclick="copyReport('all')">
+
+    <!-- View Mode Tabs -->
+    <div class="cat-group" style="margin-bottom:12px">
+      <button class="cat-btn neutral active" id="rpt-view-all" onclick="switchRptView('all')">รายการรวม</button>
+      <button class="cat-btn neutral" id="rpt-view-daily" onclick="switchRptView('daily')">รายการแยก</button>
+    </div>
+
+    <!-- รายการรวม -->
+    <div id="rpt-view-all-section">
+      <div class="report-output" id="rpt-output"></div>
+      <button class="btn btn-ghost btn-full mt8" onclick="copyFullReport()">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></svg>
-        คัดลอกรวม
+        คัดลอกรายงานรวม
       </button>
-      <button class="btn btn-ghost" onclick="copyReport('daily')">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-        คัดลอกรายวัน
-      </button>
+    </div>
+
+    <!-- รายการแยก -->
+    <div id="rpt-view-daily-section" style="display:none">
+      <div id="rpt-daily-cards"></div>
     </div>
   </div>
 </div>
@@ -670,6 +683,17 @@ svg{display:inline-block;vertical-align:middle;flex-shrink:0}
       </div>
     </div>
     <div class="card">
+      <div class="card-title">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        จัดการสมาชิก
+      </div>
+      <button class="btn btn-ghost btn-full" onclick="openUserManager()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+        ดูและจัดการ Account ทั้งหมด
+      </button>
+    </div>
+
+    <div class="card">
       <div class="card-title" style="color:var(--accent)"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16.5 9.4l-9-5.19"/><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg> Export / Import</div>
       <div class="flex gap8" style="flex-wrap:wrap">
         <button class="btn btn-ghost btn-sm" onclick="exportData()"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg> Export JSON</button>
@@ -725,6 +749,18 @@ svg{display:inline-block;vertical-align:middle;flex-shrink:0}
     <div class="modal-title"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg> แก้ไขรายการ</div>
     <div id="me-content"></div>
     <div class="modal-actions" id="me-actions"></div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-users">
+  <div class="modal-box">
+    <div class="modal-handle"></div>
+    <div class="modal-title">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      จัดการสมาชิก
+    </div>
+    <div id="user-list-content"><div class="loading-wrap"><div class="spinner"></div> กำลังโหลด...</div></div>
+    <button class="btn btn-ghost btn-full mt8" onclick="closeModal('modal-users')">ปิด</button>
   </div>
 </div>
 
@@ -915,10 +951,15 @@ onAuthStateChanged(auth, async (user) => {
     currentUser = user;
     // Check role
     currentRole = ADMIN_EMAILS.includes(user.email) ? 'admin' : 'member';
-    // Also check Firestore role (in case set manually)
+    // Check Firestore role (admin can set member/test roles)
     try {
       const userDoc = await getDoc(doc(db,'users',user.uid));
-      if(userDoc.exists() && userDoc.data().role === 'admin') currentRole = 'admin';
+      if(userDoc.exists()) {
+        const r = userDoc.data().role;
+        if(r === 'admin') currentRole = 'admin';
+        else if(r === 'test') currentRole = 'test';
+        else currentRole = 'member';
+      }
     } catch(e){}
 
     document.getElementById('auth-screen').style.display = 'none';
@@ -954,8 +995,10 @@ async function initApp() {
 
 function setupRoleUI() {
   const badge = document.getElementById('role-badge-top');
-  badge.textContent = currentRole==='admin' ? 'ADMIN' : 'MEMBER';
-  badge.className = 'role-badge '+(currentRole==='admin'?'admin':'member');
+  const roleLabel = currentRole==='admin'?'ADMIN':currentRole==='test'?'TEST':'MEMBER';
+  const roleCss = currentRole==='admin'?'admin':currentRole==='test'?'test':'member';
+  badge.textContent = roleLabel;
+  badge.className = 'role-badge '+roleCss;
 
   // User info card
   document.getElementById('user-info-card').innerHTML = `
@@ -1112,8 +1155,25 @@ async function saveItemsToFirestore() {
 // ============================================================
 // REALTIME RECORDS LISTENER
 // ============================================================
+// Session-only records for test role
+let testRecords = [];
+
 function startRecordsListener() {
   if(unsubRecords) unsubRecords();
+
+  if(currentRole === 'test') {
+    // TEST ROLE: load real data once as baseline, then work with session copy
+    const q = query(collection(db,'records'), orderBy('dateKey','desc'));
+    getDocs(q).then(snap => {
+      testRecords = snap.docs.map(d=>({id:d.id,...d.data()}));
+      allRecords = [...testRecords];
+      renderRecords();
+      renderDashboard();
+    }).catch(err => console.error(err));
+    return;
+  }
+
+  // ADMIN/MEMBER: real-time listener
   const q = query(collection(db,'records'), orderBy('dateKey','desc'));
   unsubRecords = onSnapshot(q, (snap) => {
     allRecords = snap.docs.map(d=>({id:d.id,...d.data()}));
@@ -1647,28 +1707,137 @@ window.toggleLineChart = function(type) {
   charts.line.update();
 }
 
-window.copyReport = function(mode='all'){
-  const fullText = document.getElementById('rpt-output').textContent;
-  if(!fullText.trim()){showToast('ยังไม่มีรายงาน','error');return;}
-  if(mode === 'all' || rptCat === 'expense') {
-    navigator.clipboard.writeText(fullText).then(()=>showToast('คัดลอกแล้ว'));
-    return;
-  }
-  // Daily mode - ask which day
-  const dayInput = prompt('คัดลอกวันที่เท่าไหร่? (พิมพ์ตัวเลข เช่น 27)','');
-  if(!dayInput) return;
-  const day = dayInput.trim();
-  const lines = fullText.split('\n');
-  let section = [], inSection = false;
-  for(const line of lines) {
-    if(new RegExp('^'+day+' \\S+\\.:\\s').test(line)) { inSection = true; }
-    else if(inSection && /^\d+ \S+\.:\s/.test(line)) { break; }
-    if(inSection) section.push(line);
-  }
-  const text = section.join('\n').trim();
-  if(!text){ showToast('ไม่พบข้อมูลวันที่ '+day,'error'); return; }
-  navigator.clipboard.writeText(text).then(()=>showToast('คัดลอกวันที่ '+day+' แล้ว'));
+
+
+window.switchRptView = function(mode) {
+  document.getElementById('rpt-view-all').classList.toggle('active', mode==='all');
+  document.getElementById('rpt-view-daily').classList.toggle('active', mode==='daily');
+  document.getElementById('rpt-view-all-section').style.display = mode==='all'?'block':'none';
+  document.getElementById('rpt-view-daily-section').style.display = mode==='daily'?'block':'none';
 }
+
+window.copyFullReport = function() {
+  const text = document.getElementById('rpt-output').textContent;
+  if(!text.trim()){showToast('ยังไม่มีรายงาน','error');return;}
+  navigator.clipboard.writeText(text).then(()=>showToast('คัดลอกรายงานรวมแล้ว'));
+}
+
+window._dailyTexts = {};
+
+function buildDailyCards(sortedDays) {
+  const container = document.getElementById('rpt-daily-cards');
+  if(!container) return;
+  window._dailyTexts = {};
+
+  container.innerHTML = sortedDays.map(([,day]) => {
+    const dayTotal = Object.values(day.cashiers).flatMap(c=>Object.values(c)).reduce((a,b)=>a+b,0);
+    const dk = `${day.date?.d}/${day.date?.m}`;
+
+    // Build text for this day
+    let dayText = '';
+    const parts = [];
+    ['C1','C2','C3'].forEach(c=>{
+      if(day.cashiers[c]){
+        const sub = Object.entries(day.cashiers[c]).map(([k,v])=>
+          k==='เงินสด'?`สด ${fmtN(v)}`:k==='ค่าจอดรถ'?`รถ ${fmtN(v)}`:k==='กำไรค่าข้าว'?`กำไรข้าว ${fmtN(v)}`:`${k} ${fmtN(v)}`
+        ).join(' / ');
+        parts.push(`${c}: ${sub}`);
+      }
+    });
+    dayText = `${day.date?.d} ${MONTHS_FULL[day.date?.m]?.slice(0,3)}.: ยอดรวม ${fmtN(dayTotal)} บาท\n(${parts.join(' | ')})`;
+
+    // Summary line
+    const summaryLines = [];
+    ['C1','C2','C3'].forEach(c=>{
+      if(day.cashiers[c]){
+        const t = Object.values(day.cashiers[c]).reduce((a,b)=>a+b,0);
+        summaryLines.push(`${c}: ${fmtN(t)}`);
+      }
+    });
+
+    window._dailyTexts[dk] = dayText;
+
+    return `<div class="card" style="margin-bottom:10px;padding:14px">
+      <div class="flex align-center gap8" style="margin-bottom:8px">
+        <span style="font-family:'Space Mono',monospace;font-size:13px;font-weight:700;color:var(--accent)">${dk}/${day.date?.y}</span>
+        <span style="font-size:13px;font-weight:700;color:var(--green);margin-left:auto">${fmtN(dayTotal)} บาท</span>
+      </div>
+      <div style="font-size:12px;color:var(--text2);margin-bottom:10px">${parts.join(' | ')}</div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap">
+        ${summaryLines.map(s=>`<span style="font-size:11px;background:var(--surface2);padding:3px 8px;border-radius:20px;color:var(--text2)">${s}</span>`).join('')}
+      </div>
+      <button class="btn btn-ghost btn-sm btn-full" style="margin-top:10px" onclick="copyDayReport('${dk}')">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></svg>
+        คัดลอกวัน ${dk}
+      </button>
+    </div>`;
+  }).join('');
+}
+
+window.copyDayReport = function(dk) {
+  const text = window._dailyTexts[dk];
+  if(!text){showToast('ไม่พบข้อมูล','error');return;}
+  navigator.clipboard.writeText(text).then(()=>showToast('คัดลอกวัน '+dk+' แล้ว'));
+}
+
+
+// ══════════════════════════════════════════
+// USER MANAGEMENT (ADMIN)
+// ══════════════════════════════════════════
+window.openUserManager = async function() {
+  showModal('modal-users');
+  const el = document.getElementById('user-list-content');
+  el.innerHTML = '<div class="loading-wrap"><div class="spinner"></div> กำลังโหลด...</div>';
+  try {
+    const snap = await getDocs(collection(db,'users'));
+    if(snap.empty){ el.innerHTML='<div class="empty">ยังไม่มีสมาชิก</div>'; return; }
+    const roleColors = { admin:'var(--yellow)', member:'var(--accent)', test:'var(--purple)' };
+    const roleLabels = { admin:'👑 Admin', member:'👤 Member', test:'🧪 Test' };
+    el.innerHTML = snap.docs.map(d => {
+      const u = d.data();
+      const uid = d.id;
+      const role = u.role || 'member';
+      const isMe = uid === currentUser.uid;
+      return `<div style="background:var(--surface2);border:1px solid var(--border);border-radius:14px;padding:14px;margin-bottom:10px">
+        <div class="flex align-center gap8" style="margin-bottom:10px;flex-wrap:wrap">
+          <div style="width:36px;height:36px;border-radius:50%;background:var(--accent2);display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;flex-shrink:0">
+            ${(u.name||'U')[0].toUpperCase()}
+          </div>
+          <div style="flex:1;min-width:0">
+            <div style="font-weight:700;font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${u.name||'ไม่ระบุชื่อ'}</div>
+            <div style="font-size:11px;color:var(--text2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${u.email||''}</div>
+          </div>
+          <span style="font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;background:rgba(0,0,0,.2);color:${roleColors[role]||'var(--text2)'}">
+            ${roleLabels[role]||role}
+          </span>
+        </div>
+        ${isMe ? '<div style="font-size:11px;color:var(--text3);text-align:center">— บัญชีของคุณ —</div>' : `
+        <div class="cat-group">
+          <button class="cat-btn neutral ${role==='member'?'active':''}" onclick="setUserRole('${uid}','member',this)" style="font-size:12px">Member</button>
+          <button class="cat-btn neutral ${role==='test'?'active':''}" onclick="setUserRole('${uid}','test',this)" style="font-size:12px">Test</button>
+        </div>`}
+      </div>`;
+    }).join('');
+  } catch(e) {
+    el.innerHTML = `<div class="empty">เกิดข้อผิดพลาด: ${e.message}</div>`;
+    console.error(e);
+  }
+}
+
+window.setUserRole = async function(uid, role, btn) {
+  try {
+    await updateDoc(doc(db,'users',uid), { role });
+    // Update all buttons in that user's row
+    const row = btn.closest('.cat-group');
+    row.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    showToast(`เปลี่ยนเป็น ${role==='test'?'Test Member':'Member'} แล้ว`,'info');
+  } catch(e) {
+    showToast('เกิดข้อผิดพลาด','error');
+    console.error(e);
+  }
+}
+
 window.renderDashboard = renderDashboard;
 
 // ============================================================
@@ -1714,7 +1883,8 @@ window.generateReport = function(){
   if(rptCat==='income'){
     const byDay={};
     recs.forEach(r=>{const k=r.dateKey||(r.date?dKey(r.date):0);if(!byDay[k])byDay[k]={date:r.date,cashiers:{}};if(!byDay[k].cashiers[r.cashier])byDay[k].cashiers[r.cashier]={};Object.entries(r.items||{}).forEach(([ik,v])=>{byDay[k].cashiers[r.cashier][ik]=(byDay[k].cashiers[r.cashier][ik]||0)+v;gTotal[ik]=(gTotal[ik]||0)+v;cTot[r.cashier]=(cTot[r.cashier]||0)+v;});});
-    const sorted=Object.entries(byDay).sort((a,b)=>+a[0]-+b[0]);
+    var sortedDays=Object.entries(byDay).sort((a,b)=>+a[0]-+b[0]);
+    const sorted=sortedDays;
     const firstD=sorted[0][1].date,lastD=sorted[sorted.length-1][1].date;
     text+=`รายละเอียดรายรับรายวัน (${firstD?.d} - ${lastD?.d} ${MONTHS_FULL[lastD?.m]})\n\n`;
     sorted.forEach(([,day])=>{
@@ -1762,6 +1932,16 @@ window.generateReport = function(){
     document.getElementById('rpt-stats').innerHTML=`<div class="stat-card"><div class="stat-label">ยอดโอนรวม</div><div class="stat-value expense">${fmtN(runTotal)}</div></div><div class="stat-card"><div class="stat-label">จำนวนวัน</div><div class="stat-value neutral">${sorted.length}</div></div>`;
   }
   document.getElementById('rpt-output').textContent=text;
+
+  // Build daily cards for income report
+  if(rptCat==='income' && typeof sortedDays !== 'undefined') {
+    buildDailyCards(sortedDays);
+  } else {
+    document.getElementById('rpt-daily-cards').innerHTML = '<div class="empty">ใช้ได้เฉพาะรายงานรายรับครับ</div>';
+  }
+
+  // Reset to 'all' view
+  switchRptView('all');
   document.getElementById('rpt-result').style.display='block';
   document.getElementById('rpt-result').scrollIntoView({behavior:'smooth'});
 }
