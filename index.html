@@ -975,27 +975,43 @@ onAuthStateChanged(auth, async (user) => {
     // Check role
     // ADMIN_EMAILS always wins — cannot be demoted via Firestore
     const isHardAdmin = ADMIN_EMAILS.includes(user.email);
+    console.log('[AUTH] email:', user.email, '| isHardAdmin:', isHardAdmin);
     currentRole = isHardAdmin ? 'admin' : 'member';
-    // Check Firestore role — only applies to non-hardcoded admins
+    // Check Firestore role
     try {
       const userDoc = await getDoc(doc(db,'users',user.uid));
+      console.log('[AUTH] Firestore doc exists:', userDoc.exists(), '| role in DB:', userDoc.exists() ? userDoc.data().role : 'N/A');
       if(userDoc.exists()) {
         const r = userDoc.data().role;
-        if(!isHardAdmin) {
-          // Non-admin emails: respect Firestore role (admin/member/test)
+        if(isHardAdmin) {
+          // Hard admins always stay admin — sync Firestore if needed
+          currentRole = 'admin';
+          if(r !== 'admin') {
+            await updateDoc(doc(db,'users',user.uid), { role: 'admin' }).catch(()=>{});
+            console.log('[AUTH] Synced Firestore role to admin');
+          }
+        } else {
           if(r === 'admin') currentRole = 'admin';
           else if(r === 'test') currentRole = 'test';
           else currentRole = 'member';
-        } else {
-          // Hard admins: sync Firestore to admin if it drifted
-          if(r !== 'admin') {
-            updateDoc(doc(db,'users',user.uid), { role: 'admin' }).catch(()=>{});
-          }
         }
-      } else if(!isHardAdmin) {
-        currentRole = 'member';
+      } else {
+        // No doc: create it
+        const newRole = isHardAdmin ? 'admin' : 'member';
+        currentRole = newRole;
+        setDoc(doc(db,'users',user.uid), {
+          name: user.displayName || user.email,
+          email: user.email,
+          role: newRole,
+          createdAt: serverTimestamp()
+        }).catch(()=>{});
+        console.log('[AUTH] Created new user doc with role:', newRole);
       }
-    } catch(e){}
+    } catch(e){
+      console.error('[AUTH] Firestore error:', e);
+      // Keep currentRole as already set from ADMIN_EMAILS
+    }
+    console.log('[AUTH] Final currentRole:', currentRole);
 
     document.getElementById('auth-screen').style.display = 'none';
     document.getElementById('app').style.display = 'block';
