@@ -973,15 +973,27 @@ onAuthStateChanged(auth, async (user) => {
   if(user) {
     currentUser = user;
     // Check role
-    currentRole = ADMIN_EMAILS.includes(user.email) ? 'admin' : 'member';
-    // Check Firestore role (admin can set member/test roles)
+    // ADMIN_EMAILS always wins — cannot be demoted via Firestore
+    const isHardAdmin = ADMIN_EMAILS.includes(user.email);
+    currentRole = isHardAdmin ? 'admin' : 'member';
+    // Check Firestore role — only applies to non-hardcoded admins
     try {
       const userDoc = await getDoc(doc(db,'users',user.uid));
       if(userDoc.exists()) {
         const r = userDoc.data().role;
-        if(r === 'admin') currentRole = 'admin';
-        else if(r === 'test') currentRole = 'test';
-        else currentRole = 'member';
+        if(!isHardAdmin) {
+          // Non-admin emails: respect Firestore role (admin/member/test)
+          if(r === 'admin') currentRole = 'admin';
+          else if(r === 'test') currentRole = 'test';
+          else currentRole = 'member';
+        } else {
+          // Hard admins: sync Firestore to admin if it drifted
+          if(r !== 'admin') {
+            updateDoc(doc(db,'users',user.uid), { role: 'admin' }).catch(()=>{});
+          }
+        }
+      } else if(!isHardAdmin) {
+        currentRole = 'member';
       }
     } catch(e){}
 
