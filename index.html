@@ -798,6 +798,13 @@ svg{display:inline-block;vertical-align:middle;flex-shrink:0}
   </div>
 </div>
 
+<div id="debug-panel" style="display:none;position:fixed;bottom:80px;left:12px;right:12px;z-index:999;background:#111;border:1px solid #0f0;border-radius:12px;padding:12px;font-family:monospace;font-size:11px;color:#0f0;max-height:200px;overflow-y:auto">
+  <div style="display:flex;justify-content:space-between;margin-bottom:6px">
+    <b>DEBUG LOG</b>
+    <button onclick="document.getElementById('debug-panel').style.display='none'" style="background:none;border:none;color:#f00;cursor:pointer;font-size:14px">✕</button>
+  </div>
+  <div id="debug-log"></div>
+</div>
 <div class="toast" id="toast"></div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
@@ -967,6 +974,25 @@ window.doGoogleLogin = async function() {
 }
 
 // ============================================================
+// DEBUG PANEL
+const _origLog = console.log;
+const _origErr = console.error;
+function _dbg(...args) {
+  const el = document.getElementById('debug-log');
+  if(el) {
+    const line = document.createElement('div');
+    line.style.borderBottom = '1px solid #030';
+    line.style.paddingBottom = '3px';
+    line.style.marginBottom = '3px';
+    line.textContent = args.join(' ');
+    el.appendChild(line);
+    el.scrollTop = el.scrollHeight;
+  }
+}
+console.log = function(...args) { _origLog(...args); _dbg(...args); }
+console.error = function(...args) { _origErr(...args); _dbg('ERROR:', ...args); }
+window.showDebug = function() { document.getElementById('debug-panel').style.display='block'; }
+
 // AUTH STATE LISTENER
 // ============================================================
 onAuthStateChanged(auth, async (user) => {
@@ -1192,7 +1218,38 @@ window.renameItem = async function(type, idx, newName) {
   if(hi !== -1) { hidden[hi] = newName; localStorage.setItem(key, JSON.stringify(hidden)); }
   await saveItemsToFirestore();
   renderItemsGrid();
-  showToast('เปลี่ยนชื่อแล้ว','info');
+  // Migrate all historical records that have this item key
+  showToast('กำลังอัปเดตรายการย้อนหลัง...','info');
+  try {
+    const snap = await getDocs(collection(db,'records'));
+    const batch = [];
+    snap.forEach(d => {
+      const items = d.data().items || {};
+      if(oldName in items) {
+        const newItems = {};
+        Object.entries(items).forEach(([k,v]) => { newItems[k===oldName?newName:k] = v; });
+        batch.push(updateDoc(doc(db,'records',d.id), { items: newItems }));
+      }
+    });
+    if(batch.length > 0) {
+      await Promise.all(batch);
+      // Update local allRecords too
+      allRecords.forEach(r => {
+        if(r.items && oldName in r.items) {
+          r.items[newName] = r.items[oldName];
+          delete r.items[oldName];
+        }
+      });
+      renderRecords();
+      renderDashboard();
+      showToast(`เปลี่ยนชื่อแล้ว — อัปเดตรายการย้อนหลัง ${batch.length} รายการ`,'info');
+    } else {
+      showToast('เปลี่ยนชื่อแล้ว','info');
+    }
+  } catch(e) {
+    console.error('migrate records error:', e);
+    showToast('เปลี่ยนชื่อแล้ว (อัปเดตย้อนหลังไม่สำเร็จ)','error');
+  }
 }
 
 window.addSettingItem = async function(type) {
