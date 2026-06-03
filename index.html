@@ -1898,8 +1898,9 @@ window.openUserManager = async function() {
         </div>
         ${isMe ? '<div style="font-size:11px;color:var(--text3);text-align:center">— บัญชีของคุณ —</div>' : `
         <div class="cat-group">
-          <button class="cat-btn neutral ${role==='member'?'active':''}" onclick="setUserRole('${uid}','member',this)" style="font-size:12px">Member</button>
-          <button class="cat-btn neutral ${role==='test'?'active':''}" onclick="setUserRole('${uid}','test',this)" style="font-size:12px">Test</button>
+          <button class="cat-btn neutral ${role==='admin'?'active':''}" onclick="setUserRole('${uid}','admin',this)" style="font-size:12px">👑 Admin</button>
+          <button class="cat-btn neutral ${role==='member'?'active':''}" onclick="setUserRole('${uid}','member',this)" style="font-size:12px">👤 Member</button>
+          <button class="cat-btn neutral ${role==='test'?'active':''}" onclick="setUserRole('${uid}','test',this)" style="font-size:12px">🧪 Test</button>
         </div>`}
       </div>`;
     }).join('');
@@ -1939,7 +1940,7 @@ window.setUserRole = async function(uid, role, btn) {
       const badge = card.querySelector('.role-label-badge');
       if(badge){ badge.textContent = roleLabels[role]||role; badge.style.color = roleColors[role]||'var(--text2)'; }
     }
-    showToast(`เปลี่ยนเป็น ${role==='test'?'Test Member':'Member'} แล้ว`,'info');
+    showToast(`เปลี่ยนเป็น ${role==='admin'?'Admin':role==='test'?'Test Member':'Member'} แล้ว`,'info');
   } catch(e) {
     showToast('เกิดข้อผิดพลาด','error');
     console.error(e);
@@ -1993,6 +1994,7 @@ window.loadUserManagerPage = async function() {
           + '</div></div>'
           + '<div style="display:flex;gap:6px;flex-direction:column">'
           + '<div class="cat-group" style="display:flex;gap:6px">'
+          + '<button class="cat-btn neutral ' + (role==='admin'?'active':'') + '" onclick="setUserRole(\'' + uid + '\',\'admin\',this)" style="flex:1;font-size:13px">\u{1F451} Admin</button>'
           + '<button class="cat-btn neutral ' + (role==='member'?'active':'') + '" onclick="setUserRole(\'' + uid + '\',\'member\',this)" style="flex:1;font-size:13px">\u{1F464} Member</button>'
           + '<button class="cat-btn neutral ' + (role==='test'?'active':'') + '" onclick="setUserRole(\'' + uid + '\',\'test\',this)" style="flex:1;font-size:13px">\u{1F9EA} Test</button>'
           + '</div>'
