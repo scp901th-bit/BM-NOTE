@@ -1039,7 +1039,17 @@ onAuthStateChanged(auth, async (user) => {
 
     document.getElementById('auth-screen').style.display = 'none';
     document.getElementById('app').style.display = 'block';
-    initApp();
+    try {
+      await initApp();
+    } catch(err) {
+      console.error('[INIT ERROR]', err);
+      // Show error on screen so user can see what went wrong
+      document.getElementById('app').innerHTML = '<div style="padding:32px;color:#ff3d71;font-family:monospace;font-size:13px;background:#0b0b12;min-height:100vh">'
+        + '<div style="font-size:18px;margin-bottom:16px">⚠️ เกิดข้อผิดพลาดในการโหลดแอป</div>'
+        + '<div style="background:#1a1a2e;padding:16px;border-radius:12px;word-break:break-all">' + err.message + '</div>'
+        + '<button onclick="location.reload()" style="margin-top:16px;padding:12px 24px;background:#00e5ff;color:#000;border:none;border-radius:12px;cursor:pointer;font-weight:700">รีโหลด</button>'
+        + '</div>';
+    }
   } else {
     currentUser = null;
     document.getElementById('auth-screen').style.display = 'flex';
@@ -1052,12 +1062,18 @@ onAuthStateChanged(auth, async (user) => {
 // APP INIT
 // ============================================================
 async function initApp() {
+  console.log('[INIT] Starting initApp, role:', currentRole);
   applyTheme();
   buildAllDateSelects();
+  console.log('[INIT] Loading app settings...');
   await loadAppSettings();
+  console.log('[INIT] Rendering items grid...');
   renderItemsGrid();
+  console.log('[INIT] Setting up role UI...');
   setupRoleUI();
+  console.log('[INIT] Loading settings UI...');
   loadSettingsUI();
+  console.log('[INIT] Starting records listener...');
   startRecordsListener();
   if(currentRole==='admin') {
     loadDeleteRequests();
@@ -1066,6 +1082,7 @@ async function initApp() {
     loadMyMessages();
   }
   setTimeout(renderDashboard, 200);
+  console.log('[INIT] initApp complete');
 }
 
 function setupRoleUI() {
@@ -1076,27 +1093,30 @@ function setupRoleUI() {
   badge.className = 'role-badge '+roleCss;
 
   // User info card
-  document.getElementById('user-info-card').innerHTML = `
-    <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">
-      <div style="width:44px;height:44px;border-radius:50%;background:var(--accent2);display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700;flex-shrink:0;color:var(--bg)">
-        ${currentUser.displayName?currentUser.displayName[0].toUpperCase():'U'}
-      </div>
-      <div style="flex:1;min-width:0">
-        <div style="font-weight:700;font-size:15px" id="my-display-name">${currentUser.displayName||'ผู้ใช้'}</div>
-        <div style="font-size:12px;color:var(--text2)">${currentUser.email}</div>
-        <span class="badge ${currentRole==='admin'?'badge-admin':'badge-income'}" style="margin-top:4px">${currentRole==='admin'?'<svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 20h20M4 20l2-10 6 5 6-5 2 10"/><circle cx="12" cy="7" r="2"/></svg> Admin':'<svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> Member'}</span>
-      </div>
-    </div>
-    <div id="rename-self-form" style="display:none;margin-bottom:8px">
-      <div style="display:flex;gap:8px;align-items:center">
-        <input class="form-input" id="rename-self-input" placeholder="ชื่อใหม่..." style="flex:1"/>
-        <button class="btn btn-primary btn-sm" onclick="doRenameSelf()"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> บันทึก</button>
-        <button class="btn btn-ghost btn-sm" onclick="document.getElementById('rename-self-form').style.display='none'">ยกเลิก</button>
-      </div>
-    </div>
-    <button class="btn btn-ghost btn-sm" id="btn-rename-self" onclick="openRenameSelf()">
-      <svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg> เปลี่ยนชื่อ
-    </button>`;
+  const _initial = currentUser.displayName ? currentUser.displayName[0].toUpperCase() : 'U';
+  const _name = currentUser.displayName || 'ผู้ใช้';
+  const _email = currentUser.email || '';
+  const _badgeClass = currentRole==='admin' ? 'badge-admin' : 'badge-income';
+  const _badgeSvg = currentRole==='admin'
+    ? '<svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 20h20M4 20l2-10 6 5 6-5 2 10"/><circle cx="12" cy="7" r="2"/></svg> Admin'
+    : '<svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> Member';
+  document.getElementById('user-info-card').innerHTML =
+    '<div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">'
+    + '<div style="width:44px;height:44px;border-radius:50%;background:var(--accent2);display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700;flex-shrink:0;color:var(--bg)">' + _initial + '</div>'
+    + '<div style="flex:1;min-width:0">'
+    + '<div style="font-weight:700;font-size:15px" id="my-display-name">' + _name + '</div>'
+    + '<div style="font-size:12px;color:var(--text2)">' + _email + '</div>'
+    + '<span class="badge ' + _badgeClass + '" style="margin-top:4px">' + _badgeSvg + '</span>'
+    + '</div></div>'
+    + '<div id="rename-self-form" style="display:none;margin-bottom:8px">'
+    + '<div style="display:flex;gap:8px;align-items:center">'
+    + '<input class="form-input" id="rename-self-input" placeholder="ชื่อใหม่..." style="flex:1"/>'
+    + '<button class="btn btn-primary btn-sm" onclick="doRenameSelf()">บันทึก</button>'
+    + '<button class="btn btn-ghost btn-sm" onclick="document.getElementById('rename-self-form').style.display='none'">ยกเลิก</button>'
+    + '</div></div>'
+    + '<button class="btn btn-ghost btn-sm" id="btn-rename-self" onclick="openRenameSelf()">'
+    + '<svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg> เปลี่ยนชื่อ'
+    + '</button>';
 
   // Admin settings
   document.getElementById('admin-settings').style.display = currentRole==='admin'?'block':'none';
@@ -2310,7 +2330,7 @@ window.setUserRole = async function(uid, role, btn) {
     const card = btn.closest('[data-uid]');
     if(card){
       const roleColors = { admin:'var(--yellow)', member:'var(--accent)', test:'var(--purple)' };
-      const roleLabels = { admin:'\u{1F451} Admin', member:'\u{1F464} Member', test:'\u{1F9EA} Test' };
+      const roleLabels = { admin:'👑 Admin', member:'👤 Member', test:'🧪 Test' };
       const badge = card.querySelector('.role-label-badge');
       if(badge){ badge.textContent = roleLabels[role]||role; badge.style.color = roleColors[role]||'var(--text2)'; }
     }
@@ -2342,7 +2362,7 @@ window.loadUserManagerPage = async function() {
     if(snap.empty){ el.innerHTML='<div class="empty">ยังไม่มีสมาชิก</div>'; return; }
     countEl.textContent = snap.size + ' บัญชีในระบบ';
     const roleColors = { admin:'var(--yellow)', member:'var(--accent)', test:'var(--purple)' };
-    const roleLabels = { admin:'\u{1F451} Admin', member:'\u{1F464} Member', test:'\u{1F9EA} Test' };
+    const roleLabels = { admin:'👑 Admin', member:'👤 Member', test:'🧪 Test' };
     const roleBg = { admin:'rgba(255,170,0,.12)', member:'var(--accent-dim)', test:'rgba(140,60,255,.15)' };
     const cards = snap.docs.map(d => {
       const u = d.data();
@@ -2368,9 +2388,9 @@ window.loadUserManagerPage = async function() {
           + '</div></div>'
           + '<div style="display:flex;gap:6px;flex-direction:column">'
           + '<div class="cat-group" style="display:flex;gap:6px">'
-          + '<button class="cat-btn neutral ' + (role==='admin'?'active':'') + '" onclick="setUserRole(\'' + uid + '\',\'admin\',this)" style="flex:1;font-size:13px">\u{1F451} Admin</button>'
-          + '<button class="cat-btn neutral ' + (role==='member'?'active':'') + '" onclick="setUserRole(\'' + uid + '\',\'member\',this)" style="flex:1;font-size:13px">\u{1F464} Member</button>'
-          + '<button class="cat-btn neutral ' + (role==='test'?'active':'') + '" onclick="setUserRole(\'' + uid + '\',\'test\',this)" style="flex:1;font-size:13px">\u{1F9EA} Test</button>'
+          + '<button class="cat-btn neutral ' + (role==='admin'?'active':'') + '" onclick="setUserRole(\'' + uid + '\',\'admin\',this)" style="flex:1;font-size:13px">👑 Admin</button>'
+          + '<button class="cat-btn neutral ' + (role==='member'?'active':'') + '" onclick="setUserRole(\'' + uid + '\',\'member\',this)" style="flex:1;font-size:13px">👤 Member</button>'
+          + '<button class="cat-btn neutral ' + (role==='test'?'active':'') + '" onclick="setUserRole(\'' + uid + '\',\'test\',this)" style="flex:1;font-size:13px">🧪 Test</button>'
           + '</div>'
           + '<button class="btn btn-ghost btn-sm" onclick="var c=this.closest(\'[data-uid]\');var f=c.querySelector(\'.um-rename-form\');var i=c.querySelector(\'.um-rename-input\');i.value=c.querySelector(\'.um-name-display\').textContent;f.style.display=\'flex\';i.focus()" style="font-size:12px">'
           + '<svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg> \u0e40\u0e1b\u0e25\u0e35\u0e48\u0e22\u0e19\u0e0a\u0e37\u0e48\u0e2d'
