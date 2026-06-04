@@ -1,37 +1,32 @@
-const CACHE_NAME = 'bpsnk-v4';
-const ASSETS = [
-  './index.html',
-  './manifest.json',
-  './icon-192.png',
-  './icon-512.png'
-];
+// sw.js v5 - force clear all caches on every update
+const CACHE_NAME = 'bpsnk-v5';
 
 self.addEventListener('install', e => {
-  e.waitUntil(caches.open(CACHE_NAME).then(c => c.addAll(ASSETS)));
+  // Skip waiting immediately - activate right away
   self.skipWaiting();
 });
 
 self.addEventListener('activate', e => {
   e.waitUntil(
-    caches.keys().then(keys =>
-      Promise.all(keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k)))
-    ).then(() => self.clients.claim())
+    // Delete ALL caches regardless of name
+    caches.keys().then(keys => {
+      console.log('[SW] Clearing caches:', keys);
+      return Promise.all(keys.map(k => caches.delete(k)));
+    }).then(() => {
+      console.log('[SW] All caches cleared');
+      return self.clients.claim();
+    })
   );
 });
 
 self.addEventListener('fetch', e => {
-  if (e.request.url.includes('firestore') || e.request.url.includes('googleapis') || e.request.url.includes('firebase')) {
-    e.respondWith(fetch(e.request).catch(() => caches.match('./index.html')));
+  // Always fetch from network - never serve from cache
+  if (e.request.url.includes('firestore') || 
+      e.request.url.includes('googleapis') || 
+      e.request.url.includes('firebase')) {
     return;
   }
-  // Network first — always try to get fresh file, fallback to cache
   e.respondWith(
-    fetch(e.request)
-      .then(res => {
-        const clone = res.clone();
-        caches.open(CACHE_NAME).then(c => c.put(e.request, clone));
-        return res;
-      })
-      .catch(() => caches.match(e.request))
+    fetch(e.request).catch(() => caches.match(e.request))
   );
 });
