@@ -1454,141 +1454,51 @@ function renderReportResult(records, label) {
   if(!records.length) return '<div class="s-empty">ไม่พบข้อมูลในช่วงนี้</div>';
   const income = records.filter(r=>r.type==='income');
   const expense = records.filter(r=>r.type==='expense');
-  const sumIncome = income.reduce((a,r)=>a+Object.values(r.items||{}).reduce((x,y)=>x+y,0),0);
-  const sumExpense = expense.reduce((a,r)=>a+Object.values(r.items||{}).reduce((x,y)=>x+y,0),0);
-  const profit = sumIncome - sumExpense;
-  // Per cashier breakdown
+  const sumI = income.reduce((a,r)=>a+Object.values(r.items||{}).reduce((x,y)=>x+y,0),0);
+  const sumE = expense.reduce((a,r)=>a+Object.values(r.items||{}).reduce((x,y)=>x+y,0),0);
+  const profit = sumI - sumE;
   const cashiers = [...new Set(records.map(r=>r.cashier).filter(Boolean))].sort();
   const cashierRows = cashiers.map(c=>{
     const ci = income.filter(r=>r.cashier===c).reduce((a,r)=>a+Object.values(r.items||{}).reduce((x,y)=>x+y,0),0);
     const ce = expense.filter(r=>r.cashier===c).reduce((a,r)=>a+Object.values(r.items||{}).reduce((x,y)=>x+y,0),0);
     return '<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--border)">'
-      + '<span class="badge badge-'+c.toLowerCase()+'">'+c+'</span>'
-      + '<span style="font-size:12px;color:var(--green)">+'+fmtN(ci)+'</span>'
-      + '<span style="font-size:12px;color:var(--red)">-'+fmtN(ce)+'</span>'
-      + '<span style="font-size:12px;font-weight:700;color:'+(ci-ce>=0?'var(--green)':'var(--red)')+'">='+(ci-ce>=0?'+':'')+fmtN(ci-ce)+'</span>'
-      + '</div>';
+      +'<span class="badge badge-'+c.toLowerCase()+'">'+c+'</span>'
+      +'<span style="font-size:12px;color:var(--green)">+'+fmtN(ci)+'</span>'
+      +'<span style="font-size:12px;color:var(--red)">-'+fmtN(ce)+'</span>'
+      +'<span style="font-size:12px;font-weight:700;color:'+(ci-ce>=0?'var(--green)':'var(--red)')+'">='+(ci-ce>=0?'+':'')+fmtN(ci-ce)+'</span>'
+      +'</div>';
   }).join('');
-  return '<div style="padding:14px;background:var(--surface);border-bottom:1px solid var(--border)">'
-    + '<div style="font-size:12px;font-weight:700;color:var(--text2);margin-bottom:10px">📊 '+label+'</div>'
-    + '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:10px">'
-    + '<div style="background:var(--surface2);border-radius:12px;padding:10px;text-align:center"><div style="font-size:10px;color:var(--text2)">รายรับรวม</div><div style="font-size:14px;font-weight:700;color:var(--green)">'+fmtN(sumIncome)+'</div></div>'
-    + '<div style="background:var(--surface2);border-radius:12px;padding:10px;text-align:center"><div style="font-size:10px;color:var(--text2)">รายเบิกรวม</div><div style="font-size:14px;font-weight:700;color:var(--red)">'+fmtN(sumExpense)+'</div></div>'
-    + '<div style="background:var(--surface2);border-radius:12px;padding:10px;text-align:center"><div style="font-size:10px;color:var(--text2)">กำไร</div><div style="font-size:14px;font-weight:700;color:'+(profit>=0?'var(--green)':'var(--red)')+'">'+fmtN(profit)+'</div></div>'
-    + '</div>'
-    + (cashierRows ? '<div style="margin-bottom:4px;font-size:11px;color:var(--text3)">แยกตามแคชเชียร์</div>'+cashierRows : '')
-    + '</div>'
-    + records.slice(0,15).map(r=>{
-        const total=Object.values(r.items||{}).reduce((a,b)=>a+b,0);
-        const detail=Object.entries(r.items||{}).map(([k,v])=>k+' '+fmtN(v)).join(' · ');
-        return '<div class="s-item" onclick="closeSearch();openEdit(\''+r.id+\')">'
-          + '<span class="badge badge-'+(r.cashier||'').toLowerCase()+'">'+r.cashier+'</span>'
-          + '<span class="badge '+(r.type==='income'?'badge-income':'badge-expense')+'">'+(r.type==='income'?'รายรับ':'รายเบิก')+'</span>'
-          + '<span style="font-family:\'Space Mono\',monospace;font-size:11px;color:var(--text2)">'+r.date?.d+'/'+r.date?.m+'</span>'
-          + '<span style="flex:1;font-size:12px;color:var(--text2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+detail+'</span>'
-          + '<span class="text-mono" style="font-size:13px;font-weight:700;color:'+(r.type==='income'?'var(--green)':'var(--red)')+';">'+fmtN(total)+'</span>'
-          + '</div>';
-      }).join('')
-    + (records.length>15?'<div style="padding:10px;text-align:center;font-size:12px;color:var(--text2)">...และอีก '+(records.length-15)+' รายการ</div>':'');
+  const wrapper = document.createElement('div');
+  wrapper.innerHTML = '<div style="padding:14px;background:var(--surface);border-bottom:1px solid var(--border)">'
+    +'<div style="font-size:12px;font-weight:700;color:var(--text2);margin-bottom:10px">📊 '+label+'</div>'
+    +'<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:10px">'
+    +'<div style="background:var(--surface2);border-radius:12px;padding:10px;text-align:center"><div style="font-size:10px;color:var(--text2)">รายรับรวม</div><div style="font-size:14px;font-weight:700;color:var(--green)">'+fmtN(sumI)+'</div></div>'
+    +'<div style="background:var(--surface2);border-radius:12px;padding:10px;text-align:center"><div style="font-size:10px;color:var(--text2)">รายเบิกรวม</div><div style="font-size:14px;font-weight:700;color:var(--red)">'+fmtN(sumE)+'</div></div>'
+    +'<div style="background:var(--surface2);border-radius:12px;padding:10px;text-align:center"><div style="font-size:10px;color:var(--text2)">กำไร</div><div style="font-size:14px;font-weight:700;color:'+(profit>=0?'var(--green)':'var(--red)')+'">'+fmtN(profit)+'</div></div>'
+    +'</div>'+(cashierRows?'<div style="margin-bottom:4px;font-size:11px;color:var(--text3)">แยกตามแคชเชียร์</div>'+cashierRows:'')
+    +'</div>';
+  records.slice(0,15).forEach(r=>{
+    const total=Object.values(r.items||{}).reduce((a,b)=>a+b,0);
+    const detail=Object.entries(r.items||{}).map(([k,v])=>k+' '+fmtN(v)).join(' · ');
+    const div=document.createElement('div');
+    div.className='s-item';
+    div.dataset.rid=r.id;
+    div.addEventListener('click',function(){closeSearch();openEdit(this.dataset.rid);});
+    div.innerHTML='<span class="badge badge-'+(r.cashier||'').toLowerCase()+'">'+r.cashier+'</span>'
+      +'<span class="badge '+(r.type==='income'?'badge-income':'badge-expense')+'">'+(r.type==='income'?'รายรับ':'รายเบิก')+'</span>'
+      +'<span style="font-size:11px;color:var(--text2)">'+r.date?.d+'/'+r.date?.m+'</span>'
+      +'<span style="flex:1;font-size:12px;color:var(--text2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+detail+'</span>'
+      +'<span class="text-mono" style="font-size:13px;font-weight:700;color:'+(r.type==='income'?'var(--green)':'var(--red)')+';">'+fmtN(total)+'</span>';
+    wrapper.appendChild(div);
+  });
+  if(records.length>15){
+    const more=document.createElement('div');
+    more.style.cssText='padding:10px;text-align:center;font-size:12px;color:var(--text2)';
+    more.textContent='...และอีก '+(records.length-15)+' รายการ';
+    wrapper.appendChild(more);
+  }
+  return wrapper;
 }
-
-function renderHelpPage() {
-  const today = new Date();
-  const thMonth = today.getMonth() + 1;
-  const thDay = today.getDate();
-  const thYear = today.getFullYear() + 543;
-  const exDate1 = '1/' + thMonth + '/' + thYear;
-  const exDate2 = thDay + '/' + thMonth + '/' + thYear;
-
-  const cmdDetails = [
-    {
-      cmd: '/รายงาน', icon: '📊', desc: 'ดูรายงานสรุปรายรับ-รายเบิก-กำไร ในช่วงวันที่ที่กำหนด',
-      format: '/รายงาน วัน/เดือน/ปีพ.ศ. - วัน/เดือน/ปีพ.ศ.',
-      example: '/รายงาน ' + exDate1 + ' - ' + exDate2,
-      result: '📊 รายงาน ' + exDate1 + ' — ' + exDate2
-        + '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-top:8px">'
-        + '<div style="background:var(--surface2);border-radius:10px;padding:8px;text-align:center"><div style="font-size:10px;color:var(--text2)">รายรับรวม</div><div style="font-size:13px;font-weight:700;color:var(--green)">148,332</div></div>'
-        + '<div style="background:var(--surface2);border-radius:10px;padding:8px;text-align:center"><div style="font-size:10px;color:var(--text2)">รายเบิกรวม</div><div style="font-size:13px;font-weight:700;color:var(--red)">106,687</div></div>'
-        + '<div style="background:var(--surface2);border-radius:10px;padding:8px;text-align:center"><div style="font-size:10px;color:var(--text2)">กำไร</div><div style="font-size:13px;font-weight:700;color:var(--green)">41,645</div></div>'
-        + '</div><div style="font-size:11px;color:var(--text3);margin-top:6px">+ รายการแต่ละรายการ แยกตาม C1/C2/C3</div>'
-    },
-    {
-      cmd: '/กำไร', icon: '💰', desc: 'เหมือน /รายงาน — แสดงกำไรสุทธิในช่วงวันที่',
-      format: '/กำไร วัน/เดือน/ปีพ.ศ. - วัน/เดือน/ปีพ.ศ.',
-      example: '/กำไร ' + exDate1 + ' - ' + exDate2,
-      result: 'ผลลัพธ์เหมือนกับ /รายงาน ทุกประการ'
-    },
-    {
-      cmd: '/c1', icon: '🔵', desc: 'กรองดูรายการและสรุปกำไรของ C1 เท่านั้น (ใช้ /c2 หรือ /c3 สำหรับแคชเชียร์อื่น)',
-      format: '/c1  หรือ  /c2  หรือ  /c3',
-      example: '/c1',
-      result: '<div style="display:flex;gap:10px;align-items:center;padding:6px 0">'
-        + '<span class="badge badge-c1">C1</span>'
-        + '<span style="font-size:12px;color:var(--green)">+148,332</span>'
-        + '<span style="font-size:12px;color:var(--red)">-106,687</span>'
-        + '<span style="font-size:12px;font-weight:700">กำไร +41,645</span>'
-        + '</div><div style="font-size:11px;color:var(--text3)">+ รายการย้อนหลังทั้งหมดของ C1</div>'
-    },
-    {
-      cmd: '/บันทึก', icon: '➕', desc: 'ไปยังหน้าบันทึกรายรับ-รายเบิกทันที',
-      format: '/บันทึก',
-      example: '/บันทึก',
-      result: 'เปิดหน้า "บันทึก" ทันที'
-    },
-    {
-      cmd: '/รายการ', icon: '📋', desc: 'ไปยังหน้ารายการย้อนหลังทันที',
-      format: '/รายการ',
-      example: '/รายการ',
-      result: 'เปิดหน้า "รายการ" ทันที'
-    },
-    {
-      cmd: '/ตั้งค่า', icon: '⚙️', desc: 'ไปยังหน้าตั้งค่าทันที',
-      format: '/ตั้งค่า',
-      example: '/ตั้งค่า',
-      result: 'เปิดหน้า "ตั้งค่า" ทันที'
-    },
-    {
-      cmd: '/inbox', icon: '📥', desc: 'ไปยังหน้า Inbox ทันที',
-      format: '/inbox',
-      example: '/inbox',
-      result: 'เปิดหน้า "Inbox" ทันที'
-    },
-  ];
-
-  const cards = cmdDetails.map(c =>
-    '<div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;margin-bottom:12px;overflow:hidden">'
-    + '<div style="display:flex;align-items:center;gap:10px;padding:14px 14px 10px" onclick="var b=this.nextElementSibling;b.style.display=b.style.display==='none'?'':'none'" style="cursor:pointer">'
-    + '<span style="font-size:22px">' + c.icon + '</span>'
-    + '<div style="flex:1">'
-    + '<div style="font-weight:700;font-size:15px;color:var(--accent)">' + c.cmd + '</div>'
-    + '<div style="font-size:12px;color:var(--text2)">' + c.desc + '</div>'
-    + '</div>'
-    + '<svg style="display:inline-block;vertical-align:middle;flex-shrink:0;color:var(--text3)" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>'
-    + '</div>'
-    + '<div style="display:none;padding:0 14px 14px;border-top:1px solid var(--border)">'
-    + '<div style="margin-top:10px">'
-    + '<div style="font-size:11px;color:var(--text3);margin-bottom:4px">รูปแบบการใช้</div>'
-    + '<div style="background:var(--surface2);border-radius:10px;padding:8px 12px;font-family:'Space Mono',monospace;font-size:12px;color:var(--text1)">' + c.format + '</div>'
-    + '</div>'
-    + '<div style="margin-top:8px">'
-    + '<div style="font-size:11px;color:var(--text3);margin-bottom:4px">ตัวอย่าง <span style="color:var(--yellow);cursor:pointer" onclick="event.stopPropagation();fillCommand('' + c.example + '')">(กดเพื่อใช้)</span></div>'
-    + '<div style="background:rgba(0,229,255,.08);border:1px solid rgba(0,229,255,.2);border-radius:10px;padding:8px 12px;font-family:'Space Mono',monospace;font-size:12px;color:var(--accent)">' + c.example + '</div>'
-    + '</div>'
-    + '<div style="margin-top:8px">'
-    + '<div style="font-size:11px;color:var(--text3);margin-bottom:6px">ผลลัพธ์ที่ได้</div>'
-    + '<div style="background:var(--surface2);border-radius:10px;padding:10px 12px;font-size:12px;color:var(--text1)">' + c.result + '</div>'
-    + '</div>'
-    + '</div>'
-    + '</div>'
-  ).join('');
-
-  return '<div style="padding:12px 14px 6px">'
-    + '<div style="font-size:13px;font-weight:700;color:var(--text1);margin-bottom:2px">💡 คำสั่งทั้งหมด</div>'
-    + '<div style="font-size:11px;color:var(--text2)">กดที่คำสั่งเพื่อดูตัวอย่างและผลลัพธ์</div>'
-    + '</div>'
-    + '<div style="padding:0 14px 14px">' + cards + '</div>';
-}
-
 function renderCommandList(filter) {
   const cmds = filter
     ? COMMANDS.filter(c => c.cmd.includes(filter) || c.alias.some(a=>a.includes(filter)) || c.desc.includes(filter))
@@ -1722,7 +1632,8 @@ window.doSearch = function(q) {
       if(!matches.length){ list.innerHTML='<div class="s-empty">ไม่พบรายการของ '+cid+'</div>'; return; }
       const total_i = matches.filter(r=>r.type==='income').reduce((a,r)=>a+Object.values(r.items||{}).reduce((x,y)=>x+y,0),0);
       const total_e = matches.filter(r=>r.type==='expense').reduce((a,r)=>a+Object.values(r.items||{}).reduce((x,y)=>x+y,0),0);
-      list.innerHTML = '<div style="padding:12px 14px;background:var(--surface);border-bottom:1px solid var(--border);display:flex;gap:12px;align-items:center">'
+      list.innerHTML = '';
+      const cashierHeader = '<div style="padding:12px 14px;background:var(--surface);border-bottom:1px solid var(--border);display:flex;gap:12px;align-items:center">'
         + '<span class="badge badge-'+cid.toLowerCase()+'">'+cid+'</span>'
         + '<span style="font-size:12px;color:var(--green)">+'+fmtN(total_i)+'</span>'
         + '<span style="font-size:12px;color:var(--red)">-'+fmtN(total_e)+'</span>'
@@ -1758,7 +1669,10 @@ window.doSearch = function(q) {
       }
       const recs = recordsInRange(range.from, range.to);
       const label = range.from.d+'/'+range.from.m+'/'+(range.from.y) + ' — ' + range.to.d+'/'+range.to.m+'/'+(range.to.y);
-      list.innerHTML = renderReportResult(recs, label);
+      list.innerHTML = '';
+      const rptEl = renderReportResult(recs, label);
+      if(typeof rptEl === 'string') list.innerHTML = rptEl;
+      else list.appendChild(rptEl);
       return;
     }
 
