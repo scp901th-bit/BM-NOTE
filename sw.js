@@ -1,4 +1,4 @@
-const CACHE_NAME = 'bpsnk-v4';
+const CACHE_NAME = 'bpsnk-v3';
 const ASSETS = [
   './index.html',
   './manifest.json',
