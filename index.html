@@ -1561,6 +1561,49 @@ window.fillCommand = function(example) {
   doSearch(example);
 }
 
+// ============================================================
+// SEARCH HISTORY
+// ============================================================
+function getSearchHistoryKey() {
+  return 'searchHistory_' + (currentUser?.uid || 'guest');
+}
+function saveSearchHistory(q) {
+  if(!q || q.startsWith('/') || q.length < 2) return;
+  const key = getSearchHistoryKey();
+  let hist = JSON.parse(localStorage.getItem(key) || '[]');
+  hist = hist.filter(h => h !== q);
+  hist.unshift(q);
+  localStorage.setItem(key, JSON.stringify(hist.slice(0, 10)));
+}
+function renderSearchHistory(list) {
+  const hist = JSON.parse(localStorage.getItem(getSearchHistoryKey()) || '[]');
+  if(!hist.length) {
+    list.innerHTML = '<div class="s-empty" style="margin-top:20px">'
+      + '\u{1F50D} \u0e40\u0e23\u0e34\u0e48\u0e21\u0e1e\u0e34\u0e21\u0e1e\u0e4c\u0e40\u0e1e\u0e37\u0e48\u0e2d\u0e04\u0e49\u0e19\u0e2b\u0e32<br>'
+      + '<span style="font-size:12px;color:var(--text3)">\u0e1e\u0e34\u0e21\u0e1e\u0e4c /\u0e0a\u0e48\u0e27\u0e22\u0e2b\u0e19\u0e48\u0e2d\u0e22 \u0e40\u0e1e\u0e37\u0e48\u0e2d\u0e14\u0e39\u0e04\u0e33\u0e2a\u0e31\u0e48\u0e07\u0e17\u0e31\u0e49\u0e07\u0e2b\u0e21\u0e14</span>'
+      + '</div>';
+    return;
+  }
+  let html = '<div style="display:flex;justify-content:space-between;align-items:center;padding:12px 14px 6px">'
+    + '<span style="font-size:11px;font-weight:700;color:var(--text3);letter-spacing:.5px">\u0e1b\u0e23\u0e30\u0e27\u0e31\u0e15\u0e34\u0e01\u0e32\u0e23\u0e04\u0e49\u0e19\u0e2b\u0e32</span>'
+    + '<button onclick="clearSearchHistory()" style="background:none;border:none;font-size:11px;color:var(--text3);cursor:pointer;padding:4px 8px;border-radius:8px">\u0e25\u0e49\u0e32\u0e07\u0e17\u0e31\u0e49\u0e07\u0e2b\u0e21\u0e14</button>'
+    + '</div>';
+  hist.forEach(h => {
+    const safe = h.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+    html += '<div style="display:flex;align-items:center;gap:10px;padding:10px 14px;cursor:pointer;border-bottom:1px solid var(--border)" onclick="document.getElementById(\'search-input\').value=\''+safe+'\';doSearch(\''+safe+'\')">'
+      + '<svg style="display:inline-block;vertical-align:middle;flex-shrink:0;color:var(--text3)" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>'
+      + '<span style="flex:1;font-size:13px">'+h+'</span>'
+      + '<svg style="display:inline-block;vertical-align:middle;flex-shrink:0;color:var(--text3)" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>'
+      + '</div>';
+  });
+  list.innerHTML = html;
+}
+window.clearSearchHistory = function() {
+  localStorage.removeItem(getSearchHistoryKey());
+  const list = document.getElementById('search-list');
+  if(list) renderSearchHistory(list);
+};
+
 window.openSearch = function(){
   document.getElementById('search-overlay').classList.add('open');
   setTimeout(()=>{
@@ -1583,16 +1626,9 @@ window.doSearch = function(q) {
   const list = document.getElementById('search-list');
   const raw = q.trim();
 
-  // Empty → show command list + quick-nav tiles
+  // Empty -> show search history
   if(!raw) {
-    list.innerHTML = '<div style="padding:12px 14px 6px;font-size:11px;font-weight:700;color:var(--text3);letter-spacing:.5px">ทางลัด</div>'
-      + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:8px 14px 12px">'
-      + ['บันทึก➕:/บันทึก','รายการ📋:/รายการ','รายงาน📊:/รายงาน','กำไร💰:/กำไร','Inbox📥:/inbox','C1🔵:/c1','C2🟢:/c2','C3🟠:/c3','ช่วยหน่อย💡:/ช่วยหน่อย','ตั้งค่า⚙️:/ตั้งค่า'].map(s=>{
-          const [label,cmd] = s.split(':');
-          return '<div style="background:var(--surface2);border-radius:14px;padding:12px;text-align:center;cursor:pointer;font-size:13px;font-weight:600" onclick="selectCommand(\''+cmd+'\')">'+label+'</div>';
-        }).join('')
-      + '</div>'
-      + renderCommandList('');
+    renderSearchHistory(list);
     return;
   }
 
@@ -1678,18 +1714,11 @@ window.doSearch = function(q) {
       return;
     }
 
-    // Partial /command → show matching commands
-    const partialMatches = COMMANDS.filter(c =>
-      c.cmd.toLowerCase().startsWith(lower) ||
-      c.alias.some(a=>a.toLowerCase().startsWith(lower))
-    );
-    if(partialMatches.length) {
-      const helpCmd = partialMatches.find(c=>c.cmd.toLowerCase()===lower || c.alias.map(a=>a.toLowerCase()).includes(lower));
-      list.innerHTML = (helpCmd ? renderCommandHelp(helpCmd.cmd) : '')
-        + (partialMatches.length > 1 ? renderCommandList(lower) : '');
-    } else {
-      list.innerHTML = renderCommandList(lower);
-    }
+    // Unknown /command -> hint only
+    list.innerHTML = '<div class="s-empty" style="color:var(--text2)">'
+      + 'ไม่รู้จักคำสั่ง <b>'+raw+'</b><br>'
+      + '<span style="font-size:12px">พิมพ์ <span style="color:var(--accent)">/ช่วยหน่อย</span> เพื่อดูคำสั่งทั้งหมด</span>'
+      + '</div>';
     return;
   }
 
@@ -1706,7 +1735,8 @@ window.doSearch = function(q) {
     list.innerHTML='<div class="s-empty">ไม่พบข้อมูล "<b>'+raw+'</b>"<br><span style="font-size:12px;color:var(--text2)">ลองพิมพ์ / เพื่อดูคำสั่ง</span></div>';
     return;
   }
-  list.innerHTML = '<div style="padding:8px 14px 4px;font-size:11px;color:var(--text3)">พบ '+matches.length+' รายการ</div>';
+  saveSearchHistory(raw);
+    list.innerHTML = '<div style="padding:8px 14px 4px;font-size:11px;color:var(--text3)">พบ '+matches.length+' รายการ</div>';
   matches.forEach(r=>{
     const total=Object.values(r.items||{}).reduce((a,b)=>a+b,0);
     const detail=Object.entries(r.items||{}).map(([k,v])=>k+' '+fmtN(v)).join(' \u00b7 ');
