@@ -404,12 +404,10 @@ svg{display:inline-block;vertical-align:middle;flex-shrink:0}
 <!-- SEARCH OVERLAY -->
 <div class="search-overlay" id="search-overlay">
   <div class="search-box">
-    <button class="icon-btn" onclick="closeSearch()">✕</button>
-    <input class="search-input-el" id="search-input" placeholder="ค้นหา เช่น รายรับ 1/5, เบิก C1..." oninput="doSearch(this.value)" autocomplete="off"/>
+    <button class="icon-btn" onclick="closeSearch()"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+    <input class="search-input-el" id="search-input" placeholder="ค้นหา หรือพิมพ์ / สำหรับคำสั่ง..." oninput="doSearch(this.value)" onkeydown="searchKeydown(event)" autocomplete="off"/>
   </div>
-  <div class="search-results-list" id="search-list">
-    <div class="s-empty">พิมพ์เพื่อค้นหา <svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></div>
-  </div>
+  <div class="search-results-list" id="search-list"></div>
 </div>
 
 <div class="main">
@@ -1374,38 +1372,398 @@ window.switchTab = function(name) {
 // ============================================================
 // SEARCH
 // ============================================================
+// ============================================================
+// SEARCH + COMMAND SYSTEM
+// ============================================================
+const COMMANDS = [
+  { cmd: '/รายงาน', alias: ['/report','/rpt'], icon: '📊',
+    desc: 'ดูรายงานช่วงวันที่',
+    usage: '/รายงาน 1/5/2568 - 31/5/2568',
+    hint: '/รายงาน วัน/เดือน/ปี - วัน/เดือน/ปี',
+    example: '/รายงาน 1/6/2569 - 30/6/2569' },
+  { cmd: '/บันทึก', alias: ['/add','/เพิ่ม'], icon: '➕',
+    desc: 'ไปหน้าบันทึกรายรับ-รายเบิก',
+    usage: '/บันทึก',
+    hint: '/บันทึก',
+    example: '/บันทึก' },
+  { cmd: '/รายการ', alias: ['/records','/list'], icon: '📋',
+    desc: 'ไปหน้ารายการย้อนหลัง',
+    usage: '/รายการ',
+    hint: '/รายการ',
+    example: '/รายการ' },
+  { cmd: '/กำไร', alias: ['/profit'], icon: '💰',
+    desc: 'ดูกำไรช่วงวันที่',
+    usage: '/กำไร 1/5/2568 - 31/5/2568',
+    hint: '/กำไร วัน/เดือน/ปี - วัน/เดือน/ปี',
+    example: '/กำไร 1/6/2569 - 30/6/2569' },
+  { cmd: '/c1', alias: ['/C1'], icon: '🔵',
+    desc: 'ดูรายการของ C1',
+    usage: '/c1',
+    hint: '/c1 หรือ /c2 หรือ /c3',
+    example: '/c1' },
+  { cmd: '/c2', alias: ['/C2'], icon: '🟢',
+    desc: 'ดูรายการของ C2',
+    usage: '/c2', hint: '/c1 หรือ /c2 หรือ /c3', example: '/c2' },
+  { cmd: '/c3', alias: ['/C3'], icon: '🟠',
+    desc: 'ดูรายการของ C3',
+    usage: '/c3', hint: '/c1 หรือ /c2 หรือ /c3', example: '/c3' },
+  { cmd: '/ตั้งค่า', alias: ['/settings','/setting'], icon: '⚙️',
+    desc: 'ไปหน้าตั้งค่า',
+    usage: '/ตั้งค่า', hint: '/ตั้งค่า', example: '/ตั้งค่า' },
+  { cmd: '/inbox', alias: ['/ข้อความ','/message'], icon: '📥',
+    desc: 'ไปหน้า Inbox',
+    usage: '/inbox', hint: '/inbox', example: '/inbox' },
+  { cmd: '/ช่วยหน่อย', alias: ['/help','/คำสั่ง','/?'], icon: '💡',
+    desc: 'ดูคำสั่งทั้งหมดพร้อมตัวอย่าง',
+    usage: '/ช่วยหน่อย',
+    hint: '/ช่วยหน่อย',
+    example: '/ช่วยหน่อย' },
+];
+
+function parseDateRange(str) {
+  // expects "d/m/y - d/m/y" or "d/m - d/m"
+  const parts = str.split('-').map(s=>s.trim());
+  if(parts.length < 2) return null;
+  const parseD = s => {
+    const p = s.split('/');
+    if(p.length === 2) return { d:+p[0], m:+p[1], y: new Date().getFullYear()+543 };
+    if(p.length === 3) return { d:+p[0], m:+p[1], y:+p[2] };
+    return null;
+  };
+  const from = parseD(parts[0]);
+  const to = parseD(parts[1]);
+  if(!from || !to) return null;
+  return { from, to };
+}
+
+function thYear(y) { return y > 2400 ? y-543 : y; }
+
+function recordsInRange(from, to) {
+  return allRecords.filter(r => {
+    if(!r.date) return false;
+    const fy = thYear(from.y), ty = thYear(to.y);
+    const ry = thYear(r.date.y||new Date().getFullYear()+543);
+    if(ry < fy || ry > ty) return false;
+    if(ry === fy && (r.date.m < from.m || (r.date.m === from.m && r.date.d < from.d))) return false;
+    if(ry === ty && (r.date.m > to.m || (r.date.m === to.m && r.date.d > to.d))) return false;
+    return true;
+  });
+}
+
+function renderReportResult(records, label) {
+  if(!records.length) return '<div class="s-empty">ไม่พบข้อมูลในช่วงนี้</div>';
+  const income = records.filter(r=>r.type==='income');
+  const expense = records.filter(r=>r.type==='expense');
+  const sumI = income.reduce((a,r)=>a+Object.values(r.items||{}).reduce((x,y)=>x+y,0),0);
+  const sumE = expense.reduce((a,r)=>a+Object.values(r.items||{}).reduce((x,y)=>x+y,0),0);
+  const profit = sumI - sumE;
+  const cashiers = [...new Set(records.map(r=>r.cashier).filter(Boolean))].sort();
+  const cashierRows = cashiers.map(c=>{
+    const ci = income.filter(r=>r.cashier===c).reduce((a,r)=>a+Object.values(r.items||{}).reduce((x,y)=>x+y,0),0);
+    const ce = expense.filter(r=>r.cashier===c).reduce((a,r)=>a+Object.values(r.items||{}).reduce((x,y)=>x+y,0),0);
+    return '<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--border)">'
+      +'<span class="badge badge-'+c.toLowerCase()+'">'+c+'</span>'
+      +'<span style="font-size:12px;color:var(--green)">+'+fmtN(ci)+'</span>'
+      +'<span style="font-size:12px;color:var(--red)">-'+fmtN(ce)+'</span>'
+      +'<span style="font-size:12px;font-weight:700;color:'+(ci-ce>=0?'var(--green)':'var(--red)')+'">='+(ci-ce>=0?'+':'')+fmtN(ci-ce)+'</span>'
+      +'</div>';
+  }).join('');
+  const wrapper = document.createElement('div');
+  wrapper.innerHTML = '<div style="padding:14px;background:var(--surface);border-bottom:1px solid var(--border)">'
+    +'<div style="font-size:12px;font-weight:700;color:var(--text2);margin-bottom:10px">📊 '+label+'</div>'
+    +'<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:10px">'
+    +'<div style="background:var(--surface2);border-radius:12px;padding:10px;text-align:center"><div style="font-size:10px;color:var(--text2)">รายรับรวม</div><div style="font-size:14px;font-weight:700;color:var(--green)">'+fmtN(sumI)+'</div></div>'
+    +'<div style="background:var(--surface2);border-radius:12px;padding:10px;text-align:center"><div style="font-size:10px;color:var(--text2)">รายเบิกรวม</div><div style="font-size:14px;font-weight:700;color:var(--red)">'+fmtN(sumE)+'</div></div>'
+    +'<div style="background:var(--surface2);border-radius:12px;padding:10px;text-align:center"><div style="font-size:10px;color:var(--text2)">กำไร</div><div style="font-size:14px;font-weight:700;color:'+(profit>=0?'var(--green)':'var(--red)')+'">'+fmtN(profit)+'</div></div>'
+    +'</div>'+(cashierRows?'<div style="margin-bottom:4px;font-size:11px;color:var(--text3)">แยกตามแคชเชียร์</div>'+cashierRows:'')
+    +'</div>';
+  records.slice(0,15).forEach(r=>{
+    const total=Object.values(r.items||{}).reduce((a,b)=>a+b,0);
+    const detail=Object.entries(r.items||{}).map(([k,v])=>k+' '+fmtN(v)).join(' · ');
+    const div=document.createElement('div');
+    div.className='s-item';
+    div.dataset.rid=r.id;
+    div.addEventListener('click',function(){closeSearch();openEdit(this.dataset.rid);});
+    div.innerHTML='<span class="badge badge-'+(r.cashier||'').toLowerCase()+'">'+r.cashier+'</span>'
+      +'<span class="badge '+(r.type==='income'?'badge-income':'badge-expense')+'">'+(r.type==='income'?'รายรับ':'รายเบิก')+'</span>'
+      +'<span style="font-size:11px;color:var(--text2)">'+r.date?.d+'/'+r.date?.m+'</span>'
+      +'<span style="flex:1;font-size:12px;color:var(--text2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+detail+'</span>'
+      +'<span class="text-mono" style="font-size:13px;font-weight:700;color:'+(r.type==='income'?'var(--green)':'var(--red)')+';">'+fmtN(total)+'</span>';
+    wrapper.appendChild(div);
+  });
+  if(records.length>15){
+    const more=document.createElement('div');
+    more.style.cssText='padding:10px;text-align:center;font-size:12px;color:var(--text2)';
+    more.textContent='...และอีก '+(records.length-15)+' รายการ';
+    wrapper.appendChild(more);
+  }
+  return wrapper;
+}
+function renderCommandList(filter) {
+  const cmds = filter
+    ? COMMANDS.filter(c => c.cmd.includes(filter) || c.alias.some(a=>a.includes(filter)) || c.desc.includes(filter))
+    : COMMANDS;
+  if(!cmds.length) return '<div class="s-empty">ไม่พบคำสั่ง</div>';
+  return '<div style="padding:12px 14px 6px;font-size:11px;font-weight:700;color:var(--text3);letter-spacing:.5px">คำสั่งทั้งหมด</div>'
+    + cmds.map(c=>'<div class="s-item" style="flex-direction:column;align-items:flex-start;gap:4px" onclick="selectCommand(\''+c.cmd+'\')">'
+      + '<div style="display:flex;align-items:center;gap:8px;width:100%">'
+      + '<span style="font-size:18px">'+c.icon+'</span>'
+      + '<span style="font-weight:700;font-size:14px;color:var(--accent)">'+c.cmd+'</span>'
+      + '<span style="font-size:12px;color:var(--text2)">'+c.desc+'</span>'
+      + '</div>'
+      + '<div style="font-size:11px;color:var(--text3);padding-left:26px">ตัวอย่าง: <span style="color:var(--text2)">'+c.example+'</span></div>'
+      + '</div>'
+    ).join('');
+}
+
+function renderCommandHelp(cmd) {
+  const c = COMMANDS.find(x=>x.cmd===cmd||x.alias.includes(cmd));
+  if(!c) return '';
+  return '<div style="padding:14px;background:var(--surface);border-bottom:1px solid var(--border)">'
+    + '<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">'
+    + '<span style="font-size:24px">'+c.icon+'</span>'
+    + '<div><div style="font-weight:700;font-size:16px;color:var(--accent)">'+c.cmd+'</div>'
+    + '<div style="font-size:12px;color:var(--text2)">'+c.desc+'</div></div>'
+    + '</div>'
+    + '<div style="background:var(--surface2);border-radius:12px;padding:12px;margin-bottom:8px">'
+    + '<div style="font-size:11px;color:var(--text3);margin-bottom:4px">รูปแบบการใช้งาน</div>'
+    + '<div style="font-family:\'Space Mono\',monospace;font-size:13px;color:var(--text1)">'+c.hint+'</div>'
+    + '</div>'
+    + '<div style="background:var(--surface2);border-radius:12px;padding:12px">'
+    + '<div style="font-size:11px;color:var(--text3);margin-bottom:4px">ตัวอย่าง</div>'
+    + '<div style="font-family:\'Space Mono\',monospace;font-size:13px;color:var(--yellow)" onclick="fillCommand(\''+c.example+'\')">'+c.example+' <span style="font-size:10px;color:var(--text3)">(กดเพื่อใช้)</span></div>'
+    + '</div>'
+    + '</div>';
+}
+
+window.selectCommand = function(cmd) {
+  const inp = document.getElementById('search-input');
+  const c = COMMANDS.find(x=>x.cmd===cmd||x.alias.includes(cmd));
+  if(!c) return;
+  // Commands that need no args: execute immediately
+  const noArgCmds = ['/บันทึก','/รายการ','/ตั้งค่า','/inbox'];
+  if(noArgCmds.includes(c.cmd) || ['/c1','/c2','/c3'].includes(c.cmd)) {
+    inp.value = c.cmd;
+    doSearch(c.cmd);
+    return;
+  }
+  // Commands that need args: fill example and move cursor
+  inp.value = c.example;
+  inp.focus();
+  inp.select();
+  doSearch(c.example);
+}
+
+window.fillCommand = function(example) {
+  const inp = document.getElementById('search-input');
+  inp.value = example;
+  inp.focus();
+  doSearch(example);
+}
+
+// ============================================================
+// SEARCH HISTORY
+// ============================================================
+function getSearchHistoryKey() {
+  return 'sh_' + (currentUser?.uid || 'guest');
+}
+function saveSearchHistory(q) {
+  if(!q || q.startsWith('/') || q.length < 2) return;
+  const key = getSearchHistoryKey();
+  let h = JSON.parse(localStorage.getItem(key) || '[]');
+  h = h.filter(x => x !== q);
+  h.unshift(q);
+  localStorage.setItem(key, JSON.stringify(h.slice(0, 10)));
+}
+function renderSearchHistory(list) {
+  const h = JSON.parse(localStorage.getItem(getSearchHistoryKey()) || '[]');
+  if(!h.length) {
+    list.innerHTML = '<div class="s-empty" style="margin-top:24px">'
+      + '🔍 เริ่มพิมพ์เพื่อค้นหา<br>'
+      + '<span style="font-size:12px;color:var(--text3)">พิมพ์ /ช่วยหน่อย เพื่อดูคำสั่งทั้งหมด</span>'
+      + '</div>';
+    return;
+  }
+  let html = '<div style="display:flex;justify-content:space-between;align-items:center;padding:12px 14px 6px">'
+    + '<span style="font-size:11px;font-weight:700;color:var(--text3)">ประวัติการค้นหา</span>'
+    + '<button onclick="clearSearchHistory()" style="background:none;border:none;font-size:11px;color:var(--text3);cursor:pointer;padding:4px 8px;border-radius:8px">ล้างทั้งหมด</button>'
+    + '</div>';
+  h.forEach(q => {
+    const div = document.createElement('div');
+    div.style.cssText = 'display:flex;align-items:center;gap:10px;padding:10px 14px;cursor:pointer;border-bottom:1px solid var(--border)';
+    div.dataset.q = q;
+    div.addEventListener('click', function() {
+      document.getElementById('search-input').value = this.dataset.q;
+      doSearch(this.dataset.q);
+    });
+    div.innerHTML = '<svg style="display:inline-block;vertical-align:middle;flex-shrink:0;color:var(--text3)" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>'
+      + '<span style="flex:1;font-size:13px">'+q+'</span>'
+      + '<svg style="display:inline-block;vertical-align:middle;flex-shrink:0;color:var(--text3)" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>';
+    list.insertAdjacentHTML('beforeend', html);
+    html = '';
+    list.appendChild(div);
+  });
+}
+window.clearSearchHistory = function() {
+  localStorage.removeItem(getSearchHistoryKey());
+  const list = document.getElementById('search-list');
+  if(list) renderSearchHistory(list);
+};
+
 window.openSearch = function(){
   document.getElementById('search-overlay').classList.add('open');
-  setTimeout(()=>document.getElementById('search-input').focus(),300);
+  setTimeout(()=>{
+    const inp = document.getElementById('search-input');
+    inp.focus();
+    doSearch(inp.value||'');
+  },300);
 }
+
 window.closeSearch = function(){
   document.getElementById('search-overlay').classList.remove('open');
   document.getElementById('search-input').value='';
-  document.getElementById('search-list').innerHTML='<div class="s-empty">พิมพ์เพื่อค้นหา <svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></div>';
 }
-window.doSearch = function(q){
-  const list=document.getElementById('search-list');
-  if(!q.trim()){list.innerHTML='<div class="s-empty">พิมพ์เพื่อค้นหา <svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></div>';return;}
-  const ql=q.toLowerCase();
-  const matches=allRecords.filter(r=>{
-    const ds=`${r.date?.d}/${r.date?.m}`;
-    const ts=r.type==='income'?'รายรับ income':'รายเบิก expense เบิก';
-    const all=[ds,r.cashier,ts,Object.keys(r.items||{}).join(' '),r.note||'',
+
+window.searchKeydown = function(e){
+  if(e.key==='Escape') closeSearch();
+}
+
+window.doSearch = function(q) {
+  const list = document.getElementById('search-list');
+  const raw = q.trim();
+
+  // Empty -> show history
+  if(!raw) {
+    renderSearchHistory(list);
+    return;
+  }
+
+  // Command mode: starts with /
+  if(raw.startsWith('/')) {
+    const lower = raw.toLowerCase();
+    // Find matching command
+    const matched = COMMANDS.find(c => lower === c.cmd.toLowerCase() || c.alias.map(a=>a.toLowerCase()).includes(lower));
+
+    // /บันทึก → go to add tab
+    if(['/บันทึก','/add','/เพิ่ม'].includes(lower)){
+      list.innerHTML = '<div class="s-item" style="cursor:default" onclick="closeSearch();switchTab(\'add\')">'
+        + '➕ <span style="font-weight:700">ไปหน้าบันทึก</span></div>';
+      closeSearch(); switchTab('add'); return;
+    }
+    // /รายการ → go to records tab
+    if(['/รายการ','/records','/list'].includes(lower)){
+      closeSearch(); switchTab('records'); return;
+    }
+    // /ตั้งค่า → settings
+    if(['/ตั้งค่า','/settings','/setting'].includes(lower)){
+      closeSearch(); switchTab('settings'); return;
+    }
+    // /inbox
+    if(['/inbox','/ข้อความ','/message'].includes(lower)){
+      closeSearch(); switchTab('inbox'); return;
+    }
+    // /ช่วยหน่อย
+    if(['/ช่วยหน่อย','/help','/คำสั่ง','/?'].includes(lower)){
+      list.innerHTML = renderHelpPage();
+      return;
+    }
+    // /c1 /c2 /c3 → filter records by cashier
+    if(['/c1','/c2','/c3'].includes(lower)){
+      const cid = lower.replace('/','').toUpperCase();
+      const matches = allRecords.filter(r=>r.cashier===cid).slice(0,30);
+      if(!matches.length){ list.innerHTML='<div class="s-empty">ไม่พบรายการของ '+cid+'</div>'; return; }
+      const total_i = matches.filter(r=>r.type==='income').reduce((a,r)=>a+Object.values(r.items||{}).reduce((x,y)=>x+y,0),0);
+      const total_e = matches.filter(r=>r.type==='expense').reduce((a,r)=>a+Object.values(r.items||{}).reduce((x,y)=>x+y,0),0);
+      list.innerHTML = '<div style="padding:12px 14px;background:var(--surface);border-bottom:1px solid var(--border);display:flex;gap:12px;align-items:center">'
+        + '<span class="badge badge-'+cid.toLowerCase()+'">'+cid+'</span>'
+        + '<span style="font-size:12px;color:var(--green)">+'+fmtN(total_i)+'</span>'
+        + '<span style="font-size:12px;color:var(--red)">-'+fmtN(total_e)+'</span>'
+        + '<span style="font-size:12px;font-weight:700">กำไร '+(total_i-total_e>=0?'+':'')+fmtN(total_i-total_e)+'</span>'
+        + '</div>';
+      matches.forEach(r=>{
+        const total=Object.values(r.items||{}).reduce((a,b)=>a+b,0);
+        const detail=Object.entries(r.items||{}).map(([k,v])=>k+' '+fmtN(v)).join(' · ');
+        const div=document.createElement('div');
+        div.className='s-item';
+        div.dataset.rid=r.id;
+        div.addEventListener('click',function(){closeSearch();openEdit(this.dataset.rid);});
+        div.innerHTML='<span class="badge '+(r.type==='income'?'badge-income':'badge-expense')+'">'+(r.type==='income'?'รายรับ':'รายเบิก')+'</span>'
+          +'<span style="font-size:11px;color:var(--text2)">'+r.date?.d+'/'+r.date?.m+'</span>'
+          +'<span style="flex:1;font-size:12px;color:var(--text2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+detail+'</span>'
+          +'<span class="text-mono" style="font-size:13px;font-weight:700;color:'+(r.type==='income'?'var(--green)':'var(--red)')+';">'+fmtN(total)+'</span>';
+        list.appendChild(div);
+      });
+      return;
+    }
+
+    // /รายงาน or /กำไร with date range
+    const reportCmds = ['/รายงาน','/report','/rpt','/กำไร','/profit'];
+    const isReport = reportCmds.some(c=>lower.startsWith(c));
+    if(isReport) {
+      const pfx = reportCmds.find(c=>lower.startsWith(c));
+      const arg = raw.slice(pfx.length).trim();
+      if(!arg) {
+        list.innerHTML = renderCommandHelp(COMMANDS.find(c=>c.cmd==='/รายงาน').cmd);
+        return;
+      }
+      const range = parseDateRange(arg);
+      if(!range) {
+        list.innerHTML = '<div class="s-empty" style="color:var(--red)">รูปแบบวันที่ไม่ถูกต้อง<br><span style="font-size:12px;color:var(--text2)">เช่น: /รายงาน 1/6/2569 - 30/6/2569</span></div>';
+        return;
+      }
+      const recs = recordsInRange(range.from, range.to);
+      const label = range.from.d+'/'+range.from.m+'/'+(range.from.y) + ' — ' + range.to.d+'/'+range.to.m+'/'+(range.to.y);
+      list.innerHTML = '';
+      const rptEl = renderReportResult(recs, label);
+      if(typeof rptEl === 'string') list.innerHTML = rptEl;
+      else list.appendChild(rptEl);
+      return;
+    }
+
+    // Partial /command → show matching commands
+    const partialMatches = COMMANDS.filter(c =>
+      c.cmd.toLowerCase().startsWith(lower) ||
+      c.alias.some(a=>a.toLowerCase().startsWith(lower))
+    );
+    if(partialMatches.length) {
+      const helpCmd = partialMatches.find(c=>c.cmd.toLowerCase()===lower || c.alias.map(a=>a.toLowerCase()).includes(lower));
+      list.innerHTML = (helpCmd ? renderCommandHelp(helpCmd.cmd) : '')
+        + (partialMatches.length > 1 ? renderCommandList(lower) : '');
+    } else {
+      list.innerHTML = renderCommandList(lower);
+    }
+    return;
+  }
+
+  // Normal search — search records
+  const ql = raw.toLowerCase();
+  const matches = allRecords.filter(r=>{
+    const ds = (r.date?.d||'')+'/'+(r.date?.m||'');
+    const ts = r.type==='income'?'รายรับ income':'รายเบิก expense เบิก';
+    const all = [ds,r.cashier,ts,Object.keys(r.items||{}).join(' '),r.note||'',
       Object.values(r.items||{}).reduce((a,b)=>a+b,0).toString()].join(' ').toLowerCase();
     return all.includes(ql);
   }).slice(0,25);
-  if(!matches.length){list.innerHTML='<div class="s-empty">ไม่พบข้อมูล <svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></div>';return;}
-  list.innerHTML=matches.map(r=>{
+  if(!matches.length){
+    list.innerHTML='<div class="s-empty">ไม่พบข้อมูล "<b>'+raw+'</b>"<br><span style="font-size:12px;color:var(--text2)">ลองพิมพ์ / เพื่อดูคำสั่ง</span></div>';
+    return;
+  }
+  saveSearchHistory(raw);
+  list.innerHTML = '<div style="padding:8px 14px 4px;font-size:11px;color:var(--text3)">พบ '+matches.length+' รายการ</div>';
+  matches.forEach(r=>{
     const total=Object.values(r.items||{}).reduce((a,b)=>a+b,0);
-    const detail=Object.entries(r.items||{}).map(([k,v])=>`${k} ${fmtN(v)}`).join(' · ');
-    return `<div class="s-item" onclick="closeSearch();openEdit('${r.id}')">
-      <span class="badge badge-${r.cashier?.toLowerCase()}">${r.cashier}</span>
-      <span class="badge ${r.type==='income'?'badge-income':'badge-expense'}">${r.type==='income'?'รายรับ':'รายเบิก'}</span>
-      <span style="font-family:'Space Mono',monospace;font-size:11px;color:var(--text2)">${r.date?.d}/${r.date?.m}</span>
-      <span style="flex:1;font-size:12px;color:var(--text2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${detail}</span>
-      <span class="text-mono" style="font-size:13px;font-weight:700;color:${r.type==='income'?'var(--green)':'var(--red)'};">${fmtN(total)}</span>
-    </div>`;
-  }).join('');
+    const detail=Object.entries(r.items||{}).map(([k,v])=>k+' '+fmtN(v)).join(' \u00b7 ');
+    const div=document.createElement('div');
+    div.className='s-item';
+    div.dataset.rid=r.id;
+    div.addEventListener('click',function(){closeSearch();openEdit(this.dataset.rid);});
+    div.innerHTML='<span class="badge badge-'+(r.cashier||'').toLowerCase()+'">'+r.cashier+'</span>'
+      +'<span class="badge '+(r.type==='income'?'badge-income':'badge-expense')+'">'+(r.type==='income'?'\u0e23\u0e32\u0e22\u0e23\u0e31\u0e1a':'\u0e23\u0e32\u0e22\u0e40\u0e1a\u0e34\u0e01')+'</span>'
+      +'<span style="font-size:11px;color:var(--text2)">'+r.date?.d+'/'+r.date?.m+'</span>'
+      +'<span style="flex:1;font-size:12px;color:var(--text2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+detail+'</span>'
+      +'<span class="text-mono" style="font-size:13px;font-weight:700;color:'+(r.type==='income'?'var(--green)':'var(--red)')+';">'+fmtN(total)+'</span>';
+    list.appendChild(div);
+  });
 }
 
 // ============================================================
@@ -2021,7 +2379,7 @@ window.setUserRole = async function(uid, role, btn) {
     const card = btn.closest('[data-uid]');
     if(card){
       const roleColors = { admin:'var(--yellow)', member:'var(--accent)', test:'var(--purple)' };
-      const roleLabels = { admin:'\u{1F451} Admin', member:'\u{1F464} Member', test:'\u{1F9EA} Test' };
+      const roleLabels = { admin:'👑 Admin', member:'👤 Member', test:'🧪 Test' };
       const badge = card.querySelector('.role-label-badge');
       if(badge){ badge.textContent = roleLabels[role]||role; badge.style.color = roleColors[role]||'var(--text2)'; }
     }
@@ -2053,7 +2411,7 @@ window.loadUserManagerPage = async function() {
     if(snap.empty){ el.innerHTML='<div class="empty">ยังไม่มีสมาชิก</div>'; return; }
     countEl.textContent = snap.size + ' บัญชีในระบบ';
     const roleColors = { admin:'var(--yellow)', member:'var(--accent)', test:'var(--purple)' };
-    const roleLabels = { admin:'\u{1F451} Admin', member:'\u{1F464} Member', test:'\u{1F9EA} Test' };
+    const roleLabels = { admin:'👑 Admin', member:'👤 Member', test:'🧪 Test' };
     const roleBg = { admin:'rgba(255,170,0,.12)', member:'var(--accent-dim)', test:'rgba(140,60,255,.15)' };
     const cards = snap.docs.map(d => {
       const u = d.data();
@@ -2079,9 +2437,9 @@ window.loadUserManagerPage = async function() {
           + '</div></div>'
           + '<div style="display:flex;gap:6px;flex-direction:column">'
           + '<div class="cat-group" style="display:flex;gap:6px">'
-          + '<button class="cat-btn neutral ' + (role==='admin'?'active':'') + '" onclick="setUserRole(\'' + uid + '\',\'admin\',this)" style="flex:1;font-size:13px">\u{1F451} Admin</button>'
-          + '<button class="cat-btn neutral ' + (role==='member'?'active':'') + '" onclick="setUserRole(\'' + uid + '\',\'member\',this)" style="flex:1;font-size:13px">\u{1F464} Member</button>'
-          + '<button class="cat-btn neutral ' + (role==='test'?'active':'') + '" onclick="setUserRole(\'' + uid + '\',\'test\',this)" style="flex:1;font-size:13px">\u{1F9EA} Test</button>'
+          + '<button class="cat-btn neutral ' + (role==='admin'?'active':'') + '" onclick="setUserRole(\'' + uid + '\',\'admin\',this)" style="flex:1;font-size:13px">👑 Admin</button>'
+          + '<button class="cat-btn neutral ' + (role==='member'?'active':'') + '" onclick="setUserRole(\'' + uid + '\',\'member\',this)" style="flex:1;font-size:13px">👤 Member</button>'
+          + '<button class="cat-btn neutral ' + (role==='test'?'active':'') + '" onclick="setUserRole(\'' + uid + '\',\'test\',this)" style="flex:1;font-size:13px">🧪 Test</button>'
           + '</div>'
           + '<button class="btn btn-ghost btn-sm" onclick="var c=this.closest(\'[data-uid]\');var f=c.querySelector(\'.um-rename-form\');var i=c.querySelector(\'.um-rename-input\');i.value=c.querySelector(\'.um-name-display\').textContent;f.style.display=\'flex\';i.focus()" style="font-size:12px">'
           + '<svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg> \u0e40\u0e1b\u0e25\u0e35\u0e48\u0e22\u0e19\u0e0a\u0e37\u0e48\u0e2d'
@@ -2319,7 +2677,7 @@ window.showToast = function(msg,type=''){
   if(_tt){clearTimeout(_tt);_tt=null;}
   t.classList.remove('show');
   void t.offsetWidth;
-  t.textContent=msg;t.className='toast'+(type?' '+type:'');
+  t.innerHTML=msg;t.className='toast'+(type?' '+type:'');
   requestAnimationFrame(()=>{t.classList.add('show');_tt=setTimeout(()=>{t.classList.remove('show');_tt=null;},2500);});
 }
 
@@ -2338,5 +2696,3 @@ if ('serviceWorker' in navigator) {
   });
 }
 </script>
-</body>
-</html>
