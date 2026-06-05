@@ -1561,6 +1561,55 @@ window.fillCommand = function(example) {
   doSearch(example);
 }
 
+// ============================================================
+// SEARCH HISTORY
+// ============================================================
+function getSearchHistoryKey() {
+  return 'sh_' + (currentUser?.uid || 'guest');
+}
+function saveSearchHistory(q) {
+  if(!q || q.startsWith('/') || q.length < 2) return;
+  const key = getSearchHistoryKey();
+  let h = JSON.parse(localStorage.getItem(key) || '[]');
+  h = h.filter(x => x !== q);
+  h.unshift(q);
+  localStorage.setItem(key, JSON.stringify(h.slice(0, 10)));
+}
+function renderSearchHistory(list) {
+  const h = JSON.parse(localStorage.getItem(getSearchHistoryKey()) || '[]');
+  if(!h.length) {
+    list.innerHTML = '<div class="s-empty" style="margin-top:24px">'
+      + '🔍 เริ่มพิมพ์เพื่อค้นหา<br>'
+      + '<span style="font-size:12px;color:var(--text3)">พิมพ์ /ช่วยหน่อย เพื่อดูคำสั่งทั้งหมด</span>'
+      + '</div>';
+    return;
+  }
+  let html = '<div style="display:flex;justify-content:space-between;align-items:center;padding:12px 14px 6px">'
+    + '<span style="font-size:11px;font-weight:700;color:var(--text3)">ประวัติการค้นหา</span>'
+    + '<button onclick="clearSearchHistory()" style="background:none;border:none;font-size:11px;color:var(--text3);cursor:pointer;padding:4px 8px;border-radius:8px">ล้างทั้งหมด</button>'
+    + '</div>';
+  h.forEach(q => {
+    const div = document.createElement('div');
+    div.style.cssText = 'display:flex;align-items:center;gap:10px;padding:10px 14px;cursor:pointer;border-bottom:1px solid var(--border)';
+    div.dataset.q = q;
+    div.addEventListener('click', function() {
+      document.getElementById('search-input').value = this.dataset.q;
+      doSearch(this.dataset.q);
+    });
+    div.innerHTML = '<svg style="display:inline-block;vertical-align:middle;flex-shrink:0;color:var(--text3)" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>'
+      + '<span style="flex:1;font-size:13px">'+q+'</span>'
+      + '<svg style="display:inline-block;vertical-align:middle;flex-shrink:0;color:var(--text3)" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>';
+    list.insertAdjacentHTML('beforeend', html);
+    html = '';
+    list.appendChild(div);
+  });
+}
+window.clearSearchHistory = function() {
+  localStorage.removeItem(getSearchHistoryKey());
+  const list = document.getElementById('search-list');
+  if(list) renderSearchHistory(list);
+};
+
 window.openSearch = function(){
   document.getElementById('search-overlay').classList.add('open');
   setTimeout(()=>{
@@ -1583,16 +1632,9 @@ window.doSearch = function(q) {
   const list = document.getElementById('search-list');
   const raw = q.trim();
 
-  // Empty → show command list + quick-nav tiles
+  // Empty -> show history
   if(!raw) {
-    list.innerHTML = '<div style="padding:12px 14px 6px;font-size:11px;font-weight:700;color:var(--text3);letter-spacing:.5px">ทางลัด</div>'
-      + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:8px 14px 12px">'
-      + ['บันทึก➕:/บันทึก','รายการ📋:/รายการ','รายงาน📊:/รายงาน','กำไร💰:/กำไร','Inbox📥:/inbox','C1🔵:/c1','C2🟢:/c2','C3🟠:/c3','ช่วยหน่อย💡:/ช่วยหน่อย','ตั้งค่า⚙️:/ตั้งค่า'].map(s=>{
-          const [label,cmd] = s.split(':');
-          return '<div style="background:var(--surface2);border-radius:14px;padding:12px;text-align:center;cursor:pointer;font-size:13px;font-weight:600" onclick="selectCommand(\''+cmd+'\')">'+label+'</div>';
-        }).join('')
-      + '</div>'
-      + renderCommandList('');
+    renderSearchHistory(list);
     return;
   }
 
@@ -1706,6 +1748,7 @@ window.doSearch = function(q) {
     list.innerHTML='<div class="s-empty">ไม่พบข้อมูล "<b>'+raw+'</b>"<br><span style="font-size:12px;color:var(--text2)">ลองพิมพ์ / เพื่อดูคำสั่ง</span></div>';
     return;
   }
+  saveSearchHistory(raw);
   list.innerHTML = '<div style="padding:8px 14px 4px;font-size:11px;color:var(--text3)">พบ '+matches.length+' รายการ</div>';
   matches.forEach(r=>{
     const total=Object.values(r.items||{}).reduce((a,b)=>a+b,0);
