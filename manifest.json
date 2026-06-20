@@ -1,7 +1,7 @@
 {
-  "name": "BP SNK NOTE",
-  "short_name": "BP SNK",
-  "description": "ระบบบันทึกรายรับ-รายเบิก BP Snooker",
+  "name": "BM NOTE",
+  "short_name": "BM NOTE",
+  "description": "ระบบบันทึกรายรับ-รายจ่าย BM",
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#0b0b12",
