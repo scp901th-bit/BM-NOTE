@@ -894,12 +894,48 @@ const MASTER_DEV_EMAILS = [
 // ============================================================
 let currentUser = null;
 let currentRole = 'member'; // 'admin' | 'member'
+let currentBusinessId = null; // Multi-Business: internalId of active business (Phase 1.0)
 let appSettings = { name:'นพดล อินไข่', bank:'ไทยพาณิชย์', account:'5034079005', themeMode:'dark' };
 let incomeItems = ['เงินสด','ค่าจอดรถ','กำไรค่าข้าว','อื่นๆ'];
 let expenseItems = ['แลกสด','ต้นทุนค่าข้าว','ค่าน้ำแข็ง','ซื้อถุงดำ','เบียร์ลัง','อื่นๆ'];
 let allRecords = [];
 let currentCat = 'income';
 let rptCat = 'income', rptDetail = 'all', rptCashier = 'all';
+
+// ============================================================
+// BUSINESS-SCOPED PATH HELPERS (Phase 1.0 Multi-Business)
+// All Firestore access for business data goes through these,
+// so switching businesses or rolling back only needs changes here.
+// Falls back to legacy top-level collections if no business resolved
+// (e.g. pre-migration accounts), so nothing breaks during transition.
+// ============================================================
+function bizRecordsCol() {
+  return currentBusinessId ? collection(db,'businesses',currentBusinessId,'records') : collection(db,'records');
+}
+function bizRecordDoc(id) {
+  return currentBusinessId ? doc(db,'businesses',currentBusinessId,'records',id) : doc(db,'records',id);
+}
+function bizUsersCol() {
+  return currentBusinessId ? collection(db,'businesses',currentBusinessId,'members') : collection(db,'users');
+}
+function bizUserDoc(uid) {
+  return currentBusinessId ? doc(db,'businesses',currentBusinessId,'members',uid) : doc(db,'users',uid);
+}
+function bizSettingsDoc() {
+  return currentBusinessId ? doc(db,'businesses',currentBusinessId) : doc(db,'settings','app');
+}
+function bizMessagesCol() {
+  return currentBusinessId ? collection(db,'businesses',currentBusinessId,'messages') : collection(db,'messages');
+}
+function bizMessageDoc(id) {
+  return currentBusinessId ? doc(db,'businesses',currentBusinessId,'messages',id) : doc(db,'messages',id);
+}
+function bizDeleteReqCol() {
+  return currentBusinessId ? collection(db,'businesses',currentBusinessId,'deleteRequests') : collection(db,'deleteRequests');
+}
+function bizDeleteReqDoc(id) {
+  return currentBusinessId ? doc(db,'businesses',currentBusinessId,'deleteRequests',id) : doc(db,'deleteRequests',id);
+}
 let filterC = 'all', filterT = 'all';
 let pendingSave = null, editingId = null;
 let charts = {};
@@ -1101,12 +1137,29 @@ onAuthStateChanged(auth, async (user) => {
     }
     console.log('[AUTH] Final currentRole:', currentRole);
 
+    // Resolve active business (Phase 1.0 Multi-Business)
+    try {
+      const freshUserDoc = await getDoc(doc(db,'users',user.uid));
+      const bizList = freshUserDoc.exists() ? (freshUserDoc.data().businesses || []) : [];
+      if(bizList.length > 0) {
+        currentBusinessId = bizList[0].internalId;
+        console.log('[BIZ] Active business:', currentBusinessId);
+      } else {
+        console.log('[BIZ] No business found for user — legacy mode (pre-migration)');
+        currentBusinessId = null;
+      }
+    } catch(e) {
+      console.error('[BIZ] Error resolving business:', e);
+      currentBusinessId = null;
+    }
+
     document.getElementById('auth-screen').style.display = 'none';
     document.getElementById('app').style.display = 'block';
     hideSplash();
     initApp();
   } else {
     currentUser = null;
+    currentBusinessId = null;
     document.getElementById('auth-screen').style.display = 'flex';
     document.getElementById('app').style.display = 'none';
     allRecords = [];
@@ -1183,9 +1236,10 @@ function setupRoleUI() {
 // ============================================================
 async function loadAppSettings() {
   try {
-    const snap = await getDoc(doc(db,'settings','app'));
+    const snap = await getDoc(bizSettingsDoc());
     if(snap.exists()) {
-      const d = snap.data();
+      // Business doc nests settings under a "settings" field; legacy settings/app doc is flat.
+      const d = currentBusinessId ? (snap.data().settings || {}) : snap.data();
       if(d.transferName) appSettings.name = d.transferName;
       if(d.transferBank) appSettings.bank = d.transferBank;
       if(d.transferAccount) appSettings.account = d.transferAccount;
@@ -1209,11 +1263,17 @@ window.saveSettings = async function() {
   appSettings.bank = document.getElementById('set-bank').value.trim();
   appSettings.account = document.getElementById('set-account').value.trim();
   try {
-    await setDoc(doc(db,'settings','app'), {
+    const settingsPayload = {
       transferName: appSettings.name, transferBank: appSettings.bank,
       transferAccount: appSettings.account, incomeItems, expenseItems,
       updatedAt: serverTimestamp()
-    });
+    };
+    if(currentBusinessId) {
+      // Nest under "settings" field on the business doc
+      await setDoc(bizSettingsDoc(), { settings: settingsPayload }, { merge: true });
+    } else {
+      await setDoc(bizSettingsDoc(), settingsPayload);
+    }
     showToast('<svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> บันทึกแล้ว');
   } catch(e){ showToast('เกิดข้อผิดพลาด','error'); }
 }
@@ -1287,14 +1347,14 @@ window.renameItem = async function(type, idx, newName) {
   // Migrate all historical records that have this item key
   showToast('กำลังอัปเดตรายการย้อนหลัง...','info');
   try {
-    const snap = await getDocs(collection(db,'records'));
+    const snap = await getDocs(bizRecordsCol());
     const batch = [];
     snap.forEach(d => {
       const items = d.data().items || {};
       if(oldName in items) {
         const newItems = {};
         Object.entries(items).forEach(([k,v]) => { newItems[k===oldName?newName:k] = v; });
-        batch.push(updateDoc(doc(db,'records',d.id), { items: newItems }));
+        batch.push(updateDoc(bizRecordDoc(d.id), { items: newItems }));
       }
     });
     if(batch.length > 0) {
@@ -1335,7 +1395,11 @@ window.removeSettingItem = async function(type,idx) {
 
 async function saveItemsToFirestore() {
   try {
-    await setDoc(doc(db,'settings','app'), {incomeItems, expenseItems, updatedAt:serverTimestamp()}, {merge:true});
+    if(currentBusinessId) {
+      await setDoc(bizSettingsDoc(), { settings: { incomeItems, expenseItems, updatedAt: serverTimestamp() } }, { merge: true });
+    } else {
+      await setDoc(bizSettingsDoc(), {incomeItems, expenseItems, updatedAt:serverTimestamp()}, {merge:true});
+    }
   } catch(e){}
 }
 
@@ -1350,7 +1414,7 @@ function startRecordsListener() {
 
   if(currentRole === 'test') {
     // TEST ROLE: load real data once as baseline, then work with session copy
-    const q = query(collection(db,'records'), orderBy('dateKey','desc'));
+    const q = query(bizRecordsCol(), orderBy('dateKey','desc'));
     getDocs(q).then(snap => {
       testRecords = snap.docs.map(d=>({id:d.id,...d.data()}));
       allRecords = [...testRecords];
@@ -1361,7 +1425,7 @@ function startRecordsListener() {
   }
 
   // ADMIN/MEMBER: real-time listener
-  const q = query(collection(db,'records'), orderBy('dateKey','desc'));
+  const q = query(bizRecordsCol(), orderBy('dateKey','desc'));
   unsubRecords = onSnapshot(q, (snap) => {
     allRecords = snap.docs.map(d=>({id:d.id,...d.data()}));
     renderRecords();
@@ -1874,7 +1938,7 @@ window.doSave = async function(){
       pendingSave=null;
       return;
     }
-    await addDoc(collection(db,'records'),{
+    await addDoc(bizRecordsCol(),{
       ...pendingSave,
       dateKey: dKey(pendingSave.date),
       createdBy: currentUser.uid,
@@ -1982,7 +2046,7 @@ window.doEdit = async function(){
   document.querySelectorAll('[data-eitem]').forEach(inp=>{const v=parseFloat(inp.value)||0;if(v>0)newItems[inp.dataset.eitem]=v;});
   const note=document.getElementById('edit-note')?.value.trim()||'';
   try {
-    await updateDoc(doc(db,'records',editingId),{items:newItems,note,updatedAt:serverTimestamp(),updatedBy:currentUser.uid});
+    await updateDoc(bizRecordDoc(editingId),{items:newItems,note,updatedAt:serverTimestamp(),updatedBy:currentUser.uid});
     closeModal('modal-edit');showToast('<svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> แก้ไขเรียบร้อย');
   } catch(e){showToast('เกิดข้อผิดพลาด','error');}
 }
@@ -2009,7 +2073,7 @@ window.testDeleteRecord = function(id){
 window.adminDeleteRecord = async function(){
   if(!confirm('ลบรายการนี้?'))return;
   try {
-    await deleteDoc(doc(db,'records',editingId));
+    await deleteDoc(bizRecordDoc(editingId));
     closeModal('modal-edit');showToast('<svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg> ลบเรียบร้อย');
   } catch(e){showToast('เกิดข้อผิดพลาด','error');}
 }
@@ -2023,7 +2087,7 @@ window.requestDelete = async function(recordId){
   const reason=prompt('เหตุผลที่ต้องการลบ (ไม่บังคับ):','');
   const total=Object.values(r.items||{}).reduce((a,b)=>a+b,0);
   try {
-    await addDoc(collection(db,'deleteRequests'),{
+    await addDoc(bizDeleteReqCol(),{
       recordId, recordSummary:`${r.date?.d}/${r.date?.m}/${r.date?.y} ${r.cashier} ${r.type==='income'?'รายรับ':'รายเบิก'} ${fmtN(total)} ฿`,
       reason:reason||'', requestedBy:currentUser.uid, requestedByName:currentUser.displayName||currentUser.email,
       status:'pending', createdAt:serverTimestamp()
@@ -2039,11 +2103,11 @@ async function loadDeleteRequests(){
   try {
     let snap;
     try {
-      const q=query(collection(db,'deleteRequests'),where('status','==','pending'),orderBy('createdAt','desc'));
+      const q=query(bizDeleteReqCol(),where('status','==','pending'),orderBy('createdAt','desc'));
       snap=await getDocs(q);
     } catch(idxErr) {
       console.warn('Index missing, fetching without order');
-      const q2=query(collection(db,'deleteRequests'),where('status','==','pending'));
+      const q2=query(bizDeleteReqCol(),where('status','==','pending'));
       snap=await getDocs(q2);
     }
     const list=document.getElementById('delete-requests-list');
@@ -2071,8 +2135,8 @@ window.approveDelete = async function(reqId, recordId){
   if(!confirm('อนุมัติการลบรายการนี้?'))return;
   try {
     const batch=writeBatch(db);
-    batch.delete(doc(db,'records',recordId));
-    batch.update(doc(db,'deleteRequests',reqId),{status:'approved',approvedAt:serverTimestamp(),approvedBy:currentUser.uid});
+    batch.delete(bizRecordDoc(recordId));
+    batch.update(bizDeleteReqDoc(reqId),{status:'approved',approvedAt:serverTimestamp(),approvedBy:currentUser.uid});
     await batch.commit();
     showToast('<svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> ลบรายการแล้ว');
     loadDeleteRequests();
@@ -2081,7 +2145,7 @@ window.approveDelete = async function(reqId, recordId){
 
 window.rejectDelete = async function(reqId){
   try {
-    await updateDoc(doc(db,'deleteRequests',reqId),{status:'rejected',rejectedAt:serverTimestamp()});
+    await updateDoc(bizDeleteReqDoc(reqId),{status:'rejected',rejectedAt:serverTimestamp()});
     showToast('<svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg> ปฏิเสธคำขอแล้ว');
     loadDeleteRequests();
   } catch(e){showToast('เกิดข้อผิดพลาด','error');}
@@ -2095,7 +2159,7 @@ window.sendMessage = async function(){
   const type=document.getElementById('msg-type').value;
   if(!content){showToast('กรุณาพิมพ์ข้อความ','error');return;}
   try {
-    await addDoc(collection(db,'messages'),{
+    await addDoc(bizMessagesCol(),{
       content, type, sentBy:currentUser.uid, sentByName:currentUser.displayName||currentUser.email,
       sentByEmail:currentUser.email, status:'unread', createdAt:serverTimestamp()
     });
@@ -2109,10 +2173,10 @@ async function loadMessages(){
   try {
     let snap;
     try {
-      const q=query(collection(db,'messages'),orderBy('createdAt','desc'));
+      const q=query(bizMessagesCol(),orderBy('createdAt','desc'));
       snap=await getDocs(q);
     } catch(e) {
-      snap=await getDocs(collection(db,'messages'));
+      snap=await getDocs(bizMessagesCol());
     }
     const list=document.getElementById('messages-list');
     if(!list) return;
@@ -2142,14 +2206,14 @@ async function loadMessages(){
 window.deleteMsg = async function(msgId) {
   if(!confirm('ลบข้อความนี้?')) return;
   try {
-    await deleteDoc(doc(db,'messages',msgId));
+    await deleteDoc(bizMessageDoc(msgId));
     showToast('ลบแล้ว'); loadMessages();
   } catch(e){showToast('เกิดข้อผิดพลาด','error');}
 }
 
 async function loadMyMessages(){
   try {
-    const q=query(collection(db,'messages'),where('sentBy','==',currentUser.uid),orderBy('createdAt','desc'));
+    const q=query(bizMessagesCol(),where('sentBy','==',currentUser.uid),orderBy('createdAt','desc'));
     const snap=await getDocs(q);
     const list=document.getElementById('my-messages-list');
     if(!list)return;
@@ -2345,7 +2409,7 @@ window.openUserManager = async function() {
   const el = document.getElementById('user-list-content');
   el.innerHTML = '<div class="loading-wrap"><div class="spinner"></div> กำลังโหลด...</div>';
   try {
-    const snap = await getDocs(collection(db,'users'));
+    const snap = await getDocs(bizUsersCol());
     if(snap.empty){ el.innerHTML='<div class="empty">ยังไม่มีสมาชิก</div>'; return; }
     const roleColors = { admin:'var(--yellow)', member:'var(--accent)', test:'var(--purple)' };
     const roleLabels = { admin:'👑 Admin', member:'👤 Member', test:'🧪 Test' };
@@ -2387,7 +2451,7 @@ window.adminRenameUser = async function(uid, btn) {
   const newName = inp.value.trim();
   if(!newName){ showToast('กรุณากรอกชื่อ','error'); return; }
   try {
-    await updateDoc(doc(db,'users',uid), { name: newName });
+    await updateDoc(bizUserDoc(uid), { name: newName });
     card.querySelector('.um-name-display').textContent = newName;
     card.querySelector('.um-rename-form').style.display = 'none';
     showToast('<svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> เปลี่ยนชื่อเรียบร้อย');
@@ -2399,7 +2463,7 @@ window.adminRenameUser = async function(uid, btn) {
 
 window.setUserRole = async function(uid, role, btn) {
   try {
-    await updateDoc(doc(db,'users',uid), { role });
+    await updateDoc(bizUserDoc(uid), { role });
     const row = btn.closest('.cat-group');
     row.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
@@ -2435,7 +2499,7 @@ window.loadUserManagerPage = async function() {
   const countEl = document.getElementById('um-count');
   el.innerHTML = '<div class="loading-wrap"><div class="spinner"></div> กำลังโหลด...</div>';
   try {
-    const snap = await getDocs(collection(db,'users'));
+    const snap = await getDocs(bizUsersCol());
     if(snap.empty){ el.innerHTML='<div class="empty">ยังไม่มีสมาชิก</div>'; return; }
     countEl.textContent = snap.size + ' บัญชีในระบบ';
     const roleColors = { admin:'var(--yellow)', member:'var(--accent)', test:'var(--purple)' };
@@ -2880,14 +2944,14 @@ async function importRecords(data,mode){
     toAdd=data.records.filter(r=>!existIds.has(r.id));
     // update existing
     for(const r of data.records.filter(r=>existIds.has(r.id))){
-      try{await updateDoc(doc(db,'records',r.id),{items:r.items,note:r.note||''});}catch(e){}
+      try{await updateDoc(bizRecordDoc(r.id),{items:r.items,note:r.note||''});}catch(e){}
     }
   } else { toAdd=data.records.filter(r=>!existIds.has(r.id)); }
 
   let count=0;
   for(const r of toAdd){
     try{
-      await addDoc(collection(db,'records'),{
+      await addDoc(bizRecordsCol(),{
         date:r.date,dateKey:r.dateKey||(r.date?dKey(r.date):0),cashier:r.cashier,type:r.type,
         items:r.items,note:r.note||'',createdBy:currentUser.uid,createdByName:'นำเข้าข้อมูล',createdAt:serverTimestamp()
       });count++;
