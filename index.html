@@ -1,0 +1,2930 @@
+<!DOCTYPE html>
+<html lang="th" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="BM NOTE">
+<title>BM NOTE</title>
+<link rel="apple-touch-icon" href="icon-192.png">
+
+<link rel="manifest" href="manifest.json">
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{--sq:18px}
+[data-theme="dark"]{
+  --bg:#0b0b12;--surface:#14141f;--surface2:#1c1c2e;--surface3:#24243e;
+  --border:#2e2e48;--accent:#00e5ff;--accent-dim:rgba(0,229,255,.1);
+  --accent2:#7c3aed;--green:#00d68f;--green-dim:rgba(0,214,143,.12);
+  --red:#ff3d71;--red-dim:rgba(255,61,113,.12);--yellow:#ffaa00;
+  --orange:#ff8c00;--text:#e8e8f4;--text2:#8080aa;--text3:#4a4a6a;
+  --shadow:0 8px 32px rgba(0,0,0,.6);--shadow-sm:0 2px 12px rgba(0,0,0,.4);
+  --nav-bg:#14141f;--c1:#7c9eff;--c2:#5ddba5;--c3:#ff8c00;
+}
+[data-theme="light"]{
+  --bg:#f2f3fa;--surface:#fff;--surface2:#f7f8ff;--surface3:#eceeff;
+  --border:#dde0f5;--accent:#006ebb;--accent-dim:rgba(0,110,187,.1);
+  --accent2:#6d28d9;--green:#00966a;--green-dim:rgba(0,150,106,.1);
+  --red:#cc1448;--red-dim:rgba(204,20,72,.1);--yellow:#b45309;
+  --orange:#c2610a;--text:#18182e;--text2:#4e5080;--text3:#9496b4;
+  --shadow:0 8px 32px rgba(0,0,30,.12);--shadow-sm:0 2px 12px rgba(0,0,30,.07);
+  --nav-bg:#fff;--c1:#3a65e0;--c2:#00906a;--c3:#c2610a;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{background:var(--bg);color:var(--text);font-family:'Sarabun',sans-serif;font-size:15px;min-height:100vh;padding-bottom:80px;transition:background .3s,color .3s;overscroll-behavior:none}
+
+/* ── PC LAYOUT ── */
+@media (min-width: 900px) {
+  body { padding-bottom: 0; font-size: 15px; }
+
+  /* Sidebar nav on PC */
+  .bottom-nav {
+    position: fixed;
+    left: 0; top: 0; bottom: 0; right: auto;
+    flex-direction: column;
+    width: 200px;
+    border-top: none;
+    border-right: 1px solid var(--border);
+    padding: 80px 0 24px;
+    box-shadow: 4px 0 24px rgba(0,0,0,.15);
+  }
+  .nav-item {
+    flex-direction: row;
+    justify-content: flex-start;
+    padding: 12px 20px;
+    gap: 12px;
+    font-size: 13px;
+    border-radius: 0;
+  }
+  .nav-icon { font-size: 18px; }
+  .nav-item.active {
+    background: var(--accent-dim);
+    border-left: 3px solid var(--accent);
+  }
+
+  /* Top bar adjusts for sidebar */
+  .top-bar {
+    left: 200px;
+    right: 0;
+    padding: 12px 24px;
+  }
+
+  /* Main content shifts right */
+  .main {
+    margin-left: 200px;
+    padding: 24px 32px;
+    max-width: none;
+  }
+
+  /* Auth screen centered */
+  .auth-screen { padding-left: 0; }
+  .auth-card { max-width: 440px; }
+
+  /* 2-column layout for dashboard stats */
+  .card { border-radius: 20px; }
+  .quick-stats { grid-template-columns: repeat(3, 1fr); }
+  .stats-grid { grid-template-columns: repeat(4, 1fr); }
+
+  /* Wider form layout */
+  .date-row { grid-template-columns: repeat(3, 1fr); gap: 12px; }
+
+  /* Search overlay adjust */
+  .search-overlay { left: 200px; }
+  .search-box { padding: 16px 24px; }
+
+  /* Modal wider on PC */
+  .modal-box {
+    border-radius: 20px;
+    max-width: 520px;
+    max-height: 85vh;
+    margin-bottom: 40px;
+  }
+  .modal-overlay { align-items: center; }
+
+  /* Toast above bottom */
+  .toast { bottom: 24px; }
+
+  /* Record grid on PC */
+  #records-list { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .record-item { margin-bottom: 0; }
+
+  /* Report output wider */
+  .report-output { font-size: 13px; }
+}
+
+@media (min-width: 1200px) {
+  .bottom-nav { width: 220px; }
+  .top-bar { left: 220px; }
+  .main { margin-left: 220px; padding: 28px 40px; }
+  .search-overlay { left: 220px; }
+}
+
+/* SVG ICONS */
+svg{display:inline-block;vertical-align:middle;flex-shrink:0}
+.nav-icon svg{width:22px;height:22px}
+.icon-btn svg{width:18px;height:18px}
+.card-title svg{width:16px;height:16px}
+.btn svg{width:16px;height:16px}
+.badge svg{width:12px;height:12px}
+
+/* AUTH SCREEN */
+.auth-screen{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:24px;background:var(--bg)}
+.auth-logo{font-family:'Space Mono',monospace;font-size:22px;font-weight:700;color:var(--accent);letter-spacing:3px;margin-bottom:6px}
+.auth-sub{font-size:12px;color:var(--text2);letter-spacing:1px;margin-bottom:32px}
+.auth-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--sq);padding:24px;width:100%;max-width:400px;box-shadow:var(--shadow)}
+.auth-tabs{display:flex;gap:0;margin-bottom:20px;border-radius:12px;overflow:hidden;border:1px solid var(--border)}
+.auth-tab{flex:1;padding:10px;text-align:center;cursor:pointer;font-size:14px;font-weight:700;transition:all .2s;background:var(--surface2);color:var(--text2)}
+.auth-tab.active{background:var(--accent);color:#000}
+.auth-error{background:rgba(255,61,113,.15);border:1px solid var(--red);color:#ff6b8e;padding:12px 14px;border-radius:12px;font-size:13px;margin-bottom:12px;display:none;font-weight:600;line-height:1.5}
+.auth-error.show{display:block}
+
+/* TOP BAR */
+.top-bar{background:var(--bg);border-bottom:1px solid var(--border);padding:10px 16px;display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:200;transition:background .3s}
+.logo{font-family:'Space Mono',monospace;font-size:14px;font-weight:700;color:var(--accent);letter-spacing:2px;flex:1}
+.logo span{display:block;font-size:9px;color:var(--text2);letter-spacing:1px;font-weight:400}
+.role-badge{font-size:9px;font-weight:700;padding:2px 8px;border-radius:20px;letter-spacing:.5px}
+.role-badge.admin{background:rgba(255,170,0,.15);color:var(--yellow);border:1px solid var(--yellow)}
+.role-badge.member{background:var(--accent-dim);color:var(--accent);border:1px solid var(--accent)}
+.role-badge.test{background:rgba(180,75,255,.15);color:var(--purple);border:1px solid var(--purple)}
+
+/* ICON BUTTON */
+.icon-btn{width:38px;height:38px;display:flex;align-items:center;justify-content:center;background:var(--surface2);border:1px solid var(--border);border-radius:50%;color:var(--text2);cursor:pointer;font-size:16px;transition:all .2s;flex-shrink:0;line-height:1}
+.icon-btn:active{transform:scale(.92)}
+
+/* SEARCH OVERLAY */
+.search-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);backdrop-filter:blur(8px);z-index:500;display:flex;flex-direction:column;transform:translateY(-100%);opacity:0;transition:transform .35s cubic-bezier(.4,0,.2,1),opacity .35s;pointer-events:none}
+.search-overlay.open{transform:translateY(0);opacity:1;pointer-events:all}
+.search-box{background:var(--surface);padding:14px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--border)}
+.search-input-el{flex:1;background:var(--surface2);border:1px solid var(--accent);border-radius:20px;padding:10px 16px;color:var(--text);font-family:inherit;font-size:15px;outline:none}
+.search-results-list{flex:1;overflow-y:auto;background:var(--surface);padding:8px 0}
+.s-item{padding:13px 16px;border-bottom:1px solid var(--border);cursor:pointer;display:flex;align-items:center;gap:10px;transition:background .15s}
+.s-item:active{background:var(--surface2)}
+.s-empty{padding:40px;text-align:center;color:var(--text2);font-size:14px}
+
+/* BOTTOM NAV */
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;background:var(--nav-bg);border-top:1px solid var(--border);display:flex;z-index:300;padding-bottom:env(safe-area-inset-bottom);box-shadow:0 -4px 24px rgba(0,0,0,.2);transition:background .3s}
+.nav-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:10px 4px 8px;cursor:pointer;color:var(--text3);font-size:10px;font-weight:600;letter-spacing:.3px;gap:3px;transition:all .2s}
+.nav-icon{font-size:20px;transition:transform .2s;display:flex;align-items:center;justify-content:center;width:24px;height:24px}
+.nav-item.active{color:var(--accent)}
+.nav-item.active .nav-icon{transform:scale(1.12)}
+.nav-item:active .nav-icon{transform:scale(.9)}
+
+/* MAIN */
+.main{padding:14px;max-width:640px;margin:0 auto;padding-bottom:16px}
+.section{display:none;animation:fadeUp .28s cubic-bezier(.4,0,.2,1)}
+.section.active{display:block}
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+
+/* CARDS */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--sq);padding:18px;margin-bottom:12px;transition:background .3s,border-color .3s,box-shadow .2s}
+.card:hover{box-shadow:var(--shadow-sm)}
+.card-title{font-size:11px;font-weight:700;color:var(--accent);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:14px;display:flex;align-items:center;gap:8px}
+
+/* FORM */
+.form-row{margin-bottom:11px}
+.form-label{font-size:11px;color:var(--text2);margin-bottom:5px;display:block;font-weight:700;letter-spacing:.5px}
+.form-input,.form-select,.form-textarea{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:var(--sq);padding:10px 14px;color:var(--text);font-family:inherit;font-size:15px;outline:none;transition:all .2s;-webkit-appearance:none}
+.form-input:focus,.form-select:focus,.form-textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-dim)}
+.form-textarea{resize:vertical;min-height:68px;line-height:1.6}
+.date-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+
+/* BUTTONS */
+.cashier-group{display:flex;gap:8px;flex-wrap:wrap}
+.cashier-btn{padding:8px 20px;border-radius:20px;border:1px solid var(--border);background:var(--surface2);color:var(--text2);cursor:pointer;font-family:inherit;font-size:14px;font-weight:700;transition:all .2s;user-select:none}
+.cashier-btn.active{background:var(--accent2);border-color:var(--accent2);color:#fff;transform:scale(1.04);box-shadow:0 4px 16px rgba(124,58,237,.35)}
+.cat-group{display:flex;gap:8px}
+.cat-btn{flex:1;padding:11px;border:1px solid var(--border);background:var(--surface2);color:var(--text2);cursor:pointer;font-family:inherit;font-size:14px;font-weight:700;text-align:center;transition:all .2s;border-radius:var(--sq)}
+.cat-btn.income.active{background:var(--green-dim);border-color:var(--green);color:var(--green)}
+.cat-btn.expense.active{background:var(--red-dim);border-color:var(--red);color:var(--red)}
+.cat-btn.neutral.active{background:var(--accent-dim);border-color:var(--accent);color:var(--accent)}
+.items-grid{display:flex;flex-direction:column;gap:8px}
+.item-row{display:flex;align-items:center;gap:10px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--sq);padding:10px 14px;transition:all .2s;animation:fadeUp .2s ease}
+.item-row:focus-within{border-color:var(--accent)}
+.item-label{flex:1;font-size:14px}
+.item-input{width:120px;background:var(--surface3);border:1px solid var(--border);border-radius:12px;padding:8px 10px;color:var(--text);font-family:'Space Mono',monospace;font-size:14px;text-align:right;outline:none;transition:all .2s;-webkit-appearance:none}
+.item-input:focus{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent-dim)}
+.add-item-row{display:flex;gap:8px;margin-top:10px}
+.add-item-row .form-input{flex:1}
+.btn{padding:12px 22px;border:none;border-radius:var(--sq);font-family:inherit;font-size:15px;font-weight:700;cursor:pointer;transition:all .2s;display:inline-flex;align-items:center;justify-content:center;gap:6px;user-select:none}
+.btn:active{transform:scale(.96)}
+.btn-primary{background:var(--accent);color:#000}
+.btn-primary:hover{filter:brightness(1.08)}
+.btn-danger{background:var(--red);color:#fff}
+.btn-ghost{background:transparent;border:1px solid var(--border);color:var(--text2)}
+.btn-ghost:hover{border-color:var(--accent);color:var(--accent)}
+.btn-sm{padding:7px 14px;font-size:13px}
+.btn-full{width:100%}
+.mt8{margin-top:8px}.mt12{margin-top:12px}.mt16{margin-top:16px}
+
+/* BADGES */
+.badge{display:inline-block;padding:3px 10px;font-size:10px;font-weight:700;letter-spacing:.5px;border-radius:30px}
+.badge-income{background:var(--green-dim);color:var(--green)}
+.badge-expense{background:var(--red-dim);color:var(--red)}
+.badge-c1{background:rgba(124,158,255,.15);color:var(--c1)}
+.badge-c2{background:rgba(93,219,165,.15);color:var(--c2)}
+.badge-c3{background:rgba(255,140,0,.15);color:var(--c3)}
+.badge-admin{background:rgba(255,170,0,.15);color:var(--yellow)}
+.badge-pending{background:rgba(255,170,0,.15);color:var(--yellow)}
+.badge-approved{background:var(--green-dim);color:var(--green)}
+
+/* RECORDS */
+.record-item{background:var(--surface);border:1px solid var(--border);border-radius:var(--sq);padding:14px 16px;margin-bottom:10px;cursor:pointer;transition:all .2s;animation:fadeUp .22s ease}
+.record-item:hover{border-color:var(--accent2);box-shadow:var(--shadow-sm);transform:translateY(-1px)}
+.record-item:active{transform:scale(.99)}
+.record-header{display:flex;align-items:center;gap:7px;margin-bottom:6px;flex-wrap:wrap}
+.record-date{font-family:'Space Mono',monospace;font-size:11px;color:var(--text2)}
+.record-detail{font-size:12px;color:var(--text2);line-height:1.6}
+.record-note{font-size:12px;color:var(--yellow);margin-top:4px;font-style:italic}
+.record-by{font-size:10px;color:var(--text3);margin-top:3px}
+.record-amount{font-family:'Space Mono',monospace;font-size:14px;font-weight:700;margin-left:auto}
+.record-amount.income{color:var(--green)}
+.record-amount.expense{color:var(--red)}
+
+/* FILTER */
+.filter-row{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:10px}
+.filter-chip{padding:6px 14px;border:1px solid var(--border);background:var(--surface2);color:var(--text2);cursor:pointer;font-size:12px;font-weight:700;transition:all .2s;user-select:none;font-family:inherit;border-radius:20px}
+.filter-chip:active{transform:scale(.95)}
+.filter-chip.active{border-color:var(--accent);color:var(--accent);background:var(--accent-dim)}
+
+/* STATS */
+.stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+.stat-card{background:var(--surface2);border:1px solid var(--border);border-radius:var(--sq);padding:14px;text-align:center;transition:all .2s}
+.stat-card:hover{border-color:var(--accent)}
+.stat-label{font-size:10px;color:var(--text2);margin-bottom:4px;font-weight:700;letter-spacing:.5px}
+.stat-value{font-family:'Space Mono',monospace;font-size:16px;font-weight:700}
+.stat-value.income{color:var(--green)}
+.stat-value.expense{color:var(--red)}
+.stat-value.neutral{color:var(--accent)}
+.quick-stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px}
+.qs-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--sq);padding:12px 8px;text-align:center;transition:all .2s}
+.qs-card:hover{border-color:var(--accent);transform:translateY(-2px);box-shadow:var(--shadow-sm)}
+.qs-label{font-size:9px;color:var(--text2);font-weight:700;letter-spacing:.5px;margin-bottom:4px}
+.qs-val{font-family:'Space Mono',monospace;font-size:13px;font-weight:700}
+.qs-sub{font-size:9px;color:var(--text2);margin-top:2px}
+
+/* CHARTS */
+.chart-wrap{position:relative;width:100%;margin:6px 0 4px}
+.chart-legend{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;justify-content:center}
+.legend-item{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text2)}
+.legend-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+
+/* REPORT */
+.report-output{background:var(--surface2);border:1px solid var(--border);border-radius:16px;padding:16px;font-family:'Space Mono',monospace;font-size:12px;color:var(--text);white-space:pre-wrap;line-height:1.9;min-height:160px}
+
+/* MODAL */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:400;align-items:flex-end;justify-content:center;backdrop-filter:blur(6px)}
+.modal-overlay.show{display:flex}
+.modal-box{background:var(--surface);border:1px solid var(--border);border-radius:28px 28px 0 0;padding:20px 18px 28px;width:100%;max-width:600px;max-height:92vh;overflow-y:auto;animation:slideUp .3s cubic-bezier(.4,0,.2,1);transition:background .3s}
+@keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.modal-handle{width:40px;height:4px;background:var(--border);border-radius:2px;margin:0 auto 16px}
+.modal-title{font-size:16px;font-weight:700;margin-bottom:16px;color:var(--accent)}
+.modal-actions{display:flex;gap:10px;margin-top:18px}
+
+/* TOAST */
+.toast{position:fixed;bottom:calc(70px + env(safe-area-inset-bottom));left:50%;transform:translateX(-50%) translateY(calc(100% + 24px));opacity:0;background:var(--surface3);border:1px solid var(--green);color:var(--green);padding:11px 20px;border-radius:20px;font-size:13px;font-weight:700;z-index:9999;transition:transform .3s cubic-bezier(.4,0,.2,1),opacity .3s;white-space:nowrap;box-shadow:var(--shadow);pointer-events:none;max-width:calc(100vw - 32px);text-align:center}
+.toast.show{transform:translateX(-50%) translateY(0);opacity:1}
+.toast.error{border-color:var(--red);color:var(--red)}
+.toast.info{border-color:var(--accent);color:var(--accent)}
+.toast.warn{border-color:var(--yellow);color:var(--yellow)}
+
+/* MISC */
+.divider{border:none;border-top:1px solid var(--border);margin:14px 0}
+.empty{text-align:center;color:var(--text2);padding:40px 20px;font-size:14px;line-height:2.2}
+.flex{display:flex}.gap8{gap:8px}.align-center{align-items:center}.ml-auto{margin-left:auto}
+.text-mono{font-family:'Space Mono',monospace}
+.check-item{display:flex;align-items:center;gap:10px;padding:7px 0;cursor:pointer}
+.check-item input[type=checkbox]{width:16px;height:16px;accent-color:var(--accent);cursor:pointer}
+.check-item label{font-size:14px;cursor:pointer}
+
+/* INBOX / REQUESTS */
+.inbox-item{background:var(--surface);border:1px solid var(--border);border-radius:var(--sq);padding:14px 16px;margin-bottom:10px;animation:fadeUp .22s ease}
+.inbox-header{display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap}
+.inbox-msg{font-size:13px;color:var(--text2);margin-bottom:8px;line-height:1.6}
+.inbox-actions{display:flex;gap:8px}
+
+/* SPINNER */
+.spinner{display:inline-block;width:20px;height:20px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-wrap{display:flex;align-items:center;justify-content:center;padding:40px;gap:12px;color:var(--text2);font-size:14px}
+
+/* CONFLICT MODAL */
+.conflict-option{background:var(--surface2);border:1px solid var(--border);border-radius:16px;padding:14px;margin-bottom:10px;cursor:pointer;transition:all .2s}
+.conflict-option:hover{border-color:var(--accent)}
+.conflict-option h4{font-size:14px;margin-bottom:4px}
+.conflict-option p{font-size:12px;color:var(--text2)}
+
+/* GOOGLE BTN */
+.btn-google{
+  background:#fff;color:#3c4043;border:1px solid #dadce0;
+  font-weight:600;gap:10px;width:100%;justify-content:center;
+  margin-top:10px;transition:box-shadow .2s;
+}
+.btn-google:hover{box-shadow:0 2px 8px rgba(0,0,0,.15);}
+.btn-google img{width:20px;height:20px;}
+.auth-divider{display:flex;align-items:center;gap:10px;margin:14px 0;color:var(--text2);font-size:12px;}
+.auth-divider::before,.auth-divider::after{content:'';flex:1;border-top:1px solid var(--border);}
+
+/* SYNC STATUS */
+.sync-dot{width:8px;height:8px;border-radius:50%;display:inline-block;margin-right:4px}
+.sync-dot.online{background:var(--green)}
+.sync-dot.offline{background:var(--red)}
+</style>
+</head>
+<body>
+
+<!-- SPLASH SCREEN -->
+<div id="splash-screen" style="position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;background:var(--bg,#0b0b12);transition:opacity .4s ease">
+  <div style="display:flex;flex-direction:column;align-items:center;gap:16px">
+    <img src="logo-splash.png" alt="BM NOTE" style="width:140px;height:auto;animation:splashPulse 1.4s ease-in-out infinite"/>
+    <div style="display:flex;gap:6px">
+      <span style="width:8px;height:8px;border-radius:50%;background:var(--accent,#00e5ff);animation:splashDot 1.2s ease-in-out infinite;animation-delay:0s"></span>
+      <span style="width:8px;height:8px;border-radius:50%;background:var(--accent,#00e5ff);animation:splashDot 1.2s ease-in-out infinite;animation-delay:.2s"></span>
+      <span style="width:8px;height:8px;border-radius:50%;background:var(--accent,#00e5ff);animation:splashDot 1.2s ease-in-out infinite;animation-delay:.4s"></span>
+    </div>
+  </div>
+</div>
+<style>
+@keyframes splashPulse { 0%,100%{transform:scale(1);opacity:1} 50%{transform:scale(1.05);opacity:.85} }
+@keyframes splashDot { 0%,80%,100%{opacity:.25;transform:scale(.8)} 40%{opacity:1;transform:scale(1)} }
+</style>
+
+<!-- AUTH SCREEN -->
+<div id="auth-screen" class="auth-screen">
+  <div class="auth-logo">BM NOTE</div>
+  <div class="auth-sub">ระบบบันทึกรายรับ-รายเบิก</div>
+  <div class="auth-card">
+    <div class="auth-tabs">
+      <div class="auth-tab active" id="tab-login" onclick="switchAuthTab('login')">เข้าสู่ระบบ</div>
+      <div class="auth-tab" id="tab-register" onclick="switchAuthTab('register')">สมัครสมาชิก</div>
+    </div>
+    <div class="auth-error" id="auth-error"></div>
+    <!-- LOGIN -->
+    <div id="form-login">
+      <div class="form-row">
+        <div class="form-label">อีเมล</div>
+        <input class="form-input" id="login-email" type="email" placeholder="email@example.com" inputmode="email"/>
+      </div>
+      <div class="form-row">
+        <div class="form-label">รหัสผ่าน</div>
+        <input class="form-input" id="login-pass" type="password" placeholder="รหัสผ่าน"/>
+      </div>
+      <button class="btn btn-primary btn-full mt8" onclick="doLogin()" id="btn-login"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg> เข้าสู่ระบบ</button>
+      <div class="auth-divider">หรือ</div>
+      <button class="btn btn-google" onclick="doGoogleLogin()" id="btn-google-login">
+        <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google"/>
+        เข้าสู่ระบบด้วย Google
+      </button>
+    </div>
+    <!-- REGISTER -->
+    <div id="form-register" style="display:none">
+      <div class="form-row">
+        <div class="form-label">ชื่อ-นามสกุล</div>
+        <input class="form-input" id="reg-name" type="text" placeholder="ชื่อของคุณ"/>
+      </div>
+      <div class="form-row">
+        <div class="form-label">อีเมล</div>
+        <input class="form-input" id="reg-email" type="email" placeholder="email@example.com" inputmode="email"/>
+      </div>
+      <div class="form-row">
+        <div class="form-label">รหัสผ่าน</div>
+        <input class="form-input" id="reg-pass" type="password" placeholder="อย่างน้อย 6 ตัวอักษร"/>
+      </div>
+      <button class="btn btn-primary btn-full mt8" onclick="doRegister()" id="btn-register"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> สมัครสมาชิก</button>
+      <div class="auth-divider">หรือ</div>
+      <button class="btn btn-google" onclick="doGoogleLogin()">
+        <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google"/>
+        สมัคร/เข้าสู่ระบบด้วย Google
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- MAIN APP (hidden until auth) -->
+<div id="app" style="display:none">
+
+<!-- TOP BAR -->
+<div class="top-bar">
+  <div class="logo">BM NOTE<span id="user-role-sub">ระบบบันทึกรายรับ-รายเบิก</span></div>
+  <span class="role-badge" id="role-badge-top"></span>
+  <button class="icon-btn" id="theme-btn" onclick="toggleTheme()"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg></button>
+  <button class="icon-btn" onclick="openSearch()"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></button>
+</div>
+
+<!-- TEST MODE BANNER -->
+<div id="test-banner" style="display:none;background:linear-gradient(90deg,rgba(140,60,255,.18),rgba(180,75,255,.12));border-bottom:1px solid rgba(180,75,255,.4);padding:7px 16px;text-align:center;font-size:12px;font-weight:600;color:var(--purple,#b44bff);letter-spacing:.3px">
+  🧪 โหมดทดลอง — ข้อมูลไม่ถูกบันทึกจริง และจะหายเมื่อรีเฟรช
+</div>
+
+<!-- SEARCH OVERLAY -->
+<div class="search-overlay" id="search-overlay">
+  <div class="search-box">
+    <button class="icon-btn" onclick="closeSearch()"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+    <input class="search-input-el" id="search-input" placeholder="ค้นหา หรือพิมพ์ / สำหรับคำสั่ง..." oninput="doSearch(this.value)" onkeydown="searchKeydown(event)" autocomplete="off"/>
+  </div>
+  <div class="search-results-list" id="search-list"></div>
+</div>
+
+<div class="main">
+
+<!-- DASHBOARD -->
+<div class="section active" id="tab-dashboard">
+  <div class="card">
+    <div class="card-title"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg> ช่วงวันที่</div>
+    <div class="date-row">
+      <div class="form-row"><div class="form-label">จาก วัน</div><select class="form-select" id="d-fd"></select></div>
+      <div class="form-row"><div class="form-label">เดือน</div><select class="form-select" id="d-fm"></select></div>
+      <div class="form-row"><div class="form-label">ปี พ.ศ.</div><select class="form-select" id="d-fy"></select></div>
+    </div>
+    <div class="date-row" style="margin-top:8px">
+      <div class="form-row"><div class="form-label">ถึง วัน</div><select class="form-select" id="d-td"></select></div>
+      <div class="form-row"><div class="form-label">เดือน</div><select class="form-select" id="d-tm"></select></div>
+      <div class="form-row"><div class="form-label">ปี พ.ศ.</div><select class="form-select" id="d-ty"></select></div>
+    </div>
+    <button class="btn btn-primary btn-full mt8" onclick="renderDashboard()"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg> อัปเดต</button>
+  </div>
+  <div id="qs-wrap"></div>
+  <div class="card"><div class="card-title"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg> รายรับรายวัน</div><div class="chart-wrap"><canvas id="ch-bar" height="200"></canvas></div><div class="chart-legend" id="lg-bar"></div></div>
+  <div class="card"><div class="card-title"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/></svg> สัดส่วนแคชเชียร์</div><div style="max-width:260px;margin:0 auto"><div class="chart-wrap"><canvas id="ch-dc" height="260"></canvas></div></div><div class="chart-legend" id="lg-dc"></div></div>
+  <div class="card"><div class="card-title"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/></svg> ประเภทรายรับ</div><div style="max-width:260px;margin:0 auto"><div class="chart-wrap"><canvas id="ch-dt" height="260"></canvas></div></div><div class="chart-legend" id="lg-dt"></div></div>
+  <div class="card"><div class="card-title"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/></svg> สัดส่วนรายเบิก</div><div style="max-width:260px;margin:0 auto"><div class="chart-wrap"><canvas id="ch-de" height="260"></canvas></div></div><div class="chart-legend" id="lg-de"></div></div>
+  <div class="card">
+    <div class="card-title"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="18" y="3" width="4" height="18"/><rect x="10" y="8" width="4" height="13"/><rect x="2" y="13" width="4" height="8"/></svg> รายรับ vs รายเบิก รายวัน</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px">
+      <button class="filter-chip active" id="toggle-income-line" onclick="toggleLineChart('income')"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="14" height="14" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M12 21.593c-.525-.438-9.993-8.008-9.993-13.368 0-3.397 2.75-6.225 6.243-6.225 2.021 0 3.799.95 4.75 2.393C14 2.95 15.778 2 17.75 2c3.493 0 6.25 2.828 6.25 6.225 0 5.36-9.467 12.93-10 13.368z"/></svg> รายรับ</button>
+      <button class="filter-chip active" id="toggle-expense-line" onclick="toggleLineChart('expense')"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="14" height="14" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M12 21.593c-.525-.438-9.993-8.008-9.993-13.368 0-3.397 2.75-6.225 6.243-6.225 2.021 0 3.799.95 4.75 2.393C14 2.95 15.778 2 17.75 2c3.493 0 6.25 2.828 6.25 6.225 0 5.36-9.467 12.93-10 13.368z"/></svg> รายเบิก</button>
+    </div>
+    <div class="chart-wrap"><canvas id="ch-line" height="220"></canvas></div>
+    <div class="chart-legend" id="lg-line"></div>
+  </div>
+</div>
+
+<!-- ADD (ADMIN + MEMBER) -->
+<div class="section" id="tab-add">
+  <div class="card">
+    <div class="card-title"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg> วันที่บันทึก</div>
+    <div class="date-row">
+      <div class="form-row"><div class="form-label">วัน</div><select class="form-select" id="add-day"></select></div>
+      <div class="form-row"><div class="form-label">เดือน</div><select class="form-select" id="add-month"></select></div>
+      <div class="form-row"><div class="form-label">ปี พ.ศ.</div><select class="form-select" id="add-year"></select></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="4"/></svg> แคชเชียร์</div>
+    <div class="cashier-group" id="add-cashier-group">
+      <button class="cashier-btn active" data-c="C1" onclick="toggleCashier(this)">C1</button>
+      <button class="cashier-btn" data-c="C2" onclick="toggleCashier(this)">C2</button>
+      <button class="cashier-btn" data-c="C3" onclick="toggleCashier(this)">C3</button>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg> ประเภท</div>
+    <div class="cat-group">
+      <button class="cat-btn income active" id="cat-income" onclick="setCat('income')"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="14" height="14" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M12 21.593c-.525-.438-9.993-8.008-9.993-13.368 0-3.397 2.75-6.225 6.243-6.225 2.021 0 3.799.95 4.75 2.393C14 2.95 15.778 2 17.75 2c3.493 0 6.25 2.828 6.25 6.225 0 5.36-9.467 12.93-10 13.368z"/></svg> รายรับ</button>
+      <button class="cat-btn expense" id="cat-expense" onclick="setCat('expense')"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="14" height="14" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M12 21.593c-.525-.438-9.993-8.008-9.993-13.368 0-3.397 2.75-6.225 6.243-6.225 2.021 0 3.799.95 4.75 2.393C14 2.95 15.778 2 17.75 2c3.493 0 6.25 2.828 6.25 6.225 0 5.36-9.467 12.93-10 13.368z"/></svg> รายเบิก</button>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg> รายการ</div>
+    <div class="items-grid" id="items-grid"></div>
+    <div class="add-item-row mt8">
+      <input class="form-input" id="new-item-name" placeholder="เพิ่มหัวข้อใหม่..."/>
+      <button class="btn btn-ghost btn-sm" onclick="addCustomItem()">+ เพิ่ม</button>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg> หมายเหตุ <span style="font-size:10px;color:var(--text2);font-weight:400;text-transform:none">(ไม่บังคับ)</span></div>
+    <textarea class="form-textarea" id="add-note" placeholder="เหตุสุดวิสัย เหตุการณ์พิเศษ หรือรายละเอียดเพิ่มเติม..."></textarea>
+    <div style="margin-top:8px">
+      <label style="display:inline-flex;align-items:center;gap:6px;cursor:pointer;background:var(--surface2);padding:7px 14px;border-radius:20px;font-size:12px">
+        <svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+        แนบรูป
+        <input type="file" id="add-note-image" accept="image/*" style="display:none" onchange="previewNoteImage('add-note-preview',this)"/>
+      </label>
+      <div id="add-note-preview" style="margin-top:8px"></div>
+    </div>
+  </div>
+  <button class="btn btn-primary btn-full" onclick="confirmSave()"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> บันทึกรายการ</button>
+</div>
+
+<!-- RECORDS -->
+<div class="section" id="tab-records">
+  <div class="card">
+    <div class="card-title"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg> กรอง</div>
+    <div class="filter-row" id="fc">
+      <div class="filter-chip active" data-v="all" onclick="setFilter('c','all',this)">ทั้งหมด</div>
+      <div class="filter-chip" data-v="C1" onclick="setFilter('c','C1',this)">C1</div>
+      <div class="filter-chip" data-v="C2" onclick="setFilter('c','C2',this)">C2</div>
+      <div class="filter-chip" data-v="C3" onclick="setFilter('c','C3',this)">C3</div>
+    </div>
+    <div class="filter-row" id="ft">
+      <div class="filter-chip active" data-v="all" onclick="setFilter('t','all',this)">ทั้งหมด</div>
+      <div class="filter-chip" data-v="income" onclick="setFilter('t','income',this)"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="14" height="14" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M12 21.593c-.525-.438-9.993-8.008-9.993-13.368 0-3.397 2.75-6.225 6.243-6.225 2.021 0 3.799.95 4.75 2.393C14 2.95 15.778 2 17.75 2c3.493 0 6.25 2.828 6.25 6.225 0 5.36-9.467 12.93-10 13.368z"/></svg> รายรับ</div>
+      <div class="filter-chip" data-v="expense" onclick="setFilter('t','expense',this)"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="14" height="14" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M12 21.593c-.525-.438-9.993-8.008-9.993-13.368 0-3.397 2.75-6.225 6.243-6.225 2.021 0 3.799.95 4.75 2.393C14 2.95 15.778 2 17.75 2c3.493 0 6.25 2.828 6.25 6.225 0 5.36-9.467 12.93-10 13.368z"/></svg> รายเบิก</div>
+    </div>
+  </div>
+  <div id="records-list"><div class="loading-wrap"><div class="spinner"></div> กำลังโหลด...</div></div>
+</div>
+
+<!-- REPORT (ADMIN ONLY full, MEMBER read-only) -->
+<div class="section" id="tab-report">
+  <div class="card">
+    <div class="card-title"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg> ช่วงวันที่</div>
+    <div class="date-row">
+      <div class="form-row"><div class="form-label">จาก วัน</div><select class="form-select" id="rfd"></select></div>
+      <div class="form-row"><div class="form-label">เดือน</div><select class="form-select" id="rfm"></select></div>
+      <div class="form-row"><div class="form-label">ปี</div><select class="form-select" id="rfy"></select></div>
+    </div>
+    <div class="date-row" style="margin-top:8px">
+      <div class="form-row"><div class="form-label">ถึง วัน</div><select class="form-select" id="rtd"></select></div>
+      <div class="form-row"><div class="form-label">เดือน</div><select class="form-select" id="rtm"></select></div>
+      <div class="form-row"><div class="form-label">ปี</div><select class="form-select" id="rty"></select></div>
+    </div>
+  </div>
+  <div class="card" id="rpt-cashier-card">
+    <div class="card-title"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="4"/></svg> แคชเชียร์</div>
+    <!-- รายรับ: เลือกแคชเชียร์เดียว -->
+    <div id="cashier-income-section">
+      <div class="cashier-group" id="rpt-cashier-group">
+        <button class="cashier-btn active" data-c="all" onclick="toggleRptCashier(this)">ทั้งหมด</button>
+        <button class="cashier-btn" data-c="C1" onclick="toggleRptCashier(this)">C1</button>
+        <button class="cashier-btn" data-c="C3" onclick="toggleRptCashier(this)">C3</button>
+        <button class="cashier-btn" data-c="C2" onclick="toggleRptCashier(this)">C2</button>
+      </div>
+    </div>
+    <!-- รายเบิก: เลือกช่วง (เริ่ม→จบ) พร้อมแคชเชียร์ -->
+    <div id="cashier-expense-section" style="display:none">
+      <div class="form-label" style="margin-bottom:8px">ลำดับ: C1 → C3 → C2 (เริ่มมีผลวันแรก, จบมีผลวันสุดท้าย)</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div>
+          <div class="form-label">เริ่มที่</div>
+          <select class="form-select" id="exp-cashier-from">
+            <option value="C1">C1</option>
+            <option value="C3">C3</option>
+            <option value="C2">C2</option>
+          </select>
+        </div>
+        <div>
+          <div class="form-label">จบที่</div>
+          <select class="form-select" id="exp-cashier-to">
+            <option value="C1">C1</option>
+            <option value="C3">C3</option>
+            <option value="C2" selected>C2</option>
+          </select>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg> ประเภท</div>
+    <div class="cat-group" style="margin-bottom:12px">
+      <button class="cat-btn income active" id="rpt-income" onclick="setRptCat('income')"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="14" height="14" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M12 21.593c-.525-.438-9.993-8.008-9.993-13.368 0-3.397 2.75-6.225 6.243-6.225 2.021 0 3.799.95 4.75 2.393C14 2.95 15.778 2 17.75 2c3.493 0 6.25 2.828 6.25 6.225 0 5.36-9.467 12.93-10 13.368z"/></svg> รายรับ</button>
+      <button class="cat-btn expense" id="rpt-expense" onclick="setRptCat('expense')"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="14" height="14" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M12 21.593c-.525-.438-9.993-8.008-9.993-13.368 0-3.397 2.75-6.225 6.243-6.225 2.021 0 3.799.95 4.75 2.393C14 2.95 15.778 2 17.75 2c3.493 0 6.25 2.828 6.25 6.225 0 5.36-9.467 12.93-10 13.368z"/></svg> รายเบิก</button>
+    </div>
+    <div class="cat-group">
+      <button class="cat-btn neutral active" id="rpt-all" style="font-size:13px" onclick="setRptDetail('all')">ทุกอย่าง</button>
+      <button class="cat-btn neutral" id="rpt-custom" style="font-size:13px" onclick="setRptDetail('custom')">กำหนดเอง</button>
+    </div>
+    <div id="rpt-custom-items" style="display:none;margin-top:12px"></div>
+  </div>
+  <button class="btn btn-primary btn-full" onclick="generateReport()"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="18" y="3" width="4" height="18"/><rect x="10" y="8" width="4" height="13"/><rect x="2" y="13" width="4" height="8"/></svg> สร้างรายงาน</button>
+  <div class="card mt12" id="rpt-result" style="display:none">
+    <div class="card-title">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></svg>
+      ผลลัพธ์
+    </div>
+    <div class="stats-grid" id="rpt-stats"></div>
+
+    <!-- View Mode Tabs -->
+    <div class="cat-group" style="margin-bottom:12px">
+      <button class="cat-btn neutral active" id="rpt-view-all" onclick="switchRptView('all')">รายการรวม</button>
+      <button class="cat-btn neutral" id="rpt-view-daily" onclick="switchRptView('daily')">รายการแยก</button>
+    </div>
+
+    <!-- รายการรวม -->
+    <div id="rpt-view-all-section">
+      <div class="report-output" id="rpt-output"></div>
+      <button class="btn btn-ghost btn-full mt8" onclick="copyFullReport()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></svg>
+        คัดลอกรายงานรวม
+      </button>
+    </div>
+
+    <!-- รายการแยก -->
+    <div id="rpt-view-daily-section" style="display:none">
+      <div id="rpt-daily-cards"></div>
+    </div>
+  </div>
+</div>
+
+<!-- INBOX (ADMIN: approve requests | MEMBER: send messages) -->
+<div class="section" id="tab-inbox">
+  <!-- Admin view -->
+  <div id="inbox-admin" style="display:none">
+    <div class="card">
+      <div class="card-title"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> คำขอลบรายการ <span id="pending-count" class="badge badge-pending" style="margin-left:4px"></span></div>
+      <div id="delete-requests-list"><div class="empty">ไม่มีคำขอรอการอนุมัติ <svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div></div>
+    </div>
+    <div class="card mt12">
+      <div class="card-title"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> ข้อความจากสมาชิก</div>
+      <div id="messages-list"><div class="empty">ยังไม่มีข้อความ</div></div>
+    </div>
+  </div>
+  <!-- Member view -->
+  <div id="inbox-member" style="display:none">
+    <div class="card">
+      <div class="card-title"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg> ส่งข้อความถึง Admin</div>
+      <div class="form-row">
+        <div class="form-label">ประเภท</div>
+        <select class="form-select" id="msg-type">
+          <option value="suggestion"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="9" y1="18" x2="15" y2="18"/><line x1="10" y1="22" x2="14" y2="22"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14"/></svg> ข้อเสนอแนะ</option>
+          <option value="question"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> คำถาม</option>
+          <option value="report"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> รายงานปัญหา</option>
+          <option value="other"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg> อื่นๆ</option>
+        </select>
+      </div>
+      <div class="form-row">
+        <div class="form-label">ข้อความ</div>
+        <textarea class="form-textarea" id="msg-content" placeholder="พิมพ์ข้อความของคุณ..." style="min-height:100px"></textarea>
+      </div>
+      <button class="btn btn-primary btn-full mt8" onclick="sendMessage()"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg> ส่งข้อความ</button>
+    </div>
+    <div class="card mt12">
+      <div class="card-title"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></svg> ประวัติการส่ง</div>
+      <div id="my-messages-list"><div class="loading-wrap"><div class="spinner"></div></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- SETTINGS -->
+<div class="section" id="tab-settings">
+  <div class="card">
+    <div class="card-title"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> บัญชีของฉัน</div>
+    <div id="user-info-card"></div>
+    <button class="btn btn-ghost btn-sm mt8" onclick="doLogout()"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg> ออกจากระบบ</button>
+  </div>
+  <div class="card">
+    <div class="card-title"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20z"/><path d="M12 2v20"/></svg> ธีม</div>
+    <div class="cat-group">
+      <button class="cat-btn neutral" id="th-auto" onclick="setThemeMode('auto')"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg> อัตโนมัติ</button>
+      <button class="cat-btn neutral" id="th-light" onclick="setThemeMode('light')"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg> กลางวัน</button>
+      <button class="cat-btn neutral active" id="th-dark" onclick="setThemeMode('dark')"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg> กลางคืน</button>
+    </div>
+  </div>
+  <!-- Admin only settings -->
+  <div id="admin-settings" style="display:none">
+    <div class="card">
+      <div class="card-title"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg> บัญชีรับโอน</div>
+      <div class="form-row"><div class="form-label">ชื่อผู้รับ</div><input class="form-input" id="set-name"/></div>
+      <div class="form-row"><div class="form-label">ธนาคาร</div><input class="form-input" id="set-bank"/></div>
+      <div class="form-row"><div class="form-label">เลขบัญชี</div><input class="form-input" id="set-account" inputmode="numeric"/></div>
+      <button class="btn btn-primary mt8" onclick="saveSettings()"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> บันทึก</button>
+    </div>
+    <div class="card">
+      <div class="card-title"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="18" y="3" width="4" height="18"/><rect x="10" y="8" width="4" height="13"/><rect x="2" y="13" width="4" height="8"/></svg> กราฟที่แสดงในหน้าแรก</div>
+      <div style="margin-bottom:10px">
+        <div class="form-label">หมวดรายรับที่แสดงในกราฟ</div>
+        <div id="chart-income-toggles"></div>
+      </div>
+      <div>
+        <div class="form-label">หมวดรายเบิกที่แสดงในกราฟ</div>
+        <div id="chart-expense-toggles"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg> หัวข้อรายรับ</div>
+      <div id="income-items-list"></div>
+      <div class="add-item-row mt8">
+        <input class="form-input" id="new-income-item" placeholder="เพิ่มหัวข้อรายรับ..."/>
+        <button class="btn btn-ghost btn-sm" onclick="addSettingItem('income')">+ เพิ่ม</button>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg> หัวข้อรายเบิก</div>
+      <div id="expense-items-list"></div>
+      <div class="add-item-row mt8">
+        <input class="form-input" id="new-expense-item" placeholder="เพิ่มหัวข้อรายเบิก..."/>
+        <button class="btn btn-ghost btn-sm" onclick="addSettingItem('expense')">+ เพิ่ม</button>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        จัดการสมาชิก
+      </div>
+      <button class="btn btn-ghost btn-full" onclick="openUserManagerPage()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+        ดูและจัดการ Account ทั้งหมด
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-left:auto"><polyline points="9 18 15 12 9 6"/></svg>
+      </button>
+    </div>
+
+    <div class="card">
+      <div class="card-title" style="color:var(--accent)"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16.5 9.4l-9-5.19"/><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg> Export / Import</div>
+      <div class="flex gap8" style="flex-wrap:wrap">
+        <button class="btn btn-ghost btn-sm" onclick="exportData()"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg> Export JSON</button>
+        <button class="btn btn-ghost btn-sm" onclick="document.getElementById('import-file').click()"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Import JSON</button>
+      </div>
+      <input type="file" id="import-file" accept=".json" style="display:none" onchange="handleImport(this)"/>
+    </div>
+
+    <div class="card" style="border:1px solid var(--yellow)">
+      <div class="card-title" style="color:var(--yellow)"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><path d="M12 12L3.27 6.96"/><path d="M12 12l8.73-5.04"/><path d="M12 12v9.5"/></svg> Full Backup (ก่อนอัปเดตระบบใหญ่)</div>
+      <div style="font-size:12px;color:var(--text2);margin-bottom:10px">ดึงข้อมูลทั้งหมด: รายการ, ผู้ใช้+สิทธิ์, ตั้งค่า, ข้อความ, คำขอลบ — ไฟล์เดียวครบ ใช้กู้คืนได้ทุกอย่าง</div>
+      <button class="btn btn-full" style="background:linear-gradient(135deg,#b8860b,#daa520);color:#fff;font-weight:700" onclick="exportFullBackup()">
+        <svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        ดาวน์โหลด Full Backup
+      </button>
+    </div>
+
+    <div class="card" id="migration-tool-card" style="display:none;border:2px solid #ff3d71">
+      <div class="card-title" style="color:#ff3d71"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v2m0 4h.01M21.73 18 13.73 4a2 2 0 0 0-3.46 0L2.27 18a2 2 0 0 0 1.73 3h16a2 2 0 0 0 1.73-3z"/></svg> Multi-Business Migration (Master Dev เท่านั้น)</div>
+      <div style="font-size:12px;color:var(--text2);margin-bottom:12px">ย้ายข้อมูลปัจจุบันทั้งหมดเข้า business แรก "BP Snooker" — ต้อง Full Backup ก่อนเสมอ</div>
+      <button class="btn btn-full btn-ghost" style="border:1px solid #ff3d71;color:#ff3d71;margin-bottom:8px" onclick="runMigrationDryRun()">
+        <svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        1. ดูตัวอย่าง (Dry Run) — ยังไม่เขียนข้อมูลจริง
+      </button>
+      <div id="migration-preview" style="display:none;margin-top:10px;padding:12px;background:var(--surface2);border-radius:12px;font-size:12px;max-height:300px;overflow-y:auto"></div>
+      <button id="migration-confirm-btn" class="btn btn-full mt8" style="display:none;background:#ff3d71;color:#fff;font-weight:700" onclick="confirmRunMigration()">
+        2. ยืนยันรันจริง (ย้ายข้อมูล)
+      </button>
+    </div>
+  </div>
+</div>
+
+</div><!-- /main -->
+
+<!-- BOTTOM NAV -->
+<nav class="bottom-nav" id="bottom-nav">
+  <div class="nav-item active" id="nav-dashboard" onclick="switchTab('dashboard')">
+    <div class="nav-icon"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="18" y="3" width="4" height="18"/><rect x="10" y="8" width="4" height="13"/><rect x="2" y="13" width="4" height="8"/></svg></div><div>ภาพรวม</div>
+  </div>
+  <div class="nav-item" id="nav-add" onclick="switchTab('add')">
+    <div class="nav-icon"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></div><div>บันทึก</div>
+  </div>
+  <div class="nav-item" id="nav-records" onclick="switchTab('records')">
+    <div class="nav-icon"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></svg></div><div>รายการ</div>
+  </div>
+  <div class="nav-item" id="nav-report" onclick="switchTab('report')">
+    <div class="nav-icon"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg></div><div>รายงาน</div>
+  </div>
+  <div class="nav-item" id="nav-inbox" onclick="switchTab('inbox')">
+    <div class="nav-icon"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></div><div id="inbox-nav-label">กล่องข้อความ</div>
+  </div>
+  <div class="nav-item" id="nav-settings" onclick="switchTab('settings')">
+    <div class="nav-icon"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></div><div>ตั้งค่า</div>
+  </div>
+</nav>
+
+</div><!-- /app -->
+
+<!-- MODALS -->
+<div class="modal-overlay" id="modal-confirm">
+  <div class="modal-box">
+    <div class="modal-handle"></div>
+    <div class="modal-title"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> ยืนยันการบันทึก</div>
+    <div id="mc-content"></div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" style="flex:1" onclick="closeModal('modal-confirm')">ยกเลิก</button>
+      <button class="btn btn-primary" style="flex:1" onclick="doSave()"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> ยืนยัน</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-edit">
+  <div class="modal-box">
+    <div class="modal-handle"></div>
+    <div class="modal-title"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg> แก้ไขรายการ</div>
+    <div id="me-content"></div>
+    <div class="modal-actions" id="me-actions"></div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-users">
+  <div class="modal-box">
+    <div class="modal-handle"></div>
+    <div class="modal-title">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      จัดการสมาชิก
+    </div>
+    <div id="user-list-content"><div class="loading-wrap"><div class="spinner"></div> กำลังโหลด...</div></div>
+    <button class="btn btn-ghost btn-full mt8" onclick="closeModal('modal-users')">ปิด</button>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-conflict">
+  <div class="modal-box">
+    <div class="modal-handle"></div>
+    <div class="modal-title"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> พบข้อมูลซ้ำ</div>
+    <div id="conflict-content"></div>
+    <div id="conflict-options"></div>
+  </div>
+</div>
+
+<!-- USER MANAGER FULL PAGE -->
+<div id="page-user-manager" style="display:none;position:fixed;inset:0;z-index:200;background:var(--bg);overflow-y:auto">
+  <div style="max-width:480px;margin:0 auto;padding:0 0 80px 0">
+    <div style="display:flex;align-items:center;gap:12px;padding:16px;border-bottom:1px solid var(--border);position:sticky;top:0;background:var(--bg);z-index:10">
+      <button onclick="closeUserManagerPage()" style="background:var(--surface2);border:none;border-radius:50%;width:36px;height:36px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text1)">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+      </button>
+      <div>
+        <div style="font-weight:700;font-size:16px">จัดการสมาชิก</div>
+        <div style="font-size:11px;color:var(--text2)" id="um-count"></div>
+      </div>
+      <button onclick="loadUserManagerPage()" style="margin-left:auto;background:var(--surface2);border:none;border-radius:50%;width:36px;height:36px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text1)">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+      </button>
+    </div>
+    <div id="um-list" style="padding:16px"></div>
+  </div>
+</div>
+
+<div id="debug-panel" style="display:none;position:fixed;bottom:80px;left:12px;right:12px;z-index:999;background:#111;border:1px solid #0f0;border-radius:12px;padding:12px;font-family:monospace;font-size:11px;color:#0f0;max-height:200px;overflow-y:auto">
+  <div style="display:flex;justify-content:space-between;margin-bottom:6px">
+    <b>DEBUG LOG</b>
+    <button onclick="document.getElementById('debug-panel').style.display='none'" style="background:none;border:none;color:#f00;cursor:pointer;font-size:14px">✕</button>
+  </div>
+  <div id="debug-log"></div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<!-- Firebase -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, updateProfile, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { getFirestore, collection, doc, addDoc, getDoc, getDocs, setDoc, updateDoc, deleteDoc, onSnapshot, query, orderBy, where, serverTimestamp, writeBatch, arrayUnion } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyB7BoM5MgfzJGQhQxiKims1wxl0Ok-jkO4",
+  authDomain: "bpsnooker-note.firebaseapp.com",
+  projectId: "bpsnooker-note",
+  storageBucket: "bpsnooker-note.firebasestorage.app",
+  messagingSenderId: "745165093044",
+  appId: "1:745165093044:web:155f0ad45b2e0085aeffe1",
+  measurementId: "G-22Z7G9PDYJ"
+};
+
+const fbApp = initializeApp(firebaseConfig);
+const auth = getAuth(fbApp);
+const db = getFirestore(fbApp);
+
+// ADMIN UID — set after first login
+const ADMIN_EMAILS = [
+  "scp901th@gmail.com",
+  "botindo001@gmail.com",
+  "b1786350@gmail.com",
+  "chakkritinkhai@gmail.com",
+  "developer.bysegod07@gmail.com"
+];
+
+// PLATFORM-LEVEL: Master Developer (highest authority, can grant Developer role to others)
+const MASTER_DEV_EMAILS = [
+  "chakkritinkhai@gmail.com",
+  "scp901th@gmail.com",
+  "segod.studio101@gmail.com",
+  "developer.bysegod07@gmail.com"
+];
+
+// ============================================================
+// STATE
+// ============================================================
+let currentUser = null;
+let currentRole = 'member'; // 'admin' | 'member'
+let appSettings = { name:'นพดล อินไข่', bank:'ไทยพาณิชย์', account:'5034079005', themeMode:'dark' };
+let incomeItems = ['เงินสด','ค่าจอดรถ','กำไรค่าข้าว','อื่นๆ'];
+let expenseItems = ['แลกสด','ต้นทุนค่าข้าว','ค่าน้ำแข็ง','ซื้อถุงดำ','เบียร์ลัง','อื่นๆ'];
+let allRecords = [];
+let currentCat = 'income';
+let rptCat = 'income', rptDetail = 'all', rptCashier = 'all';
+let filterC = 'all', filterT = 'all';
+let pendingSave = null, editingId = null;
+let charts = {};
+let importBuffer = null;
+let unsubRecords = null;
+
+const MONTHS_FULL = ['','มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
+const MONTHS_SHORT = ['','ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+const CC = {C1:'#7c9eff',C2:'#5ddba5',C3:'#ff8c00'};
+const PAL = ['#00e5ff','#7c3aed','#00d68f','#ff3d71','#ffaa00','#ff8c00','#b44bff','#5ddba5'];
+
+function fmtN(n){return Number(n).toLocaleString('th-TH')}
+function dKey(d){return d.y*10000+d.m*100+d.d}
+function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,6)}
+
+// ============================================================
+// AUTH
+// ============================================================
+window.switchAuthTab = function(tab) {
+  document.getElementById('form-login').style.display = tab==='login'?'block':'none';
+  document.getElementById('form-register').style.display = tab==='register'?'block':'none';
+  document.getElementById('tab-login').classList.toggle('active', tab==='login');
+  document.getElementById('tab-register').classList.toggle('active', tab==='register');
+  document.getElementById('auth-error').classList.remove('show');
+}
+
+function showAuthError(msg) {
+  const el = document.getElementById('auth-error');
+  el.textContent = msg;
+  el.classList.add('show');
+  el.scrollIntoView({behavior:'smooth', block:'center'});
+}
+
+window.doLogin = async function() {
+  const email = document.getElementById('login-email').value.trim();
+  const pass = document.getElementById('login-pass').value;
+  if(!email||!pass){showAuthError('กรุณากรอกข้อมูลให้ครบ');return}
+  const btn = document.getElementById('btn-login');
+  btn.disabled = true; btn.innerHTML = '<span style="display:inline-block;width:16px;height:16px;border:2px solid #000;border-top-color:transparent;border-radius:50%;animation:spin .7s linear infinite"></span> กำลังเข้าสู่ระบบ...';
+  try {
+    await signInWithEmailAndPassword(auth, email, pass);
+  } catch(e) {
+    console.error('Login error:', e.code, e.message);
+    const msgs = {
+      'auth/user-not-found':'ไม่พบบัญชีนี้ กรุณาสมัครสมาชิกก่อน',
+      'auth/wrong-password':'รหัสผ่านไม่ถูกต้อง',
+      'auth/invalid-email':'อีเมลไม่ถูกต้อง',
+      'auth/invalid-credential':'อีเมลหรือรหัสผ่านไม่ถูกต้อง',
+      'auth/too-many-requests':'ลองผิดหลายครั้งเกินไป กรุณารอสักครู่',
+      'auth/network-request-failed':'ไม่มีการเชื่อมต่ออินเทอร์เน็ต'
+    };
+    showAuthError(msgs[e.code]||'เกิดข้อผิดพลาด ['+e.code+']: '+e.message);
+    btn.disabled=false; btn.innerHTML='<svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg> เข้าสู่ระบบ';
+  }
+}
+
+window.doRegister = async function() {
+  const name = document.getElementById('reg-name').value.trim();
+  const email = document.getElementById('reg-email').value.trim();
+  const pass = document.getElementById('reg-pass').value;
+  if(!name||!email||!pass){showAuthError('กรุณากรอกข้อมูลให้ครบ');return}
+  if(pass.length<6){showAuthError('รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร');return}
+  const btn = document.getElementById('btn-register');
+  btn.disabled=true; btn.innerHTML='<span style="display:inline-block;width:16px;height:16px;border:2px solid #000;border-top-color:transparent;border-radius:50%;animation:spin .7s linear infinite"></span> กำลังสมัคร...';
+  try {
+    const cred = await createUserWithEmailAndPassword(auth, email, pass);
+    await updateProfile(cred.user, {displayName: name});
+    try {
+      await setDoc(doc(db,'users',cred.user.uid), {
+        name, email, role:'member', createdAt: serverTimestamp()
+      });
+    } catch(dbErr) {
+      console.warn('Firestore write failed (non-critical):', dbErr);
+    }
+  } catch(e) {
+    console.error('Register error:', e.code, e.message);
+    const msgs = {
+      'auth/email-already-in-use':'อีเมลนี้ถูกใช้แล้ว กรุณาเข้าสู่ระบบแทน',
+      'auth/invalid-email':'อีเมลไม่ถูกต้อง',
+      'auth/weak-password':'รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร',
+      'auth/network-request-failed':'ไม่มีการเชื่อมต่ออินเทอร์เน็ต'
+    };
+    showAuthError(msgs[e.code]||'เกิดข้อผิดพลาด ['+e.code+']: '+e.message);
+    btn.disabled=false; btn.innerHTML='<svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> สมัครสมาชิก';
+  }
+}
+
+window.doLogout = async function() {
+  if(!confirm('ออกจากระบบ?')) return;
+  if(unsubRecords) unsubRecords();
+  await signOut(auth);
+}
+
+// ============================================================
+// GOOGLE LOGIN
+// ============================================================
+window.doGoogleLogin = async function() {
+  const provider = new GoogleAuthProvider();
+  provider.setCustomParameters({ prompt: 'select_account' });
+  try {
+    const result = await signInWithPopup(auth, provider);
+    const user = result.user;
+    // Check if user doc exists, if not create it
+    const userRef = doc(db, 'users', user.uid);
+    const userSnap = await getDoc(userRef);
+    if (!userSnap.exists()) {
+      await setDoc(userRef, {
+        name: user.displayName || 'Google User',
+        email: user.email,
+        role: 'member',
+        createdAt: serverTimestamp()
+      });
+    }
+  } catch(e) {
+    const msgs = {
+      'auth/popup-closed-by-user': 'ปิด popup ก่อนเข้าสู่ระบบ',
+      'auth/popup-blocked': 'Browser บล็อก popup กรุณาอนุญาต popup แล้วลองใหม่',
+      'auth/cancelled-popup-request': '',
+    };
+    const msg = msgs[e.code];
+    if(msg) showAuthError(msg);
+    else if(e.code !== 'auth/cancelled-popup-request') showAuthError('เกิดข้อผิดพลาด: ' + e.message);
+  }
+}
+
+// ============================================================
+// DEBUG PANEL
+const _origLog = console.log;
+const _origErr = console.error;
+function _dbg(...args) {
+  const el = document.getElementById('debug-log');
+  if(el) {
+    const line = document.createElement('div');
+    line.style.borderBottom = '1px solid #030';
+    line.style.paddingBottom = '3px';
+    line.style.marginBottom = '3px';
+    line.textContent = args.join(' ');
+    el.appendChild(line);
+    el.scrollTop = el.scrollHeight;
+  }
+}
+console.log = function(...args) { _origLog(...args); _dbg(...args); }
+console.error = function(...args) { _origErr(...args); _dbg('ERROR:', ...args); }
+window.showDebug = function() { document.getElementById('debug-panel').style.display='block'; }
+
+// Safety: force-hide splash after 8s no matter what
+setTimeout(() => { const s=document.getElementById('splash-screen'); if(s && s.style.display!=='none'){ s.style.opacity='0'; setTimeout(()=>s.style.display='none',400);} }, 8000);
+
+function hideSplash() {
+  const splash = document.getElementById('splash-screen');
+  if(!splash) return;
+  splash.style.opacity = '0';
+  setTimeout(() => { splash.style.display = 'none'; }, 400);
+}
+
+// AUTH STATE LISTENER
+// ============================================================
+onAuthStateChanged(auth, async (user) => {
+  if(user) {
+    currentUser = user;
+    // Check role
+    // ADMIN_EMAILS always wins — cannot be demoted via Firestore
+    const isHardAdmin = ADMIN_EMAILS.includes(user.email);
+    console.log('[AUTH] email:', user.email, '| isHardAdmin:', isHardAdmin);
+    currentRole = isHardAdmin ? 'admin' : 'member';
+    // Check Firestore role
+    try {
+      const userDoc = await getDoc(doc(db,'users',user.uid));
+      console.log('[AUTH] Firestore doc exists:', userDoc.exists(), '| role in DB:', userDoc.exists() ? userDoc.data().role : 'N/A');
+      if(userDoc.exists()) {
+        const r = userDoc.data().role;
+        if(isHardAdmin) {
+          // Hard admins always stay admin — sync Firestore if needed
+          currentRole = 'admin';
+          if(r !== 'admin') {
+            await updateDoc(doc(db,'users',user.uid), { role: 'admin' }).catch(()=>{});
+            console.log('[AUTH] Synced Firestore role to admin');
+          }
+        } else {
+          if(r === 'admin') currentRole = 'admin';
+          else if(r === 'test') currentRole = 'test';
+          else currentRole = 'member';
+        }
+      } else {
+        // No doc: create it
+        const newRole = isHardAdmin ? 'admin' : 'member';
+        currentRole = newRole;
+        setDoc(doc(db,'users',user.uid), {
+          name: user.displayName || user.email,
+          email: user.email,
+          role: newRole,
+          createdAt: serverTimestamp()
+        }).catch(()=>{});
+        console.log('[AUTH] Created new user doc with role:', newRole);
+      }
+    } catch(e){
+      console.error('[AUTH] Firestore error:', e);
+      // Keep currentRole as already set from ADMIN_EMAILS
+    }
+    console.log('[AUTH] Final currentRole:', currentRole);
+
+    document.getElementById('auth-screen').style.display = 'none';
+    document.getElementById('app').style.display = 'block';
+    hideSplash();
+    initApp();
+  } else {
+    currentUser = null;
+    document.getElementById('auth-screen').style.display = 'flex';
+    document.getElementById('app').style.display = 'none';
+    allRecords = [];
+    hideSplash();
+  }
+});
+
+// ============================================================
+// APP INIT
+// ============================================================
+async function initApp() {
+  applyTheme();
+  buildAllDateSelects();
+  await loadAppSettings();
+  renderItemsGrid();
+  setupRoleUI();
+  loadSettingsUI();
+  startRecordsListener();
+  if(currentRole==='admin') {
+    loadDeleteRequests();
+    loadMessages();
+  } else {
+    loadMyMessages();
+  }
+  setTimeout(renderDashboard, 200);
+}
+
+function setupRoleUI() {
+  const badge = document.getElementById('role-badge-top');
+  const roleLabel = currentRole==='admin'?'ADMIN':currentRole==='test'?'TEST':'MEMBER';
+  const roleCss = currentRole==='admin'?'admin':currentRole==='test'?'test':'member';
+  badge.textContent = roleLabel;
+  badge.className = 'role-badge '+roleCss;
+
+  // User info card
+  document.getElementById('user-info-card').innerHTML = `
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">
+      <div style="width:44px;height:44px;border-radius:50%;background:var(--accent2);display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700;flex-shrink:0;color:var(--bg)">
+        ${currentUser.displayName?currentUser.displayName[0].toUpperCase():'U'}
+      </div>
+      <div style="flex:1;min-width:0">
+        <div style="font-weight:700;font-size:15px" id="my-display-name">${currentUser.displayName||'ผู้ใช้'}</div>
+        <div style="font-size:12px;color:var(--text2)">${currentUser.email}</div>
+        <span class="badge ${currentRole==='admin'?'badge-admin':'badge-income'}" style="margin-top:4px">${currentRole==='admin'?'<svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 20h20M4 20l2-10 6 5 6-5 2 10"/><circle cx="12" cy="7" r="2"/></svg> Admin':'<svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> Member'}</span>
+      </div>
+    </div>
+    <div id="rename-self-form" style="display:none;margin-bottom:8px">
+      <div style="display:flex;gap:8px;align-items:center">
+        <input class="form-input" id="rename-self-input" placeholder="ชื่อใหม่..." style="flex:1"/>
+        <button class="btn btn-primary btn-sm" onclick="doRenameSelf()"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> บันทึก</button>
+        <button class="btn btn-ghost btn-sm" onclick="document.getElementById('rename-self-form').style.display='none'">ยกเลิก</button>
+      </div>
+    </div>
+    <button class="btn btn-ghost btn-sm" id="btn-rename-self" onclick="openRenameSelf()">
+      <svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg> เปลี่ยนชื่อ
+    </button>`;
+
+  // Admin settings
+  document.getElementById('admin-settings').style.display = currentRole==='admin'?'block':'none';
+  // Inbox label
+  document.getElementById('inbox-nav-label').textContent = currentRole==='admin'?'Inbox':'ส่งข้อความ';
+  // Inbox views
+  document.getElementById('inbox-admin').style.display = currentRole==='admin'?'block':'none';
+  document.getElementById('inbox-member').style.display = (currentRole==='member'||currentRole==='test')?'block':'none';
+  // Test mode banner
+  const tb = document.getElementById('test-banner');
+  if(tb) tb.style.display = currentRole==='test'?'block':'none';
+  // Migration tool (Master Dev only)
+  updateMigrationToolVisibility();
+}
+
+// ============================================================
+// SETTINGS
+// ============================================================
+async function loadAppSettings() {
+  try {
+    const snap = await getDoc(doc(db,'settings','app'));
+    if(snap.exists()) {
+      const d = snap.data();
+      if(d.transferName) appSettings.name = d.transferName;
+      if(d.transferBank) appSettings.bank = d.transferBank;
+      if(d.transferAccount) appSettings.account = d.transferAccount;
+      if(d.incomeItems) incomeItems = d.incomeItems;
+      if(d.expenseItems) expenseItems = d.expenseItems;
+    }
+  } catch(e){}
+}
+
+function loadSettingsUI() {
+  document.getElementById('set-name').value = appSettings.name;
+  document.getElementById('set-bank').value = appSettings.bank;
+  document.getElementById('set-account').value = appSettings.account;
+  renderSettingsLists();
+  const m = localStorage.getItem('themeMode')||'dark';
+  ['auto','light','dark'].forEach(x=>document.getElementById(`th-${x}`)?.classList.toggle('active',x===m));
+}
+
+window.saveSettings = async function() {
+  appSettings.name = document.getElementById('set-name').value.trim();
+  appSettings.bank = document.getElementById('set-bank').value.trim();
+  appSettings.account = document.getElementById('set-account').value.trim();
+  try {
+    await setDoc(doc(db,'settings','app'), {
+      transferName: appSettings.name, transferBank: appSettings.bank,
+      transferAccount: appSettings.account, incomeItems, expenseItems,
+      updatedAt: serverTimestamp()
+    });
+    showToast('<svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> บันทึกแล้ว');
+  } catch(e){ showToast('เกิดข้อผิดพลาด','error'); }
+}
+
+function renderSettingsLists() {
+  ['income','expense'].forEach(type => {
+    const list = type==='income'?incomeItems:expenseItems;
+    const el = document.getElementById(`${type}-items-list`);
+    if(!el) return;
+    el.innerHTML = list.map((name,i)=>`
+      <div class="flex align-center gap8" style="padding:7px 0;border-bottom:1px solid var(--border)">
+        <input style="flex:1;font-size:14px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:6px 10px;color:var(--text);outline:none"
+          value="${name}" onchange="renameItem('${type}',${i},this.value)" onblur="renameItem('${type}',${i},this.value)"/>
+        <button class="btn btn-danger btn-sm" onclick="removeSettingItem('${type}',${i})">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M9 6V4h6v2"/></svg>
+        </button>
+      </div>`).join('');
+  });
+  renderChartToggles();
+}
+
+function renderChartToggles() {
+  // Load saved hidden items from localStorage
+  const hiddenIncome = JSON.parse(localStorage.getItem('hiddenIncomeItems')||'[]');
+  const hiddenExpense = JSON.parse(localStorage.getItem('hiddenExpenseItems')||'[]');
+
+  const incEl = document.getElementById('chart-income-toggles');
+  const expEl = document.getElementById('chart-expense-toggles');
+  if(!incEl || !expEl) return;
+
+  incEl.innerHTML = incomeItems.map(name => `
+    <label class="check-item">
+      <input type="checkbox" ${!hiddenIncome.includes(name)?'checked':''} onchange="toggleChartItem('income','${name}',this.checked)"/>
+      <span style="font-size:14px">${name}</span>
+    </label>`).join('');
+
+  expEl.innerHTML = expenseItems.map(name => `
+    <label class="check-item">
+      <input type="checkbox" ${!hiddenExpense.includes(name)?'checked':''} onchange="toggleChartItem('expense','${name}',this.checked)"/>
+      <span style="font-size:14px">${name}</span>
+    </label>`).join('');
+}
+
+window.toggleChartItem = function(type, name, visible) {
+  const key = type==='income'?'hiddenIncomeItems':'hiddenExpenseItems';
+  const hidden = JSON.parse(localStorage.getItem(key)||'[]');
+  if(visible) {
+    const idx = hidden.indexOf(name);
+    if(idx !== -1) hidden.splice(idx, 1);
+  } else {
+    if(!hidden.includes(name)) hidden.push(name);
+  }
+  localStorage.setItem(key, JSON.stringify(hidden));
+  showToast(visible?'แสดงในกราฟแล้ว':'ซ่อนจากกราฟแล้ว','info');
+}
+
+window.renameItem = async function(type, idx, newName) {
+  newName = newName.trim();
+  if(!newName) return;
+  const list = type==='income'?incomeItems:expenseItems;
+  const oldName = list[idx];
+  if(oldName === newName) return;
+  list[idx] = newName;
+  // Update hidden items if renamed
+  const key = type==='income'?'hiddenIncomeItems':'hiddenExpenseItems';
+  const hidden = JSON.parse(localStorage.getItem(key)||'[]');
+  const hi = hidden.indexOf(oldName);
+  if(hi !== -1) { hidden[hi] = newName; localStorage.setItem(key, JSON.stringify(hidden)); }
+  await saveItemsToFirestore();
+  renderItemsGrid();
+  // Migrate all historical records that have this item key
+  showToast('กำลังอัปเดตรายการย้อนหลัง...','info');
+  try {
+    const snap = await getDocs(collection(db,'records'));
+    const batch = [];
+    snap.forEach(d => {
+      const items = d.data().items || {};
+      if(oldName in items) {
+        const newItems = {};
+        Object.entries(items).forEach(([k,v]) => { newItems[k===oldName?newName:k] = v; });
+        batch.push(updateDoc(doc(db,'records',d.id), { items: newItems }));
+      }
+    });
+    if(batch.length > 0) {
+      await Promise.all(batch);
+      // Update local allRecords too
+      allRecords.forEach(r => {
+        if(r.items && oldName in r.items) {
+          r.items[newName] = r.items[oldName];
+          delete r.items[oldName];
+        }
+      });
+      renderRecords();
+      renderDashboard();
+      showToast(`เปลี่ยนชื่อแล้ว — อัปเดตรายการย้อนหลัง ${batch.length} รายการ`,'info');
+    } else {
+      showToast('เปลี่ยนชื่อแล้ว','info');
+    }
+  } catch(e) {
+    console.error('migrate records error:', e);
+    showToast('เปลี่ยนชื่อแล้ว (อัปเดตย้อนหลังไม่สำเร็จ)','error');
+  }
+}
+
+window.addSettingItem = async function(type) {
+  const inp = document.getElementById(`new-${type}-item`);
+  const name = inp.value.trim(); if(!name) return;
+  const list = type==='income'?incomeItems:expenseItems;
+  if(!list.includes(name)){list.push(name);}
+  inp.value=''; renderSettingsLists(); renderItemsGrid();
+  await saveItemsToFirestore();
+}
+
+window.removeSettingItem = async function(type,idx) {
+  (type==='income'?incomeItems:expenseItems).splice(idx,1);
+  renderSettingsLists(); renderItemsGrid();
+  await saveItemsToFirestore();
+}
+
+async function saveItemsToFirestore() {
+  try {
+    await setDoc(doc(db,'settings','app'), {incomeItems, expenseItems, updatedAt:serverTimestamp()}, {merge:true});
+  } catch(e){}
+}
+
+// ============================================================
+// REALTIME RECORDS LISTENER
+// ============================================================
+// Session-only records for test role
+let testRecords = [];
+
+function startRecordsListener() {
+  if(unsubRecords) unsubRecords();
+
+  if(currentRole === 'test') {
+    // TEST ROLE: load real data once as baseline, then work with session copy
+    const q = query(collection(db,'records'), orderBy('dateKey','desc'));
+    getDocs(q).then(snap => {
+      testRecords = snap.docs.map(d=>({id:d.id,...d.data()}));
+      allRecords = [...testRecords];
+      renderRecords();
+      renderDashboard();
+    }).catch(err => console.error(err));
+    return;
+  }
+
+  // ADMIN/MEMBER: real-time listener
+  const q = query(collection(db,'records'), orderBy('dateKey','desc'));
+  unsubRecords = onSnapshot(q, (snap) => {
+    allRecords = snap.docs.map(d=>({id:d.id,...d.data()}));
+    renderRecords();
+    if(document.getElementById('tab-dashboard').classList.contains('active')) {
+      renderDashboard();
+    }
+  }, (err) => {
+    console.error(err);
+    showToast('เกิดข้อผิดพลาดในการโหลดข้อมูล','error');
+  });
+}
+
+// ============================================================
+// THEME
+// ============================================================
+function applyTheme() {
+  const mode = localStorage.getItem('themeMode')||'dark';
+  let theme = mode==='auto'?(window.matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light'):mode;
+  document.documentElement.setAttribute('data-theme',theme);
+  document.getElementById('theme-btn').innerHTML = theme==='dark'?'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>':'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/></svg>';
+}
+
+window.toggleTheme = function() {
+  const cur = localStorage.getItem('themeMode')||'dark';
+  setThemeMode(cur==='dark'?'light':cur==='light'?'auto':'dark');
+}
+
+window.setThemeMode = function(m) {
+  localStorage.setItem('themeMode',m);
+  applyTheme();
+  ['auto','light','dark'].forEach(x=>document.getElementById(`th-${x}`)?.classList.toggle('active',x===m));
+  setTimeout(()=>{destroyCharts();renderDashboard();},60);
+}
+
+// ============================================================
+// DATE SELECTS
+// ============================================================
+function buildDaySelect(id,sel){
+  const el=document.getElementById(id);if(!el)return;
+  el.innerHTML='';for(let i=1;i<=31;i++){const o=document.createElement('option');o.value=i;o.textContent=i;if(i===sel)o.selected=true;el.appendChild(o);}
+}
+function buildMonthSelect(id,sel){
+  const el=document.getElementById(id);if(!el)return;
+  el.innerHTML=MONTHS_SHORT.slice(1).map((m,i)=>`<option value="${i+1}"${i+1===sel?' selected':''}>${m}</option>`).join('');
+}
+function buildYearSelect(id,sel){
+  const el=document.getElementById(id);if(!el)return;
+  const thY=new Date().getFullYear()+543;el.innerHTML='';
+  for(let y=thY-2;y<=thY+1;y++){const o=document.createElement('option');o.value=y;o.textContent=y;if(y===sel)o.selected=true;el.appendChild(o);}
+}
+function buildAllDateSelects(){
+  const now=new Date();const d=now.getDate(),m=now.getMonth()+1,y=now.getFullYear()+543;
+  buildDaySelect('d-fd',1);buildMonthSelect('d-fm',m);buildYearSelect('d-fy',y);
+  buildDaySelect('d-td',d);buildMonthSelect('d-tm',m);buildYearSelect('d-ty',y);
+  buildDaySelect('add-day',d);buildMonthSelect('add-month',m);buildYearSelect('add-year',y);
+  buildDaySelect('rfd',1);buildMonthSelect('rfm',m);buildYearSelect('rfy',y);
+  buildDaySelect('rtd',d);buildMonthSelect('rtm',m);buildYearSelect('rty',y);
+}
+
+// ============================================================
+// TABS
+// ============================================================
+window.switchTab = function(name) {
+  ['dashboard','add','records','report','inbox','settings'].forEach(n=>{
+    document.getElementById('tab-'+n)?.classList.toggle('active',n===name);
+    document.getElementById('nav-'+n)?.classList.toggle('active',n===name);
+  });
+  if(name==='records') renderRecords();
+  if(name==='report') renderRptCustomItems();
+  if(name==='settings'){loadSettingsUI();}
+  if(name==='dashboard') setTimeout(renderDashboard,50);
+  if(name==='inbox'){if(currentRole==='admin'){loadDeleteRequests();loadMessages();}else{loadMyMessages();}}
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+// ============================================================
+// SEARCH
+// ============================================================
+// ============================================================
+// SEARCH + COMMAND SYSTEM
+// ============================================================
+const COMMANDS = [
+  { cmd: '/รายงาน', alias: ['/report','/rpt'], icon: '📊',
+    desc: 'ดูรายงานช่วงวันที่',
+    usage: '/รายงาน 1/5/2568 - 31/5/2568',
+    hint: '/รายงาน วัน/เดือน/ปี - วัน/เดือน/ปี',
+    example: '/รายงาน 1/6/2569 - 30/6/2569' },
+  { cmd: '/บันทึก', alias: ['/add','/เพิ่ม'], icon: '➕',
+    desc: 'ไปหน้าบันทึกรายรับ-รายเบิก',
+    usage: '/บันทึก',
+    hint: '/บันทึก',
+    example: '/บันทึก' },
+  { cmd: '/รายการ', alias: ['/records','/list'], icon: '📋',
+    desc: 'ไปหน้ารายการย้อนหลัง',
+    usage: '/รายการ',
+    hint: '/รายการ',
+    example: '/รายการ' },
+  { cmd: '/กำไร', alias: ['/profit'], icon: '💰',
+    desc: 'ดูกำไรช่วงวันที่',
+    usage: '/กำไร 1/5/2568 - 31/5/2568',
+    hint: '/กำไร วัน/เดือน/ปี - วัน/เดือน/ปี',
+    example: '/กำไร 1/6/2569 - 30/6/2569' },
+  { cmd: '/c1', alias: ['/C1'], icon: '🔵',
+    desc: 'ดูรายการของ C1',
+    usage: '/c1',
+    hint: '/c1 หรือ /c2 หรือ /c3',
+    example: '/c1' },
+  { cmd: '/c2', alias: ['/C2'], icon: '🟢',
+    desc: 'ดูรายการของ C2',
+    usage: '/c2', hint: '/c1 หรือ /c2 หรือ /c3', example: '/c2' },
+  { cmd: '/c3', alias: ['/C3'], icon: '🟠',
+    desc: 'ดูรายการของ C3',
+    usage: '/c3', hint: '/c1 หรือ /c2 หรือ /c3', example: '/c3' },
+  { cmd: '/ตั้งค่า', alias: ['/settings','/setting'], icon: '⚙️',
+    desc: 'ไปหน้าตั้งค่า',
+    usage: '/ตั้งค่า', hint: '/ตั้งค่า', example: '/ตั้งค่า' },
+  { cmd: '/inbox', alias: ['/ข้อความ','/message'], icon: '📥',
+    desc: 'ไปหน้า Inbox',
+    usage: '/inbox', hint: '/inbox', example: '/inbox' },
+  { cmd: '/ช่วยหน่อย', alias: ['/help','/คำสั่ง','/?'], icon: '💡',
+    desc: 'ดูคำสั่งทั้งหมดพร้อมตัวอย่าง',
+    usage: '/ช่วยหน่อย',
+    hint: '/ช่วยหน่อย',
+    example: '/ช่วยหน่อย' },
+];
+
+function parseDateRange(str) {
+  // expects "d/m/y - d/m/y" or "d/m - d/m"
+  const parts = str.split('-').map(s=>s.trim());
+  if(parts.length < 2) return null;
+  const parseD = s => {
+    const p = s.split('/');
+    if(p.length === 2) return { d:+p[0], m:+p[1], y: new Date().getFullYear()+543 };
+    if(p.length === 3) return { d:+p[0], m:+p[1], y:+p[2] };
+    return null;
+  };
+  const from = parseD(parts[0]);
+  const to = parseD(parts[1]);
+  if(!from || !to) return null;
+  return { from, to };
+}
+
+function thYear(y) { return y > 2400 ? y-543 : y; }
+
+function recordsInRange(from, to) {
+  return allRecords.filter(r => {
+    if(!r.date) return false;
+    const fy = thYear(from.y), ty = thYear(to.y);
+    const ry = thYear(r.date.y||new Date().getFullYear()+543);
+    if(ry < fy || ry > ty) return false;
+    if(ry === fy && (r.date.m < from.m || (r.date.m === from.m && r.date.d < from.d))) return false;
+    if(ry === ty && (r.date.m > to.m || (r.date.m === to.m && r.date.d > to.d))) return false;
+    return true;
+  });
+}
+
+function renderReportResult(records, label) {
+  if(!records.length) return '<div class="s-empty">ไม่พบข้อมูลในช่วงนี้</div>';
+  const income = records.filter(r=>r.type==='income');
+  const expense = records.filter(r=>r.type==='expense');
+  const sumI = income.reduce((a,r)=>a+Object.values(r.items||{}).reduce((x,y)=>x+y,0),0);
+  const sumE = expense.reduce((a,r)=>a+Object.values(r.items||{}).reduce((x,y)=>x+y,0),0);
+  const profit = sumI - sumE;
+  const cashiers = [...new Set(records.map(r=>r.cashier).filter(Boolean))].sort();
+  const cashierRows = cashiers.map(c=>{
+    const ci = income.filter(r=>r.cashier===c).reduce((a,r)=>a+Object.values(r.items||{}).reduce((x,y)=>x+y,0),0);
+    const ce = expense.filter(r=>r.cashier===c).reduce((a,r)=>a+Object.values(r.items||{}).reduce((x,y)=>x+y,0),0);
+    return '<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--border)">'
+      +'<span class="badge badge-'+c.toLowerCase()+'">'+c+'</span>'
+      +'<span style="font-size:12px;color:var(--green)">+'+fmtN(ci)+'</span>'
+      +'<span style="font-size:12px;color:var(--red)">-'+fmtN(ce)+'</span>'
+      +'<span style="font-size:12px;font-weight:700;color:'+(ci-ce>=0?'var(--green)':'var(--red)')+'">='+(ci-ce>=0?'+':'')+fmtN(ci-ce)+'</span>'
+      +'</div>';
+  }).join('');
+  const wrapper = document.createElement('div');
+  wrapper.innerHTML = '<div style="padding:14px;background:var(--surface);border-bottom:1px solid var(--border)">'
+    +'<div style="font-size:12px;font-weight:700;color:var(--text2);margin-bottom:10px">📊 '+label+'</div>'
+    +'<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:10px">'
+    +'<div style="background:var(--surface2);border-radius:12px;padding:10px;text-align:center"><div style="font-size:10px;color:var(--text2)">รายรับรวม</div><div style="font-size:14px;font-weight:700;color:var(--green)">'+fmtN(sumI)+'</div></div>'
+    +'<div style="background:var(--surface2);border-radius:12px;padding:10px;text-align:center"><div style="font-size:10px;color:var(--text2)">รายเบิกรวม</div><div style="font-size:14px;font-weight:700;color:var(--red)">'+fmtN(sumE)+'</div></div>'
+    +'<div style="background:var(--surface2);border-radius:12px;padding:10px;text-align:center"><div style="font-size:10px;color:var(--text2)">กำไร</div><div style="font-size:14px;font-weight:700;color:'+(profit>=0?'var(--green)':'var(--red)')+'">'+fmtN(profit)+'</div></div>'
+    +'</div>'+(cashierRows?'<div style="margin-bottom:4px;font-size:11px;color:var(--text3)">แยกตามแคชเชียร์</div>'+cashierRows:'')
+    +'</div>';
+  records.slice(0,15).forEach(r=>{
+    const total=Object.values(r.items||{}).reduce((a,b)=>a+b,0);
+    const detail=Object.entries(r.items||{}).map(([k,v])=>k+' '+fmtN(v)).join(' · ');
+    const div=document.createElement('div');
+    div.className='s-item';
+    div.dataset.rid=r.id;
+    div.addEventListener('click',function(){closeSearch();openEdit(this.dataset.rid);});
+    div.innerHTML='<span class="badge badge-'+(r.cashier||'').toLowerCase()+'">'+r.cashier+'</span>'
+      +'<span class="badge '+(r.type==='income'?'badge-income':'badge-expense')+'">'+(r.type==='income'?'รายรับ':'รายเบิก')+'</span>'
+      +'<span style="font-size:11px;color:var(--text2)">'+r.date?.d+'/'+r.date?.m+'</span>'
+      +'<span style="flex:1;font-size:12px;color:var(--text2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+detail+'</span>'
+      +'<span class="text-mono" style="font-size:13px;font-weight:700;color:'+(r.type==='income'?'var(--green)':'var(--red)')+';">'+fmtN(total)+'</span>';
+    wrapper.appendChild(div);
+  });
+  if(records.length>15){
+    const more=document.createElement('div');
+    more.style.cssText='padding:10px;text-align:center;font-size:12px;color:var(--text2)';
+    more.textContent='...และอีก '+(records.length-15)+' รายการ';
+    wrapper.appendChild(more);
+  }
+  return wrapper;
+}
+function renderCommandList(filter) {
+  const cmds = filter
+    ? COMMANDS.filter(c => c.cmd.includes(filter) || c.alias.some(a=>a.includes(filter)) || c.desc.includes(filter))
+    : COMMANDS;
+  if(!cmds.length) return '<div class="s-empty">ไม่พบคำสั่ง</div>';
+  return '<div style="padding:12px 14px 6px;font-size:11px;font-weight:700;color:var(--text3);letter-spacing:.5px">คำสั่งทั้งหมด</div>'
+    + cmds.map(c=>'<div class="s-item" style="flex-direction:column;align-items:flex-start;gap:4px" onclick="selectCommand(\''+c.cmd+'\')">'
+      + '<div style="display:flex;align-items:center;gap:8px;width:100%">'
+      + '<span style="font-size:18px">'+c.icon+'</span>'
+      + '<span style="font-weight:700;font-size:14px;color:var(--accent)">'+c.cmd+'</span>'
+      + '<span style="font-size:12px;color:var(--text2)">'+c.desc+'</span>'
+      + '</div>'
+      + '<div style="font-size:11px;color:var(--text3);padding-left:26px">ตัวอย่าง: <span style="color:var(--text2)">'+c.example+'</span></div>'
+      + '</div>'
+    ).join('');
+}
+
+function renderCommandHelp(cmd) {
+  const c = COMMANDS.find(x=>x.cmd===cmd||x.alias.includes(cmd));
+  if(!c) return '';
+  return '<div style="padding:14px;background:var(--surface);border-bottom:1px solid var(--border)">'
+    + '<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">'
+    + '<span style="font-size:24px">'+c.icon+'</span>'
+    + '<div><div style="font-weight:700;font-size:16px;color:var(--accent)">'+c.cmd+'</div>'
+    + '<div style="font-size:12px;color:var(--text2)">'+c.desc+'</div></div>'
+    + '</div>'
+    + '<div style="background:var(--surface2);border-radius:12px;padding:12px;margin-bottom:8px">'
+    + '<div style="font-size:11px;color:var(--text3);margin-bottom:4px">รูปแบบการใช้งาน</div>'
+    + '<div style="font-family:\'Space Mono\',monospace;font-size:13px;color:var(--text1)">'+c.hint+'</div>'
+    + '</div>'
+    + '<div style="background:var(--surface2);border-radius:12px;padding:12px">'
+    + '<div style="font-size:11px;color:var(--text3);margin-bottom:4px">ตัวอย่าง</div>'
+    + '<div style="font-family:\'Space Mono\',monospace;font-size:13px;color:var(--yellow)" onclick="fillCommand(\''+c.example+'\')">'+c.example+' <span style="font-size:10px;color:var(--text3)">(กดเพื่อใช้)</span></div>'
+    + '</div>'
+    + '</div>';
+}
+
+window.selectCommand = function(cmd) {
+  const inp = document.getElementById('search-input');
+  const c = COMMANDS.find(x=>x.cmd===cmd||x.alias.includes(cmd));
+  if(!c) return;
+  // Commands that need no args: execute immediately
+  const noArgCmds = ['/บันทึก','/รายการ','/ตั้งค่า','/inbox'];
+  if(noArgCmds.includes(c.cmd) || ['/c1','/c2','/c3'].includes(c.cmd)) {
+    inp.value = c.cmd;
+    doSearch(c.cmd);
+    return;
+  }
+  // Commands that need args: fill example and move cursor
+  inp.value = c.example;
+  inp.focus();
+  inp.select();
+  doSearch(c.example);
+}
+
+window.fillCommand = function(example) {
+  const inp = document.getElementById('search-input');
+  inp.value = example;
+  inp.focus();
+  doSearch(example);
+}
+
+window.openSearch = function(){
+  document.getElementById('search-overlay').classList.add('open');
+  setTimeout(()=>{
+    const inp = document.getElementById('search-input');
+    inp.focus();
+    doSearch(inp.value||'');
+  },300);
+}
+
+window.closeSearch = function(){
+  document.getElementById('search-overlay').classList.remove('open');
+  document.getElementById('search-input').value='';
+}
+
+window.searchKeydown = function(e){
+  if(e.key==='Escape') closeSearch();
+}
+
+window.doSearch = function(q) {
+  const list = document.getElementById('search-list');
+  const raw = q.trim();
+
+  // Empty → show command list + quick-nav tiles
+  if(!raw) {
+    list.innerHTML = '<div style="padding:12px 14px 6px;font-size:11px;font-weight:700;color:var(--text3);letter-spacing:.5px">ทางลัด</div>'
+      + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:8px 14px 12px">'
+      + ['บันทึก➕:/บันทึก','รายการ📋:/รายการ','รายงาน📊:/รายงาน','กำไร💰:/กำไร','Inbox📥:/inbox','C1🔵:/c1','C2🟢:/c2','C3🟠:/c3','ช่วยหน่อย💡:/ช่วยหน่อย','ตั้งค่า⚙️:/ตั้งค่า'].map(s=>{
+          const [label,cmd] = s.split(':');
+          return '<div style="background:var(--surface2);border-radius:14px;padding:12px;text-align:center;cursor:pointer;font-size:13px;font-weight:600" onclick="selectCommand(\''+cmd+'\')">'+label+'</div>';
+        }).join('')
+      + '</div>'
+      + renderCommandList('');
+    return;
+  }
+
+  // Command mode: starts with /
+  if(raw.startsWith('/')) {
+    const lower = raw.toLowerCase();
+    // Find matching command
+    const matched = COMMANDS.find(c => lower === c.cmd.toLowerCase() || c.alias.map(a=>a.toLowerCase()).includes(lower));
+
+    // /บันทึก → go to add tab
+    if(['/บันทึก','/add','/เพิ่ม'].includes(lower)){
+      list.innerHTML = '<div class="s-item" style="cursor:default" onclick="closeSearch();switchTab(\'add\')">'
+        + '➕ <span style="font-weight:700">ไปหน้าบันทึก</span></div>';
+      closeSearch(); switchTab('add'); return;
+    }
+    // /รายการ → go to records tab
+    if(['/รายการ','/records','/list'].includes(lower)){
+      closeSearch(); switchTab('records'); return;
+    }
+    // /ตั้งค่า → settings
+    if(['/ตั้งค่า','/settings','/setting'].includes(lower)){
+      closeSearch(); switchTab('settings'); return;
+    }
+    // /inbox
+    if(['/inbox','/ข้อความ','/message'].includes(lower)){
+      closeSearch(); switchTab('inbox'); return;
+    }
+    // /ช่วยหน่อย
+    if(['/ช่วยหน่อย','/help','/คำสั่ง','/?'].includes(lower)){
+      list.innerHTML = renderHelpPage();
+      return;
+    }
+    // /c1 /c2 /c3 → filter records by cashier
+    if(['/c1','/c2','/c3'].includes(lower)){
+      const cid = lower.replace('/','').toUpperCase();
+      const matches = allRecords.filter(r=>r.cashier===cid).slice(0,30);
+      if(!matches.length){ list.innerHTML='<div class="s-empty">ไม่พบรายการของ '+cid+'</div>'; return; }
+      const total_i = matches.filter(r=>r.type==='income').reduce((a,r)=>a+Object.values(r.items||{}).reduce((x,y)=>x+y,0),0);
+      const total_e = matches.filter(r=>r.type==='expense').reduce((a,r)=>a+Object.values(r.items||{}).reduce((x,y)=>x+y,0),0);
+      list.innerHTML = '<div style="padding:12px 14px;background:var(--surface);border-bottom:1px solid var(--border);display:flex;gap:12px;align-items:center">'
+        + '<span class="badge badge-'+cid.toLowerCase()+'">'+cid+'</span>'
+        + '<span style="font-size:12px;color:var(--green)">+'+fmtN(total_i)+'</span>'
+        + '<span style="font-size:12px;color:var(--red)">-'+fmtN(total_e)+'</span>'
+        + '<span style="font-size:12px;font-weight:700">กำไร '+(total_i-total_e>=0?'+':'')+fmtN(total_i-total_e)+'</span>'
+        + '</div>';
+      matches.forEach(r=>{
+        const total=Object.values(r.items||{}).reduce((a,b)=>a+b,0);
+        const detail=Object.entries(r.items||{}).map(([k,v])=>k+' '+fmtN(v)).join(' · ');
+        const div=document.createElement('div');
+        div.className='s-item';
+        div.dataset.rid=r.id;
+        div.addEventListener('click',function(){closeSearch();openEdit(this.dataset.rid);});
+        div.innerHTML='<span class="badge '+(r.type==='income'?'badge-income':'badge-expense')+'">'+(r.type==='income'?'รายรับ':'รายเบิก')+'</span>'
+          +'<span style="font-size:11px;color:var(--text2)">'+r.date?.d+'/'+r.date?.m+'</span>'
+          +'<span style="flex:1;font-size:12px;color:var(--text2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+detail+'</span>'
+          +'<span class="text-mono" style="font-size:13px;font-weight:700;color:'+(r.type==='income'?'var(--green)':'var(--red)')+';">'+fmtN(total)+'</span>';
+        list.appendChild(div);
+      });
+      return;
+    }
+
+    // /รายงาน or /กำไร with date range
+    const reportCmds = ['/รายงาน','/report','/rpt','/กำไร','/profit'];
+    const isReport = reportCmds.some(c=>lower.startsWith(c));
+    if(isReport) {
+      const pfx = reportCmds.find(c=>lower.startsWith(c));
+      const arg = raw.slice(pfx.length).trim();
+      if(!arg) {
+        list.innerHTML = renderCommandHelp(COMMANDS.find(c=>c.cmd==='/รายงาน').cmd);
+        return;
+      }
+      const range = parseDateRange(arg);
+      if(!range) {
+        list.innerHTML = '<div class="s-empty" style="color:var(--red)">รูปแบบวันที่ไม่ถูกต้อง<br><span style="font-size:12px;color:var(--text2)">เช่น: /รายงาน 1/6/2569 - 30/6/2569</span></div>';
+        return;
+      }
+      const recs = recordsInRange(range.from, range.to);
+      const label = range.from.d+'/'+range.from.m+'/'+(range.from.y) + ' — ' + range.to.d+'/'+range.to.m+'/'+(range.to.y);
+      list.innerHTML = '';
+      const rptEl = renderReportResult(recs, label);
+      if(typeof rptEl === 'string') list.innerHTML = rptEl;
+      else list.appendChild(rptEl);
+      return;
+    }
+
+    // Partial /command → show matching commands
+    const partialMatches = COMMANDS.filter(c =>
+      c.cmd.toLowerCase().startsWith(lower) ||
+      c.alias.some(a=>a.toLowerCase().startsWith(lower))
+    );
+    if(partialMatches.length) {
+      const helpCmd = partialMatches.find(c=>c.cmd.toLowerCase()===lower || c.alias.map(a=>a.toLowerCase()).includes(lower));
+      list.innerHTML = (helpCmd ? renderCommandHelp(helpCmd.cmd) : '')
+        + (partialMatches.length > 1 ? renderCommandList(lower) : '');
+    } else {
+      list.innerHTML = renderCommandList(lower);
+    }
+    return;
+  }
+
+  // Normal search — search records
+  const ql = raw.toLowerCase();
+  const matches = allRecords.filter(r=>{
+    const ds = (r.date?.d||'')+'/'+(r.date?.m||'');
+    const ts = r.type==='income'?'รายรับ income':'รายเบิก expense เบิก';
+    const all = [ds,r.cashier,ts,Object.keys(r.items||{}).join(' '),r.note||'',
+      Object.values(r.items||{}).reduce((a,b)=>a+b,0).toString()].join(' ').toLowerCase();
+    return all.includes(ql);
+  }).slice(0,25);
+  if(!matches.length){
+    list.innerHTML='<div class="s-empty">ไม่พบข้อมูล "<b>'+raw+'</b>"<br><span style="font-size:12px;color:var(--text2)">ลองพิมพ์ / เพื่อดูคำสั่ง</span></div>';
+    return;
+  }
+  list.innerHTML = '<div style="padding:8px 14px 4px;font-size:11px;color:var(--text3)">พบ '+matches.length+' รายการ</div>';
+  matches.forEach(r=>{
+    const total=Object.values(r.items||{}).reduce((a,b)=>a+b,0);
+    const detail=Object.entries(r.items||{}).map(([k,v])=>k+' '+fmtN(v)).join(' \u00b7 ');
+    const div=document.createElement('div');
+    div.className='s-item';
+    div.dataset.rid=r.id;
+    div.addEventListener('click',function(){closeSearch();openEdit(this.dataset.rid);});
+    div.innerHTML='<span class="badge badge-'+(r.cashier||'').toLowerCase()+'">'+r.cashier+'</span>'
+      +'<span class="badge '+(r.type==='income'?'badge-income':'badge-expense')+'">'+(r.type==='income'?'\u0e23\u0e32\u0e22\u0e23\u0e31\u0e1a':'\u0e23\u0e32\u0e22\u0e40\u0e1a\u0e34\u0e01')+'</span>'
+      +'<span style="font-size:11px;color:var(--text2)">'+r.date?.d+'/'+r.date?.m+'</span>'
+      +'<span style="flex:1;font-size:12px;color:var(--text2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+detail+'</span>'
+      +'<span class="text-mono" style="font-size:13px;font-weight:700;color:'+(r.type==='income'?'var(--green)':'var(--red)')+';">'+fmtN(total)+'</span>';
+    list.appendChild(div);
+  });
+}
+
+// ============================================================
+// ADD FORM
+// ============================================================
+window.toggleCashier = function(btn){
+  document.querySelectorAll('#add-cashier-group .cashier-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+}
+function getSelCashier(){return document.querySelector('#add-cashier-group .cashier-btn.active')?.dataset.c||'C1'}
+window.setCat = function(c){
+  currentCat=c;
+  document.getElementById('cat-income').classList.toggle('active',c==='income');
+  document.getElementById('cat-expense').classList.toggle('active',c==='expense');
+  renderItemsGrid();
+}
+function renderItemsGrid(){
+  const items=currentCat==='income'?incomeItems:expenseItems;
+  document.getElementById('items-grid').innerHTML=items.map(name=>`
+    <div class="item-row">
+      <span class="item-label">${name}</span>
+      <input class="item-input" type="number" placeholder="0" data-item="${name}" min="0" inputmode="numeric"/>
+    </div>`).join('');
+}
+window.addCustomItem = function(){
+  const inp=document.getElementById('new-item-name');
+  const name=inp.value.trim();if(!name)return;
+  const list=currentCat==='income'?incomeItems:expenseItems;
+  if(!list.includes(name)){list.push(name);}
+  inp.value='';renderItemsGrid();saveItemsToFirestore();
+}
+function getFormData(){
+  const date={d:+document.getElementById('add-day').value,m:+document.getElementById('add-month').value,y:+document.getElementById('add-year').value};
+  const items={};
+  document.querySelectorAll('#items-grid .item-input').forEach(inp=>{const v=parseFloat(inp.value);if(v>0)items[inp.dataset.item]=v;});
+  const noteImage=getNoteImageBase64('add-note-image');
+  return {date,cashier:getSelCashier(),type:currentCat,items,note:document.getElementById('add-note').value.trim(),noteImage};
+}
+window.confirmSave = function(){
+  const data=getFormData();
+  if(!Object.keys(data.items).length){showToast('กรุณากรอกอย่างน้อย 1 รายการ','error');return;}
+  pendingSave=data;
+  const total=Object.values(data.items).reduce((a,b)=>a+b,0);
+  const rows=Object.entries(data.items).map(([k,v])=>`<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--border)"><span>${k}</span><span class="text-mono">${fmtN(v)} ฿</span></div>`).join('');
+  const noteHtml=data.note?`<div style="margin-top:10px;padding:10px;background:var(--surface2);border-radius:14px;font-size:13px;color:var(--yellow)"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg> ${data.note}</div>`:'';
+  const noteImgHtml=data.noteImage?renderNoteImage(data.noteImage):'';
+  document.getElementById('mc-content').innerHTML=`
+    <div style="margin-bottom:12px;display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+      <span class="text-mono" style="font-size:12px;color:var(--text2)">${data.date.d}/${data.date.m}/${data.date.y}</span>
+      <span class="badge badge-${data.cashier.toLowerCase()}">${data.cashier}</span>
+      <span class="badge ${data.type==='income'?'badge-income':'badge-expense'}">${data.type==='income'?'<svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="14" height="14" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M12 21.593c-.525-.438-9.993-8.008-9.993-13.368 0-3.397 2.75-6.225 6.243-6.225 2.021 0 3.799.95 4.75 2.393C14 2.95 15.778 2 17.75 2c3.493 0 6.25 2.828 6.25 6.225 0 5.36-9.467 12.93-10 13.368z"/></svg> รายรับ':'<svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="14" height="14" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M12 21.593c-.525-.438-9.993-8.008-9.993-13.368 0-3.397 2.75-6.225 6.243-6.225 2.021 0 3.799.95 4.75 2.393C14 2.95 15.778 2 17.75 2c3.493 0 6.25 2.828 6.25 6.225 0 5.36-9.467 12.93-10 13.368z"/></svg> รายเบิก'}</span>
+    </div>
+    ${rows}
+    <div style="display:flex;justify-content:space-between;padding:10px 0;font-weight:700">
+      <span>ยอดรวม</span>
+      <span class="text-mono" style="color:${data.type==='income'?'var(--green)':'var(--red)'};">${fmtN(total)} บาท</span>
+    </div>${noteHtml}${noteImgHtml}`;
+  showModal('modal-confirm');
+}
+window.doSave = async function(){
+  if(!pendingSave)return;
+  try {
+    if(currentRole === 'test') {
+      // TEST ROLE: save to session only, never touch Firebase
+      const fakeId = 'test_' + Date.now() + '_' + Math.random().toString(36).slice(2,7);
+      const now = new Date();
+      const newRec = {
+        id: fakeId,
+        ...pendingSave,
+        dateKey: dKey(pendingSave.date),
+        createdBy: currentUser.uid,
+        createdByName: currentUser.displayName||currentUser.email,
+        createdAt: now
+      };
+      testRecords.unshift(newRec);
+      allRecords = [...testRecords];
+      renderRecords();
+      renderDashboard();
+      closeModal('modal-confirm');
+      showToast('<svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> บันทึก (ทดลอง - ไม่บันทึกจริง)');
+      document.querySelectorAll('#items-grid .item-input').forEach(i=>i.value='');
+      document.getElementById('add-note').value='';
+      pendingSave=null;
+      return;
+    }
+    await addDoc(collection(db,'records'),{
+      ...pendingSave,
+      dateKey: dKey(pendingSave.date),
+      createdBy: currentUser.uid,
+      createdByName: currentUser.displayName||currentUser.email,
+      createdAt: serverTimestamp()
+    });
+    closeModal('modal-confirm');
+    showToast('<svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> บันทึกเรียบร้อย');
+    document.querySelectorAll('#items-grid .item-input').forEach(i=>i.value='');
+    document.getElementById('add-note').value='';
+    pendingSave=null;
+  } catch(e){ showToast('เกิดข้อผิดพลาด: '+e.message,'error'); }
+}
+
+// ============================================================
+// RECORDS
+// ============================================================
+window.setFilter = function(type,val,el){
+  const id=type==='c'?'fc':'ft';
+  document.getElementById(id).querySelectorAll('.filter-chip').forEach(c=>c.classList.remove('active'));
+  el.classList.add('active');
+  if(type==='c')filterC=val;else filterT=val;
+  renderRecords();
+}
+function renderRecords(){
+  let recs=[...allRecords];
+  if(filterC!=='all')recs=recs.filter(r=>r.cashier===filterC);
+  if(filterT!=='all')recs=recs.filter(r=>r.type===filterT);
+  const list=document.getElementById('records-list');
+  if(!recs.length){list.innerHTML='<div class="empty">ยังไม่มีรายการ ✨</div>';return;}
+  list.innerHTML=recs.map(r=>{
+    const total=Object.values(r.items||{}).reduce((a,b)=>a+b,0);
+    const detail=Object.entries(r.items||{}).map(([k,v])=>`${k} ${fmtN(v)}`).join(' · ');
+    const noteHtml=r.note?`<div class="record-note"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg> ${r.note}</div>`:'';
+    const noteImgHtml=r.noteImage?renderNoteImage(r.noteImage,'max-width:100%;max-height:120px;border-radius:10px;cursor:pointer;margin-top:4px'):'';;
+    const byHtml=`<div class="record-by">บันทึกโดย: ${r.createdByName||'ไม่ระบุ'}</div>`;
+    return `<div class="record-item" onclick="openEdit('${r.id}')">
+      <div class="record-header">
+        <span class="record-date">${r.date?.d}/${r.date?.m}/${r.date?.y}</span>
+        <span class="badge badge-${r.cashier?.toLowerCase()}">${r.cashier}</span>
+        <span class="badge ${r.type==='income'?'badge-income':'badge-expense'}">${r.type==='income'?'รายรับ':'รายเบิก'}</span>
+        <span class="record-amount ${r.type}">${r.type==='income'?'+':'-'}${fmtN(total)}</span>
+      </div>
+      <div class="record-detail">${detail}</div>
+      ${noteHtml}${noteImgHtml}${byHtml}
+    </div>`;
+  }).join('');
+}
+
+// ============================================================
+// EDIT / DELETE
+// ============================================================
+window.openEdit = function(id){
+  editingId=id;
+  const r=allRecords.find(x=>x.id===id);if(!r)return;
+  const total=Object.values(r.items||{}).reduce((a,b)=>a+b,0);
+  const isOwner = r.createdBy===currentUser.uid;
+  // Test role: can edit/delete session records only
+  const isTestRecord = currentRole==='test' && r.id?.startsWith('test_');
+  const canEdit = currentRole==='admin' || isOwner || isTestRecord;
+  const rows=Object.entries(r.items||{}).map(([k,v])=>`
+    <div class="item-row" style="margin-bottom:8px">
+      <span class="item-label">${k}</span>
+      ${canEdit?`<input class="item-input" type="number" value="${v}" data-eitem="${k}" min="0" inputmode="numeric"/>`:`<span class="text-mono" style="color:var(--text2)">${fmtN(v)} ฿</span>`}
+    </div>`).join('');
+  document.getElementById('me-content').innerHTML=`
+    <div style="margin-bottom:12px;display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+      <span class="text-mono" style="font-size:12px;color:var(--text2)">${r.date?.d}/${r.date?.m}/${r.date?.y}</span>
+      <span class="badge badge-${r.cashier?.toLowerCase()}">${r.cashier}</span>
+      <span class="badge ${r.type==='income'?'badge-income':'badge-expense'}">${r.type==='income'?'<svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="14" height="14" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M12 21.593c-.525-.438-9.993-8.008-9.993-13.368 0-3.397 2.75-6.225 6.243-6.225 2.021 0 3.799.95 4.75 2.393C14 2.95 15.778 2 17.75 2c3.493 0 6.25 2.828 6.25 6.225 0 5.36-9.467 12.93-10 13.368z"/></svg> รายรับ':'<svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="14" height="14" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M12 21.593c-.525-.438-9.993-8.008-9.993-13.368 0-3.397 2.75-6.225 6.243-6.225 2.021 0 3.799.95 4.75 2.393C14 2.95 15.778 2 17.75 2c3.493 0 6.25 2.828 6.25 6.225 0 5.36-9.467 12.93-10 13.368z"/></svg> รายเบิก'}</span>
+      <span class="text-mono ml-auto" style="color:${r.type==='income'?'var(--green)':'var(--red)'};">${fmtN(total)} ฿</span>
+    </div>
+    ${rows}
+    ${canEdit?`<div class="form-row mt8"><div class="form-label"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg> หมายเหตุ</div><textarea class="form-textarea" id="edit-note">${r.note||''}</textarea><div style="margin-top:8px">${r.noteImage?'<div style="margin-bottom:6px">'+renderNoteImage(r.noteImage)+'</div>':''}<label style="display:inline-flex;align-items:center;gap:6px;cursor:pointer;background:var(--surface2);padding:6px 12px;border-radius:20px;font-size:12px"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>เปลี่ยนรูป<input type="file" id="edit-note-image" accept="image/*" style="display:none" onchange="previewNoteImage('edit-note-preview',this)"/></label><div id="edit-note-preview" style="margin-top:6px"></div></div></div>`:''}
+    ${!canEdit?'<div style="font-size:12px;color:var(--text2);text-align:center;padding:8px">👁️ ดูเท่านั้น — ส่งคำขอลบถ้าต้องการลบ</div>':''}`;
+
+  // Actions
+  const actionsEl = document.getElementById('me-actions');
+  if(currentRole==='admin') {
+    actionsEl.innerHTML=`
+      <button class="btn btn-danger btn-sm" onclick="adminDeleteRecord()"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg> ลบ</button>
+      <button class="btn btn-ghost" style="flex:1" onclick="closeModal('modal-edit')">ยกเลิก</button>
+      <button class="btn btn-primary" style="flex:1" onclick="doEdit()"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> บันทึก</button>`;
+  } else if(isTestRecord) {
+    actionsEl.innerHTML=`
+      <button class="btn btn-danger btn-sm" onclick="testDeleteRecord('${id}')"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg> ลบ (ทดลอง)</button>
+      <button class="btn btn-ghost" style="flex:1" onclick="closeModal('modal-edit')">ยกเลิก</button>
+      <button class="btn btn-primary" style="flex:1" onclick="testEditRecord('${id}')"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> บันทึก</button>`;
+  } else if(isOwner) {
+    actionsEl.innerHTML=`
+      <button class="btn btn-ghost btn-sm" onclick="requestDelete('${id}')"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg> ขอลบ</button>
+      <button class="btn btn-ghost" style="flex:1" onclick="closeModal('modal-edit')">ยกเลิก</button>
+      <button class="btn btn-primary" style="flex:1" onclick="doEdit()"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> บันทึก</button>`;
+  } else {
+    actionsEl.innerHTML=`
+      <button class="btn btn-ghost btn-sm" onclick="requestDelete('${id}')"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg> ขอลบ</button>
+      <button class="btn btn-ghost" style="flex:1" onclick="closeModal('modal-edit')">ปิด</button>`;
+  }
+  showModal('modal-edit');
+}
+
+window.doEdit = async function(){
+  const r=allRecords.find(x=>x.id===editingId);if(!r)return;
+  const newItems={};
+  document.querySelectorAll('[data-eitem]').forEach(inp=>{const v=parseFloat(inp.value)||0;if(v>0)newItems[inp.dataset.eitem]=v;});
+  const note=document.getElementById('edit-note')?.value.trim()||'';
+  try {
+    await updateDoc(doc(db,'records',editingId),{items:newItems,note,updatedAt:serverTimestamp(),updatedBy:currentUser.uid});
+    closeModal('modal-edit');showToast('<svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> แก้ไขเรียบร้อย');
+  } catch(e){showToast('เกิดข้อผิดพลาด','error');}
+}
+
+window.testEditRecord = function(id){
+  const newItems={};
+  document.querySelectorAll('[data-eitem]').forEach(inp=>{const v=parseFloat(inp.value)||0;if(v>0)newItems[inp.dataset.eitem]=v;});
+  const note=document.getElementById('edit-note')?.value.trim()||'';
+  const idx=testRecords.findIndex(x=>x.id===id);
+  if(idx>-1){testRecords[idx]={...testRecords[idx],items:newItems,note};}
+  allRecords=[...testRecords];
+  renderRecords();renderDashboard();
+  closeModal('modal-edit');showToast('<svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> แก้ไข (ทดลอง)');
+}
+
+window.testDeleteRecord = function(id){
+  if(!confirm('ลบรายการทดลองนี้?'))return;
+  testRecords=testRecords.filter(x=>x.id!==id);
+  allRecords=[...testRecords];
+  renderRecords();renderDashboard();
+  closeModal('modal-edit');showToast('ลบเรียบร้อย (ทดลอง)');
+}
+
+window.adminDeleteRecord = async function(){
+  if(!confirm('ลบรายการนี้?'))return;
+  try {
+    await deleteDoc(doc(db,'records',editingId));
+    closeModal('modal-edit');showToast('<svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg> ลบเรียบร้อย');
+  } catch(e){showToast('เกิดข้อผิดพลาด','error');}
+}
+
+// ============================================================
+// DELETE REQUESTS (MEMBER)
+// ============================================================
+window.requestDelete = async function(recordId){
+  closeModal('modal-edit');
+  const r=allRecords.find(x=>x.id===recordId);if(!r)return;
+  const reason=prompt('เหตุผลที่ต้องการลบ (ไม่บังคับ):','');
+  const total=Object.values(r.items||{}).reduce((a,b)=>a+b,0);
+  try {
+    await addDoc(collection(db,'deleteRequests'),{
+      recordId, recordSummary:`${r.date?.d}/${r.date?.m}/${r.date?.y} ${r.cashier} ${r.type==='income'?'รายรับ':'รายเบิก'} ${fmtN(total)} ฿`,
+      reason:reason||'', requestedBy:currentUser.uid, requestedByName:currentUser.displayName||currentUser.email,
+      status:'pending', createdAt:serverTimestamp()
+    });
+    showToast('<svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg> ส่งคำขอลบแล้ว รอ Admin อนุมัติ','info');
+  } catch(e){showToast('เกิดข้อผิดพลาด','error');}
+}
+
+// ============================================================
+// ADMIN: MANAGE DELETE REQUESTS
+// ============================================================
+async function loadDeleteRequests(){
+  try {
+    let snap;
+    try {
+      const q=query(collection(db,'deleteRequests'),where('status','==','pending'),orderBy('createdAt','desc'));
+      snap=await getDocs(q);
+    } catch(idxErr) {
+      console.warn('Index missing, fetching without order');
+      const q2=query(collection(db,'deleteRequests'),where('status','==','pending'));
+      snap=await getDocs(q2);
+    }
+    const list=document.getElementById('delete-requests-list');
+    const count=document.getElementById('pending-count');
+    if(snap.empty){list.innerHTML='<div class="empty">ไม่มีคำขอรอการอนุมัติ <svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>';count.style.display='none';return;}
+    count.textContent=snap.size;count.style.display='inline-block';
+    list.innerHTML=snap.docs.map(d=>{
+      const req=d.data();
+      return `<div class="inbox-item">
+        <div class="inbox-header">
+          <span class="badge badge-pending">รอการอนุมัติ</span>
+          <span style="font-size:12px;color:var(--text2)">${req.requestedByName}</span>
+        </div>
+        <div class="inbox-msg"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg> ขอลบ: <strong>${req.recordSummary}</strong>${req.reason?`<br>เหตุผล: ${req.reason}`:''}</div>
+        <div class="inbox-actions">
+          <button class="btn btn-primary btn-sm" onclick="approveDelete('${d.id}','${req.recordId}')"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> อนุมัติลบ</button>
+          <button class="btn btn-ghost btn-sm" onclick="rejectDelete('${d.id}')"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg> ปฏิเสธ</button>
+        </div>
+      </div>`;
+    }).join('');
+  } catch(e){console.error(e);}
+}
+
+window.approveDelete = async function(reqId, recordId){
+  if(!confirm('อนุมัติการลบรายการนี้?'))return;
+  try {
+    const batch=writeBatch(db);
+    batch.delete(doc(db,'records',recordId));
+    batch.update(doc(db,'deleteRequests',reqId),{status:'approved',approvedAt:serverTimestamp(),approvedBy:currentUser.uid});
+    await batch.commit();
+    showToast('<svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> ลบรายการแล้ว');
+    loadDeleteRequests();
+  } catch(e){showToast('เกิดข้อผิดพลาด','error');}
+}
+
+window.rejectDelete = async function(reqId){
+  try {
+    await updateDoc(doc(db,'deleteRequests',reqId),{status:'rejected',rejectedAt:serverTimestamp()});
+    showToast('<svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg> ปฏิเสธคำขอแล้ว');
+    loadDeleteRequests();
+  } catch(e){showToast('เกิดข้อผิดพลาด','error');}
+}
+
+// ============================================================
+// MESSAGES
+// ============================================================
+window.sendMessage = async function(){
+  const content=document.getElementById('msg-content').value.trim();
+  const type=document.getElementById('msg-type').value;
+  if(!content){showToast('กรุณาพิมพ์ข้อความ','error');return;}
+  try {
+    await addDoc(collection(db,'messages'),{
+      content, type, sentBy:currentUser.uid, sentByName:currentUser.displayName||currentUser.email,
+      sentByEmail:currentUser.email, status:'unread', createdAt:serverTimestamp()
+    });
+    document.getElementById('msg-content').value='';
+    showToast('<svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg> ส่งข้อความแล้ว','info');
+    loadMyMessages();
+  } catch(e){showToast('เกิดข้อผิดพลาด','error');}
+}
+
+async function loadMessages(){
+  try {
+    let snap;
+    try {
+      const q=query(collection(db,'messages'),orderBy('createdAt','desc'));
+      snap=await getDocs(q);
+    } catch(e) {
+      snap=await getDocs(collection(db,'messages'));
+    }
+    const list=document.getElementById('messages-list');
+    if(!list) return;
+    if(snap.empty){list.innerHTML='<div class="empty">ยังไม่มีข้อความ</div>';return;}
+    const tL={'suggestion':'ข้อเสนอแนะ','question':'คำถาม','report':'รายงานปัญหา','other':'อื่นๆ'};
+    list.innerHTML=snap.docs.map(d=>{
+      const msg=d.data();
+      const replyHtml='';
+      return `<div class="inbox-item" id="msg-${d.id}">
+        <div class="inbox-header">
+          <span class="badge badge-income">${tL[msg.type]||msg.type}</span>
+          <span style="font-size:12px;color:var(--text2);font-weight:600">${msg.sentByName}</span>
+          <span class="badge ${msg.status==='read'?'badge-approved':'badge-pending'}">${msg.status==='read'?'อ่านแล้ว':'ใหม่'}</span>
+          <span class="ml-auto" style="display:flex;gap:6px;flex-wrap:wrap">
+            ${msg.status==='unread'?`<button class="btn btn-ghost btn-sm" onclick="markRead('${d.id}')">อ่านแล้ว</button>`:''}
+            
+            <button class="btn btn-danger btn-sm" onclick="deleteMsg('${d.id}')"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M9 6V4h6v2"/></svg></button>
+          </span>
+        </div>
+        <div class="inbox-msg">${msg.content}</div>
+        ${replyHtml}
+      </div>`;
+    }).join('');
+  } catch(e){console.error('loadMessages:',e);}
+}
+
+window.deleteMsg = async function(msgId) {
+  if(!confirm('ลบข้อความนี้?')) return;
+  try {
+    await deleteDoc(doc(db,'messages',msgId));
+    showToast('ลบแล้ว'); loadMessages();
+  } catch(e){showToast('เกิดข้อผิดพลาด','error');}
+}
+
+async function loadMyMessages(){
+  try {
+    const q=query(collection(db,'messages'),where('sentBy','==',currentUser.uid),orderBy('createdAt','desc'));
+    const snap=await getDocs(q);
+    const list=document.getElementById('my-messages-list');
+    if(!list)return;
+    if(snap.empty){list.innerHTML='<div class="empty">ยังไม่มีประวัติการส่ง</div>';return;}
+    const typeLabels={'suggestion':'<svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="9" y1="18" x2="15" y2="18"/><line x1="10" y1="22" x2="14" y2="22"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14"/></svg> ข้อเสนอแนะ','question':'<svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> คำถาม','report':'<svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> รายงานปัญหา','other':'<svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg> อื่นๆ'};
+    list.innerHTML=snap.docs.map(d=>{
+      const msg=d.data();
+      return `<div class="inbox-item">
+        <div class="inbox-header">
+          <span class="badge badge-income">${typeLabels[msg.type]||msg.type}</span>
+          <span class="badge ${msg.status==='read'?'badge-approved':'badge-pending'}">${msg.status==='read'?'อ่านแล้ว':'รอการอ่าน'}</span>
+        </div>
+        <div class="inbox-msg">${msg.content}</div>
+        
+      </div>`;
+    }).join('');
+  } catch(e){console.error(e);}
+}
+
+// ============================================================
+// DASHBOARD + CHARTS
+// ============================================================
+function themeColors(){
+  const dark=document.documentElement.getAttribute('data-theme')==='dark';
+  return {grid:dark?'rgba(255,255,255,.05)':'rgba(0,0,0,.05)',text:dark?'#8080aa':'#4e5080',tooltipBg:dark?'#1c1c2e':'#fff',tooltipText:dark?'#e8e8f4':'#18182e'};
+}
+function destroyCharts(){Object.values(charts).forEach(c=>{try{c.destroy();}catch(e){}});charts={};}
+
+function renderDashboard(){
+  const fd=+document.getElementById('d-fd').value,fm=+document.getElementById('d-fm').value,fy=+document.getElementById('d-fy').value;
+  const td=+document.getElementById('d-td').value,tm=+document.getElementById('d-tm').value,ty=+document.getElementById('d-ty').value;
+  const from=fy*10000+fm*100+fd,to=ty*10000+tm*100+td;
+  const recs=allRecords.filter(r=>{const k=r.dateKey||(r.date?dKey(r.date):0);return k>=from&&k<=to;});
+  const inc=recs.filter(r=>r.type==='income');
+  const exp=recs.filter(r=>r.type==='expense');
+  const totalI=inc.reduce((s,r)=>s+Object.values(r.items||{}).reduce((a,b)=>a+b,0),0);
+  const totalE=exp.reduce((s,r)=>s+Object.values(r.items||{}).reduce((a,b)=>a+b,0),0);
+  const profit=totalI-totalE;
+  document.getElementById('qs-wrap').innerHTML=`
+    <div class="quick-stats">
+      <div class="qs-card"><div class="qs-label">รายรับรวม</div><div class="qs-val" style="color:var(--green)">${fmtN(totalI)}</div><div class="qs-sub">บาท</div></div>
+      <div class="qs-card"><div class="qs-label">รายเบิกรวม</div><div class="qs-val" style="color:var(--red)">${fmtN(totalE)}</div><div class="qs-sub">บาท</div></div>
+      <div class="qs-card"><div class="qs-label">กำไรสุทธิ</div><div class="qs-val" style="color:${profit>=0?'var(--green)':'var(--red)'}">${fmtN(profit)}</div><div class="qs-sub">บาท</div></div>
+    </div>`;
+  destroyCharts();
+  const tc=themeColors();
+  Chart.defaults.color=tc.text;Chart.defaults.font.family="'Sarabun',sans-serif";
+  const ttp={backgroundColor:tc.tooltipBg,titleColor:tc.tooltipText,bodyColor:tc.tooltipText,borderColor:'rgba(0,229,255,.25)',borderWidth:1,cornerRadius:12,padding:10};
+
+  // Bar chart
+  const dayKeys=[...new Set(inc.map(r=>r.dateKey||(r.date?dKey(r.date):0)))].filter(Boolean).sort();
+  const dayLabels=dayKeys.map(k=>`${Math.floor(k%100)}/${Math.floor((k/100)%100)}`);
+  const barDS=['C1','C2','C3'].map(c=>({label:c,data:dayKeys.map(k=>inc.filter(r=>(r.dateKey||(r.date?dKey(r.date):0))===k&&r.cashier===c).reduce((s,r)=>s+Object.values(r.items||{}).reduce((a,b)=>a+b,0),0)),backgroundColor:CC[c]+'bb',borderColor:CC[c],borderWidth:1,borderRadius:6}));
+  charts.bar=new Chart(document.getElementById('ch-bar').getContext('2d'),{type:'bar',data:{labels:dayLabels,datasets:barDS},options:{responsive:true,interaction:{mode:'index',intersect:false},plugins:{legend:{display:false},tooltip:{...ttp,callbacks:{label:ctx=>`${ctx.dataset.label}: ${fmtN(ctx.raw)} ฿`}}},scales:{x:{grid:{color:tc.grid},ticks:{color:tc.text}},y:{grid:{color:tc.grid},ticks:{color:tc.text,callback:v=>fmtN(v)}}}}});
+  document.getElementById('lg-bar').innerHTML=['C1','C2','C3'].map(c=>`<div class="legend-item"><div class="legend-dot" style="background:${CC[c]}"></div>${c}</div>`).join('');
+
+  // Donut cashier
+  const cTot={C1:0,C2:0,C3:0};
+  inc.forEach(r=>cTot[r.cashier]=(cTot[r.cashier]||0)+Object.values(r.items||{}).reduce((a,b)=>a+b,0));
+  const cL=Object.keys(cTot).filter(k=>cTot[k]>0),cV=cL.map(k=>cTot[k]),cC=cL.map(k=>CC[k]);
+  charts.dc=new Chart(document.getElementById('ch-dc').getContext('2d'),{type:'doughnut',data:{labels:cL,datasets:[{data:cV,backgroundColor:cC,borderColor:'transparent',hoverOffset:8}]},options:{cutout:'68%',responsive:true,plugins:{legend:{display:false},tooltip:{...ttp,callbacks:{label:ctx=>`${ctx.label}: ${fmtN(ctx.raw)} ฿ (${(ctx.raw/(cV.reduce((a,b)=>a+b,0)||1)*100).toFixed(1)}%)`}}}}});
+  document.getElementById('lg-dc').innerHTML=cL.map((l,i)=>`<div class="legend-item"><div class="legend-dot" style="background:${cC[i]}"></div>${l}: ${fmtN(cV[i])}</div>`).join('');
+
+  // Donut income type - filter hidden items
+  const hiddenI=JSON.parse(localStorage.getItem('hiddenIncomeItems')||'[]');
+  const tMapRaw={};inc.forEach(r=>Object.entries(r.items||{}).forEach(([k,v])=>tMapRaw[k]=(tMapRaw[k]||0)+v));
+  const tMap={};Object.entries(tMapRaw).forEach(([k,v])=>{if(!hiddenI.includes(k))tMap[k]=v;});
+  const tL=Object.keys(tMap),tV=Object.values(tMap),tC=tL.map((_,i)=>PAL[i%PAL.length]);
+  charts.dt=new Chart(document.getElementById('ch-dt').getContext('2d'),{type:'doughnut',data:{labels:tL,datasets:[{data:tV,backgroundColor:tC,borderColor:'transparent',hoverOffset:8}]},options:{cutout:'68%',responsive:true,plugins:{legend:{display:false},tooltip:{...ttp,callbacks:{label:ctx=>`${ctx.label}: ${fmtN(ctx.raw)} ฿`}}}}});
+  document.getElementById('lg-dt').innerHTML=tL.map((l,i)=>`<div class="legend-item"><div class="legend-dot" style="background:${tC[i]}"></div>${l}: ${fmtN(tV[i])}</div>`).join('');
+
+  // Donut expense - filter hidden items
+  const hiddenE=JSON.parse(localStorage.getItem('hiddenExpenseItems')||'[]');
+  const eMapRaw={};exp.forEach(r=>Object.entries(r.items||{}).forEach(([k,v])=>eMapRaw[k]=(eMapRaw[k]||0)+v));
+  const eMap={};Object.entries(eMapRaw).forEach(([k,v])=>{if(!hiddenE.includes(k))eMap[k]=v;});
+  const eL=Object.keys(eMap),eV=Object.values(eMap),eC=['#ff3d71','#ffaa00','#ff8c00','#b44bff','#7c9eff','#5ddba5'];
+  charts.de=new Chart(document.getElementById('ch-de').getContext('2d'),{type:'doughnut',data:{labels:eL,datasets:[{data:eV,backgroundColor:eC,borderColor:'transparent',hoverOffset:8}]},options:{cutout:'68%',responsive:true,plugins:{legend:{display:false},tooltip:{...ttp,callbacks:{label:ctx=>`${ctx.label}: ${fmtN(ctx.raw)} ฿`}}}}});
+  document.getElementById('lg-de').innerHTML=eL.map((l,i)=>`<div class="legend-item"><div class="legend-dot" style="background:${eC[i]||'#888'}"></div>${l}: ${fmtN(eV[i])}</div>`).join('');
+
+  // Dual Line chart: income + expense
+  const allDK=[...new Set(recs.map(r=>r.dateKey||(r.date?dKey(r.date):0)))].filter(Boolean).sort();
+  const lineLabels=allDK.map(k=>`${Math.floor(k%100)}/${Math.floor((k/100)%100)}`);
+  const incomeData=allDK.map(k=>recs.filter(r=>(r.dateKey||(r.date?dKey(r.date):0))===k&&r.type==='income').reduce((s,r)=>s+Object.values(r.items||{}).reduce((a,b)=>a+b,0),0));
+  const expenseData=allDK.map(k=>recs.filter(r=>(r.dateKey||(r.date?dKey(r.date):0))===k&&r.type==='expense').reduce((s,r)=>s+Object.values(r.items||{}).reduce((a,b)=>a+b,0),0));
+  const lCtx=document.getElementById('ch-line').getContext('2d');
+  const gradI=lCtx.createLinearGradient(0,0,0,220);gradI.addColorStop(0,'rgba(0,214,143,.2)');gradI.addColorStop(1,'rgba(0,214,143,0)');
+  const gradE=lCtx.createLinearGradient(0,0,0,220);gradE.addColorStop(0,'rgba(255,61,113,.2)');gradE.addColorStop(1,'rgba(255,61,113,0)');
+  charts.line=new Chart(lCtx,{
+    type:'line',
+    data:{labels:lineLabels,datasets:[
+      {label:'รายรับ',data:incomeData,borderColor:'#00d68f',backgroundColor:gradI,tension:.4,fill:true,pointRadius:4,pointBackgroundColor:'#00d68f',pointBorderColor:'transparent',hidden:false},
+      {label:'รายเบิก',data:expenseData,borderColor:'#ff3d71',backgroundColor:gradE,tension:.4,fill:true,pointRadius:4,pointBackgroundColor:'#ff3d71',pointBorderColor:'transparent',hidden:false}
+    ]},
+    options:{responsive:true,interaction:{mode:'index',intersect:false},
+      plugins:{legend:{display:false},tooltip:{...ttp,callbacks:{label:ctx=>`${ctx.dataset.label}: ${fmtN(ctx.raw)} ฿`}}},
+      scales:{x:{grid:{color:tc.grid},ticks:{color:tc.text}},y:{grid:{color:tc.grid},ticks:{color:tc.text,callback:v=>fmtN(v)}}}}
+  });
+  document.getElementById('lg-line').innerHTML=`
+    <div class="legend-item"><div class="legend-dot" style="background:#00d68f"></div>รายรับ</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#ff3d71"></div>รายเบิก</div>`;
+}
+
+
+window.toggleLineChart = function(type) {
+  const btn = document.getElementById(`toggle-${type}-line`);
+  btn.classList.toggle('active');
+  if(!charts.line) return;
+  const idx = type==='income' ? 0 : 1;
+  const meta = charts.line.getDatasetMeta(idx);
+  meta.hidden = !meta.hidden;
+  charts.line.update();
+}
+
+
+
+window.switchRptView = function(mode) {
+  document.getElementById('rpt-view-all').classList.toggle('active', mode==='all');
+  document.getElementById('rpt-view-daily').classList.toggle('active', mode==='daily');
+  document.getElementById('rpt-view-all-section').style.display = mode==='all'?'block':'none';
+  document.getElementById('rpt-view-daily-section').style.display = mode==='daily'?'block':'none';
+}
+
+window.copyFullReport = function() {
+  const text = document.getElementById('rpt-output').textContent;
+  if(!text.trim()){showToast('ยังไม่มีรายงาน','error');return;}
+  navigator.clipboard.writeText(text).then(()=>showToast('คัดลอกรายงานรวมแล้ว'));
+}
+
+window._dailyTexts = {};
+
+function buildDailyCards(sortedDays) {
+  const container = document.getElementById('rpt-daily-cards');
+  if(!container) return;
+  window._dailyTexts = {};
+
+  container.innerHTML = sortedDays.map(([,day]) => {
+    const dayTotal = Object.values(day.cashiers).flatMap(c=>Object.values(c)).reduce((a,b)=>a+b,0);
+    const dk = `${day.date?.d}/${day.date?.m}`;
+
+    // Build text for this day
+    let dayText = '';
+    const parts = [];
+    ['C1','C2','C3'].forEach(c=>{
+      if(day.cashiers[c]){
+        const sub = Object.entries(day.cashiers[c]).map(([k,v])=>
+          k==='เงินสด'?`สด ${fmtN(v)}`:k==='ค่าจอดรถ'?`รถ ${fmtN(v)}`:k==='กำไรค่าข้าว'?`กำไรข้าว ${fmtN(v)}`:`${k} ${fmtN(v)}`
+        ).join(' / ');
+        parts.push(`${c}: ${sub}`);
+      }
+    });
+    dayText = `${day.date?.d} ${MONTHS_FULL[day.date?.m]?.slice(0,3)}.: ยอดรวม ${fmtN(dayTotal)} บาท\n(${parts.join(' | ')})`;
+
+    // Summary line
+    const summaryLines = [];
+    ['C1','C2','C3'].forEach(c=>{
+      if(day.cashiers[c]){
+        const t = Object.values(day.cashiers[c]).reduce((a,b)=>a+b,0);
+        summaryLines.push(`${c}: ${fmtN(t)}`);
+      }
+    });
+
+    window._dailyTexts[dk] = dayText;
+
+    return `<div class="card" style="margin-bottom:10px;padding:14px">
+      <div class="flex align-center gap8" style="margin-bottom:8px">
+        <span style="font-family:'Space Mono',monospace;font-size:13px;font-weight:700;color:var(--accent)">${dk}/${day.date?.y}</span>
+        <span style="font-size:13px;font-weight:700;color:var(--green);margin-left:auto">${fmtN(dayTotal)} บาท</span>
+      </div>
+      <div style="font-size:12px;color:var(--text2);margin-bottom:10px">${parts.join(' | ')}</div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap">
+        ${summaryLines.map(s=>`<span style="font-size:11px;background:var(--surface2);padding:3px 8px;border-radius:20px;color:var(--text2)">${s}</span>`).join('')}
+      </div>
+      <button class="btn btn-ghost btn-sm btn-full" style="margin-top:10px" onclick="copyDayReport('${dk}')">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></svg>
+        คัดลอกวัน ${dk}
+      </button>
+    </div>`;
+  }).join('');
+}
+
+window.copyDayReport = function(dk) {
+  const text = window._dailyTexts[dk];
+  if(!text){showToast('ไม่พบข้อมูล','error');return;}
+  navigator.clipboard.writeText(text).then(()=>showToast('คัดลอกวัน '+dk+' แล้ว'));
+}
+
+
+// ══════════════════════════════════════════
+// USER MANAGEMENT (ADMIN)
+// ══════════════════════════════════════════
+window.openUserManager = async function() {
+  showModal('modal-users');
+  const el = document.getElementById('user-list-content');
+  el.innerHTML = '<div class="loading-wrap"><div class="spinner"></div> กำลังโหลด...</div>';
+  try {
+    const snap = await getDocs(collection(db,'users'));
+    if(snap.empty){ el.innerHTML='<div class="empty">ยังไม่มีสมาชิก</div>'; return; }
+    const roleColors = { admin:'var(--yellow)', member:'var(--accent)', test:'var(--purple)' };
+    const roleLabels = { admin:'👑 Admin', member:'👤 Member', test:'🧪 Test' };
+    el.innerHTML = snap.docs.map(d => {
+      const u = d.data();
+      const uid = d.id;
+      const role = u.role || 'member';
+      const isMe = uid === currentUser.uid;
+      return `<div style="background:var(--surface2);border:1px solid var(--border);border-radius:14px;padding:14px;margin-bottom:10px">
+        <div class="flex align-center gap8" style="margin-bottom:10px;flex-wrap:wrap">
+          <div style="width:36px;height:36px;border-radius:50%;background:var(--accent2);display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;flex-shrink:0">
+            ${(u.name||'U')[0].toUpperCase()}
+          </div>
+          <div style="flex:1;min-width:0">
+            <div style="font-weight:700;font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${u.name||'ไม่ระบุชื่อ'}</div>
+            <div style="font-size:11px;color:var(--text2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${u.email||''}</div>
+          </div>
+          <span style="font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;background:rgba(0,0,0,.2);color:${roleColors[role]||'var(--text2)'}">
+            ${roleLabels[role]||role}
+          </span>
+        </div>
+        ${isMe ? '<div style="font-size:11px;color:var(--text3);text-align:center">— บัญชีของคุณ —</div>' : `
+        <div class="cat-group">
+          <button class="cat-btn neutral ${role==='admin'?'active':''}" onclick="setUserRole('${uid}','admin',this)" style="font-size:12px">👑 Admin</button>
+          <button class="cat-btn neutral ${role==='member'?'active':''}" onclick="setUserRole('${uid}','member',this)" style="font-size:12px">👤 Member</button>
+          <button class="cat-btn neutral ${role==='test'?'active':''}" onclick="setUserRole('${uid}','test',this)" style="font-size:12px">🧪 Test</button>
+        </div>`}
+      </div>`;
+    }).join('');
+  } catch(e) {
+    el.innerHTML = `<div class="empty">เกิดข้อผิดพลาด: ${e.message}</div>`;
+    console.error(e);
+  }
+}
+
+window.adminRenameUser = async function(uid, btn) {
+  const card = btn.closest('[data-uid]');
+  const inp = card.querySelector('.um-rename-input');
+  const newName = inp.value.trim();
+  if(!newName){ showToast('กรุณากรอกชื่อ','error'); return; }
+  try {
+    await updateDoc(doc(db,'users',uid), { name: newName });
+    card.querySelector('.um-name-display').textContent = newName;
+    card.querySelector('.um-rename-form').style.display = 'none';
+    showToast('<svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> เปลี่ยนชื่อเรียบร้อย');
+  } catch(e) {
+    showToast('เกิดข้อผิดพลาด: '+e.message,'error');
+    console.error(e);
+  }
+}
+
+window.setUserRole = async function(uid, role, btn) {
+  try {
+    await updateDoc(doc(db,'users',uid), { role });
+    const row = btn.closest('.cat-group');
+    row.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    // Update role badge in the card
+    const card = btn.closest('[data-uid]');
+    if(card){
+      const roleColors = { admin:'var(--yellow)', member:'var(--accent)', test:'var(--purple)' };
+      const roleLabels = { admin:'👑 Admin', member:'👤 Member', test:'🧪 Test' };
+      const badge = card.querySelector('.role-label-badge');
+      if(badge){ badge.textContent = roleLabels[role]||role; badge.style.color = roleColors[role]||'var(--text2)'; }
+    }
+    showToast(`เปลี่ยนเป็น ${role==='admin'?'Admin':role==='test'?'Test Member':'Member'} แล้ว`,'info');
+  } catch(e) {
+    showToast('เกิดข้อผิดพลาด','error');
+    console.error(e);
+  }
+}
+
+// ============================================================
+// USER MANAGER PAGE (full screen)
+// ============================================================
+window.openUserManagerPage = function() {
+  document.getElementById('page-user-manager').style.display = 'block';
+  document.body.style.overflow = 'hidden';
+  loadUserManagerPage();
+}
+window.closeUserManagerPage = function() {
+  document.getElementById('page-user-manager').style.display = 'none';
+  document.body.style.overflow = '';
+}
+window.loadUserManagerPage = async function() {
+  const el = document.getElementById('um-list');
+  const countEl = document.getElementById('um-count');
+  el.innerHTML = '<div class="loading-wrap"><div class="spinner"></div> กำลังโหลด...</div>';
+  try {
+    const snap = await getDocs(collection(db,'users'));
+    if(snap.empty){ el.innerHTML='<div class="empty">ยังไม่มีสมาชิก</div>'; return; }
+    countEl.textContent = snap.size + ' บัญชีในระบบ';
+    const roleColors = { admin:'var(--yellow)', member:'var(--accent)', test:'var(--purple)' };
+    const roleLabels = { admin:'👑 Admin', member:'👤 Member', test:'🧪 Test' };
+    const roleBg = { admin:'rgba(255,170,0,.12)', member:'var(--accent-dim)', test:'rgba(140,60,255,.15)' };
+    const cards = snap.docs.map(d => {
+      const u = d.data();
+      const uid = d.id;
+      const role = u.role || 'member';
+      const isMe = uid === currentUser.uid;
+      const initials = (u.name||'U').slice(0,2).toUpperCase();
+      const safeName = (u.name||'').replace(/"/g,'&quot;');
+      const nameHtml = '<div class="um-name-display" style="font-weight:700;font-size:15px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + (u.name||'\u0e44\u0e21\u0e48\u0e23\u0e30\u0e1a\u0e38\u0e0a\u0e37\u0e48\u0e2d') + '</div>';
+      const emailHtml = '<div style="font-size:11px;color:var(--text2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + (u.email||'') + '</div>';
+      const badgeHtml = '<span class="role-label-badge" style="font-size:11px;font-weight:700;padding:4px 10px;border-radius:20px;background:' + (roleBg[role]||'rgba(0,0,0,.1)') + ';color:' + (roleColors[role]||'var(--text2)') + '">' + (roleLabels[role]||role) + '</span>';
+      const avatarHtml = '<div style="width:44px;height:44px;border-radius:50%;background:var(--accent2);display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;flex-shrink:0;color:var(--bg)">' + initials + '</div>';
+
+      let bodyHtml;
+      if(isMe) {
+        bodyHtml = '<div style="font-size:12px;color:var(--text3);text-align:center;padding:6px 0">— \u0e1a\u0e31\u0e0d\u0e0a\u0e35\u0e02\u0e2d\u0e07\u0e04\u0e38\u0e13 —</div>';
+      } else {
+        bodyHtml = '<div class="um-rename-form" style="display:none;margin-bottom:10px">'
+          + '<div style="display:flex;gap:8px;align-items:center">'
+          + '<input class="form-input um-rename-input" placeholder="\u0e0a\u0e37\u0e48\u0e2d\u0e43\u0e2b\u0e21\u0e48..." style="flex:1;font-size:13px" value="' + safeName + '"/>'
+          + '<button class="btn btn-primary btn-sm" onclick="adminRenameUser(\'' + uid + '\',this)">\u0e1a\u0e31\u0e19\u0e17\u0e36\u0e01</button>'
+          + '<button class="btn btn-ghost btn-sm" onclick="this.closest(\'.um-rename-form\').style.display=\'none\'">\u0e22\u0e01\u0e40\u0e25\u0e34\u0e01</button>'
+          + '</div></div>'
+          + '<div style="display:flex;gap:6px;flex-direction:column">'
+          + '<div class="cat-group" style="display:flex;gap:6px">'
+          + '<button class="cat-btn neutral ' + (role==='admin'?'active':'') + '" onclick="setUserRole(\'' + uid + '\',\'admin\',this)" style="flex:1;font-size:13px">👑 Admin</button>'
+          + '<button class="cat-btn neutral ' + (role==='member'?'active':'') + '" onclick="setUserRole(\'' + uid + '\',\'member\',this)" style="flex:1;font-size:13px">👤 Member</button>'
+          + '<button class="cat-btn neutral ' + (role==='test'?'active':'') + '" onclick="setUserRole(\'' + uid + '\',\'test\',this)" style="flex:1;font-size:13px">🧪 Test</button>'
+          + '</div>'
+          + '<button class="btn btn-ghost btn-sm" onclick="var c=this.closest(\'[data-uid]\');var f=c.querySelector(\'.um-rename-form\');var i=c.querySelector(\'.um-rename-input\');i.value=c.querySelector(\'.um-name-display\').textContent;f.style.display=\'flex\';i.focus()" style="font-size:12px">'
+          + '<svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg> \u0e40\u0e1b\u0e25\u0e35\u0e48\u0e22\u0e19\u0e0a\u0e37\u0e48\u0e2d'
+          + '</button></div>';
+      }
+
+      return '<div data-uid="' + uid + '" style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:16px;margin-bottom:12px">'
+        + '<div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">'
+        + avatarHtml + '<div style="flex:1;min-width:0">' + nameHtml + emailHtml + '</div>' + badgeHtml
+        + '</div>' + bodyHtml + '</div>';
+    });
+    el.innerHTML = cards.join('');
+  } catch(e) {
+    el.innerHTML = '<div class="empty">\u0e40\u0e01\u0e34\u0e14\u0e02\u0e49\u0e2d\u0e1c\u0e34\u0e14\u0e1e\u0e25\u0e32\u0e14: ' + e.message + '</div>';
+    console.error(e);
+  }
+}
+window.renderDashboard = renderDashboard;
+
+// ============================================================
+// RENAME SELF
+// ============================================================
+window.openRenameSelf = function() {
+  const form = document.getElementById('rename-self-form');
+  const inp = document.getElementById('rename-self-input');
+  inp.value = currentUser.displayName || '';
+  form.style.display = 'flex';
+  inp.focus();
+}
+
+window.doRenameSelf = async function() {
+  const inp = document.getElementById('rename-self-input');
+  const newName = inp.value.trim();
+  if(!newName){ showToast('กรุณากรอกชื่อ','error'); return; }
+  if(newName === currentUser.displayName){ document.getElementById('rename-self-form').style.display='none'; return; }
+  try {
+    await updateProfile(currentUser, { displayName: newName });
+    await updateDoc(doc(db,'users',currentUser.uid), { name: newName });
+    document.getElementById('rename-self-form').style.display = 'none';
+    document.getElementById('my-display-name').textContent = newName;
+    // Update top-bar avatar initial
+    setupRoleUI();
+    showToast('<svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> เปลี่ยนชื่อเรียบร้อย');
+  } catch(e) {
+    showToast('เกิดข้อผิดพลาด: '+e.message,'error');
+    console.error(e);
+  }
+}
+
+// ============================================================
+// REPORT
+// ============================================================
+window.setRptCat = function(c){
+  rptCat=c;
+  document.getElementById('rpt-income').classList.toggle('active',c==='income');
+  document.getElementById('rpt-expense').classList.toggle('active',c==='expense');
+  document.getElementById('cashier-income-section').style.display=c==='income'?'block':'none';
+  document.getElementById('cashier-expense-section').style.display=c==='expense'?'block':'none';
+  renderRptCustomItems();
+}
+window.setRptDetail = function(d){rptDetail=d;document.getElementById('rpt-all').classList.toggle('active',d==='all');document.getElementById('rpt-custom').classList.toggle('active',d==='custom');document.getElementById('rpt-custom-items').style.display=d==='custom'?'block':'none';}
+window.toggleRptCashier = function(btn){document.querySelectorAll('#rpt-cashier-group .cashier-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');rptCashier=btn.dataset.c;}
+function renderRptCustomItems(){const items=rptCat==='income'?incomeItems:expenseItems;document.getElementById('rpt-custom-items').innerHTML=items.map(n=>`<label class="check-item"><input type="checkbox" class="rpt-chk" value="${n}" checked/><span>${n}</span></label>`).join('');}
+
+window.generateReport = function(){
+  const fd=+document.getElementById('rfd').value,fm=+document.getElementById('rfm').value,fy=+document.getElementById('rfy').value;
+  const td=+document.getElementById('rtd').value,tm=+document.getElementById('rtm').value,ty=+document.getElementById('rty').value;
+  const from=fy*10000+fm*100+fd,to=ty*10000+tm*100+td;
+  const sel=rptDetail==='all'?null:[...document.querySelectorAll('.rpt-chk:checked')].map(c=>c.value);
+
+  // Cashier order for expense: C1->C3->C2
+  const CASHIER_ORDER = ['C1','C3','C2'];
+  let expFromCashier = null, expToCashier = null;
+  if(rptCat==='expense'){
+    expFromCashier = document.getElementById('exp-cashier-from').value;
+    expToCashier = document.getElementById('exp-cashier-to').value;
+  }
+
+  // Get all matching days first (no cashier filter yet)
+  let recs=allRecords.filter(r=>{
+    const k=r.dateKey||(r.date?dKey(r.date):0);
+    if(k<from||k>to||r.type!==rptCat) return false;
+    if(rptCat==='income') return rptCashier==='all'||r.cashier===rptCashier;
+    return true;
+  });
+  if(sel)recs=recs.map(r=>{const fi={};sel.forEach(k=>{if(r.items?.[k])fi[k]=r.items[k];});return {...r,items:fi};}).filter(r=>Object.keys(r.items||{}).length);
+  if(!recs.length){document.getElementById('rpt-result').style.display='none';showToast('ไม่มีข้อมูลในช่วงนี้','error');return;}
+
+  let text='';const gTotal={},cTot={C1:0,C2:0,C3:0};
+  if(rptCat==='income'){
+    const byDay={};
+    recs.forEach(r=>{const k=r.dateKey||(r.date?dKey(r.date):0);if(!byDay[k])byDay[k]={date:r.date,cashiers:{}};if(!byDay[k].cashiers[r.cashier])byDay[k].cashiers[r.cashier]={};Object.entries(r.items||{}).forEach(([ik,v])=>{byDay[k].cashiers[r.cashier][ik]=(byDay[k].cashiers[r.cashier][ik]||0)+v;gTotal[ik]=(gTotal[ik]||0)+v;cTot[r.cashier]=(cTot[r.cashier]||0)+v;});});
+    var sortedDays=Object.entries(byDay).sort((a,b)=>+a[0]-+b[0]);
+    const sorted=sortedDays;
+    const firstD=sorted[0][1].date,lastD=sorted[sorted.length-1][1].date;
+    text+=`รายละเอียดรายรับรายวัน (${firstD?.d} - ${lastD?.d} ${MONTHS_FULL[lastD?.m]})\n\n`;
+    sorted.forEach(([,day])=>{
+      const dayTotal=Object.values(day.cashiers).flatMap(c=>Object.values(c)).reduce((a,b)=>a+b,0);
+      text+=`${day.date?.d} ${MONTHS_FULL[day.date?.m]?.slice(0,3)}.: ยอดรวม ${fmtN(dayTotal)} บาท\n`;
+      const parts=[];
+      ['C1','C2','C3'].forEach(c=>{if(day.cashiers[c]){const sub=Object.entries(day.cashiers[c]).map(([k,v])=>k==='เงินสด'?`สด ${fmtN(v)}`:k==='ค่าจอดรถ'?`รถ ${fmtN(v)}`:k==='กำไรค่าข้าว'?`กำไรข้าว ${fmtN(v)}`:`${k} ${fmtN(v)}`).join(' / ');parts.push(`${c}: ${sub}`);}});
+      text+=`(${parts.join(' | ')})\n\n`;
+    });
+    const gs=Object.values(gTotal).reduce((a,b)=>a+b,0);
+    text+=`ยอดรวมสุทธิ (${firstD?.d} - ${lastD?.d} ${MONTHS_FULL[lastD?.m]}) = ${fmtN(gs)} บาท\n`;
+    if(cTot.C1)text+=`C1: ${fmtN(cTot.C1)} บาท\n`;
+    if(cTot.C2)text+=`C2: ${fmtN(cTot.C2)} บาท\n`;
+    if(cTot.C3)text+=`C3: ${fmtN(cTot.C3)} บาท\n`;
+    if(gTotal['ค่าจอดรถ'])text+=`ค่ารถ: ${fmtN(gTotal['ค่าจอดรถ'])} บาท\n`;
+    if(gTotal['กำไรค่าข้าว'])text+=`กำไรค่าข้าว: ${fmtN(gTotal['กำไรค่าข้าว'])} บาท\n`;
+    document.getElementById('rpt-stats').innerHTML=`<div class="stat-card"><div class="stat-label">ยอดรวมสุทธิ</div><div class="stat-value income">${fmtN(Object.values(gTotal).reduce((a,b)=>a+b,0))}</div></div><div class="stat-card"><div class="stat-label">จำนวนวัน</div><div class="stat-value neutral">${sorted.length}</div></div><div class="stat-card"><div class="stat-label">C1</div><div class="stat-value income">${fmtN(cTot.C1||0)}</div></div><div class="stat-card"><div class="stat-label">C2+C3</div><div class="stat-value income">${fmtN((cTot.C2||0)+(cTot.C3||0))}</div></div>`;
+  } else {
+    const byDay={};
+    recs.forEach(r=>{const k=r.dateKey||(r.date?dKey(r.date):0);if(!byDay[k])byDay[k]={date:r.date,cashiers:{}};if(!byDay[k].cashiers[r.cashier])byDay[k].cashiers[r.cashier]={};Object.entries(r.items||{}).forEach(([ik,v])=>{byDay[k].cashiers[r.cashier][ik]=(byDay[k].cashiers[r.cashier][ik]||0)+v;gTotal[ik]=(gTotal[ik]||0)+v;});});
+    const sorted=Object.entries(byDay).sort((a,b)=>+a[0]-+b[0]);
+    const lastD=sorted[sorted.length-1][1].date;
+    const ceD=`${String(lastD?.d).padStart(2,'0')}/${String(lastD?.m).padStart(2,'0')}/${(lastD?.y||2569)-543+2000}`;
+    text+=`เบิกเงินคืน ${ceD}\n\n`;
+    let runTotal=0;
+    const CO=['C1','C3','C2'];
+    const fi2=CO.indexOf(expFromCashier||'C1'),ti2=CO.indexOf(expToCashier||'C2');
+    sorted.forEach(([,day],dayIdx)=>{
+      let dayT=0;
+      let dayCashiers;
+      if(sorted.length===1){
+        if(fi2<=ti2) dayCashiers=CO.slice(fi2,ti2+1);
+        else dayCashiers=[...CO.slice(fi2),...CO.slice(0,ti2+1)];
+      } else if(dayIdx===0){
+        dayCashiers=CO.slice(fi2);
+      } else if(dayIdx===sorted.length-1){
+        dayCashiers=CO.slice(0,ti2+1);
+      } else {
+        dayCashiers=CO;
+      }
+      dayCashiers.forEach(c=>{if(day.cashiers[c]){text+=`วันที่ ${day.date?.d}/${day.date?.m}/${day.date?.y} (${c})\n`;Object.entries(day.cashiers[c]).forEach(([k,v])=>{const lbl=k==='ต้นทุนค่าข้าว'?'จ่ายค่าทุนข้าว':k==='ค่าน้ำแข็ง'?'จ่ายค่าน้ำแข็ง':k;text+=`${lbl} ${fmtN(v)}\n`;dayT+=v;});}});
+      runTotal+=dayT;text+=`รวมโอน (${day.date?.d}/${day.date?.m}) = ${fmtN(dayT)}\n\n`;
+    });
+    text+=`ยอดโอนรวมสุทธิ = ${fmtN(runTotal)} บาท\n\nหมายเหตุ\n\n${appSettings.name}\nธนาคาร ${appSettings.bank}\n${appSettings.account}`;
+    document.getElementById('rpt-stats').innerHTML=`<div class="stat-card"><div class="stat-label">ยอดโอนรวม</div><div class="stat-value expense">${fmtN(runTotal)}</div></div><div class="stat-card"><div class="stat-label">จำนวนวัน</div><div class="stat-value neutral">${sorted.length}</div></div>`;
+  }
+  document.getElementById('rpt-output').textContent=text;
+
+  // Build daily cards for income report
+  if(rptCat==='income' && typeof sortedDays !== 'undefined') {
+    buildDailyCards(sortedDays);
+  } else {
+    document.getElementById('rpt-daily-cards').innerHTML = '<div class="empty">ใช้ได้เฉพาะรายงานรายรับครับ</div>';
+  }
+
+  // Reset to 'all' view
+  switchRptView('all');
+  document.getElementById('rpt-result').style.display='block';
+  document.getElementById('rpt-result').scrollIntoView({behavior:'smooth'});
+}
+
+window.copyReport = function(){navigator.clipboard.writeText(document.getElementById('rpt-output').textContent).then(()=>showToast('คัดลอกแล้ว'));}
+
+// ============================================================
+// EXPORT / IMPORT (ADMIN)
+// ============================================================
+window.exportData = function(){
+  const data={records:allRecords,settings:appSettings,incomeItems,expenseItems,exportedAt:new Date().toISOString()};
+  const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`bmnote_backup_${Date.now()}.json`;a.click();
+  showToast('<svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg> Export เรียบร้อย');
+}
+
+window.exportFullBackup = async function(){
+  if(currentRole !== 'admin') { showToast('เฉพาะ Admin เท่านั้น','error'); return; }
+  showToast('กำลังดึงข้อมูลทั้งหมด...');
+  try {
+    // 1. Records (already in memory, but re-fetch to be safe + complete)
+    const recordsSnap = await getDocs(collection(db,'records'));
+    const records = recordsSnap.docs.map(d=>({id:d.id,...d.data()}));
+
+    // 2. Users (critical for migration - roles, canExport, etc.)
+    const usersSnap = await getDocs(collection(db,'users'));
+    const users = usersSnap.docs.map(d=>({id:d.id,...d.data()}));
+
+    // 3. Settings
+    const settingsSnap = await getDoc(doc(db,'settings','app'));
+    const settings = settingsSnap.exists() ? settingsSnap.data() : {};
+
+    // 4. Messages/Inbox (if exists)
+    let messages = [];
+    try {
+      const msgSnap = await getDocs(collection(db,'messages'));
+      messages = msgSnap.docs.map(d=>({id:d.id,...d.data()}));
+    } catch(e){}
+
+    // 5. Delete requests (if exists)
+    let deleteRequests = [];
+    try {
+      const drSnap = await getDocs(collection(db,'deleteRequests'));
+      deleteRequests = drSnap.docs.map(d=>({id:d.id,...d.data()}));
+    } catch(e){}
+
+    const fullBackup = {
+      app: 'BM NOTE',
+      backupVersion: 1,
+      exportedAt: new Date().toISOString(),
+      exportedBy: currentUser?.email || 'unknown',
+      collections: {
+        records, users, settings, messages, deleteRequests
+      },
+      counts: {
+        records: records.length,
+        users: users.length,
+        messages: messages.length,
+        deleteRequests: deleteRequests.length
+      }
+    };
+
+    const blob = new Blob([JSON.stringify(fullBackup,null,2)],{type:'application/json'});
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `BMNOTE_FULL_BACKUP_${new Date().toISOString().slice(0,10)}_${Date.now()}.json`;
+    a.click();
+
+    showToast('✅ Backup สมบูรณ์: ' + records.length + ' records, ' + users.length + ' users');
+  } catch(e) {
+    console.error(e);
+    showToast('เกิดข้อผิดพลาด: ' + e.message, 'error');
+  }
+}
+
+// ============================================================
+// MULTI-BUSINESS MIGRATION (Master Dev only, Phase 1.0)
+// ============================================================
+function isMasterDev() {
+  return currentUser && MASTER_DEV_EMAILS.includes(currentUser.email);
+}
+
+function genInternalId() {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  const seg = (n) => Array.from({length:n}, () => chars[Math.floor(Math.random()*chars.length)]).join('');
+  return seg(3) + '-' + seg(2) + seg(2) + seg(2) + seg(2);
+}
+
+function genBusinessCode() {
+  const now = new Date();
+  const pad = n => String(n).padStart(2,'0');
+  return 'BP-' + pad(now.getDate()) + pad(now.getMonth()+1) + String(now.getFullYear()).slice(-2)
+    + pad(now.getHours()) + pad(now.getMinutes()) + pad(now.getSeconds());
+}
+
+let migrationPlan = null;
+
+window.runMigrationDryRun = async function() {
+  if(!isMasterDev()) { showToast('เฉพาะ Master Developer เท่านั้น', 'error'); return; }
+  showToast('กำลังตรวจสอบข้อมูล...');
+  try {
+    const recordsSnap = await getDocs(collection(db,'records'));
+    const records = recordsSnap.docs.map(d=>({id:d.id,...d.data()}));
+    const usersSnap = await getDocs(collection(db,'users'));
+    const users = usersSnap.docs.map(d=>({id:d.id,...d.data()}));
+    const settingsSnap = await getDoc(doc(db,'settings','app'));
+    const settings = settingsSnap.exists() ? settingsSnap.data() : {};
+    let messages = [];
+    try { messages = (await getDocs(collection(db,'messages'))).docs.map(d=>({id:d.id,...d.data()})); } catch(e){}
+    let deleteRequests = [];
+    try { deleteRequests = (await getDocs(collection(db,'deleteRequests'))).docs.map(d=>({id:d.id,...d.data()})); } catch(e){}
+
+    const existingBizSnap = await getDocs(collection(db,'businesses'));
+    if(existingBizSnap.docs.length > 0) {
+      document.getElementById('migration-preview').style.display = 'block';
+      document.getElementById('migration-preview').innerHTML = '<div style="color:var(--yellow)">⚠️ พบ business ที่มีอยู่แล้ว ('+existingBizSnap.docs.length+' รายการ) — อาจเคย migrate ไปแล้ว กรุณาตรวจสอบก่อนรันซ้ำ</div>';
+      document.getElementById('migration-confirm-btn').style.display = 'block';
+      return;
+    }
+
+    const internalId = genInternalId();
+    const businessCode = genBusinessCode();
+    const roleMap = { admin: 'owner', member: 'staff', test: 'staff' };
+
+    migrationPlan = { internalId, businessCode, businessName: 'BP Snooker', records, users, settings, messages, deleteRequests, roleMap };
+
+    const ownerCandidate = users.find(u => ADMIN_EMAILS.includes(u.email));
+
+    let html = '<div style="font-weight:700;margin-bottom:8px;color:var(--accent)">📋 แผนการย้ายข้อมูล (ยังไม่เขียนจริง)</div>';
+    html += '<div style="margin-bottom:6px">🏢 Business ใหม่: <b>BP Snooker</b></div>';
+    html += '<div style="margin-bottom:6px">🔑 Internal ID: <code>'+internalId+'</code></div>';
+    html += '<div style="margin-bottom:6px">🏷️ Business Code: <code>'+businessCode+'</code></div>';
+    html += '<div style="margin-bottom:6px">👑 Owner: '+(ownerCandidate ? ownerCandidate.email : '(ไม่พบ admin เดิม)')+'</div>';
+    html += '<div style="border-top:1px solid var(--border);margin:8px 0"></div>';
+    html += '<div style="margin-bottom:4px">📝 Records จะย้าย: <b>'+records.length+'</b> รายการ</div>';
+    html += '<div style="margin-bottom:4px">👥 Users จะย้าย: <b>'+users.length+'</b> คน</div>';
+    html += '<div style="margin-bottom:4px">💬 Messages: <b>'+messages.length+'</b></div>';
+    html += '<div style="margin-bottom:4px">🗑️ Delete Requests: <b>'+deleteRequests.length+'</b></div>';
+    html += '<div style="border-top:1px solid var(--border);margin:8px 0"></div>';
+    html += '<div style="font-size:11px;color:var(--text3)">Role mapping: admin→owner, member→staff, test→staff</div>';
+    html += '<div style="font-size:11px;color:var(--text3)">ข้อมูลเดิมใน records/users/settings จะ<b>ไม่ถูกลบ</b> — แค่คัดลอกเข้าโครงสร้างใหม่</div>';
+
+    document.getElementById('migration-preview').style.display = 'block';
+    document.getElementById('migration-preview').innerHTML = html;
+    document.getElementById('migration-confirm-btn').style.display = 'block';
+    showToast('✅ Dry run เสร็จสิ้น — ตรวจสอบแผนด้านบนก่อนยืนยัน');
+  } catch(e) {
+    console.error(e);
+    showToast('เกิดข้อผิดพลาด: ' + e.message, 'error');
+  }
+};
+
+window.confirmRunMigration = async function() {
+  if(!isMasterDev()) { showToast('เฉพาะ Master Developer เท่านั้น', 'error'); return; }
+  if(!migrationPlan) { showToast('กรุณากด Dry Run ก่อน', 'error'); return; }
+  if(!confirm('ยืนยันรัน Migration จริง?\n\nจะสร้าง business "BP Snooker" และคัดลอกข้อมูล ' + migrationPlan.records.length + ' records, ' + migrationPlan.users.length + ' users เข้าไป\n\nข้อมูลเดิมจะไม่ถูกลบ (ปลอดภัย rollback ได้)\n\nกด OK เพื่อดำเนินการต่อ')) return;
+
+  showToast('กำลัง migrate ข้อมูล... อย่าปิดหน้านี้');
+  try {
+    const { internalId, businessCode, businessName, records, users, settings, messages, deleteRequests, roleMap } = migrationPlan;
+    const ownerCandidate = users.find(u => ADMIN_EMAILS.includes(u.email));
+
+    await setDoc(doc(db,'businesses',internalId), {
+      internalId, businessCode, name: businessName, type: 'snooker',
+      ownerUid: ownerCandidate ? ownerCandidate.id : (currentUser?.uid || null),
+      createdAt: serverTimestamp(),
+      settings: settings || {}
+    });
+
+    const BATCH_SIZE = 400;
+    for(let i = 0; i < records.length; i += BATCH_SIZE) {
+      const batch = writeBatch(db);
+      records.slice(i, i+BATCH_SIZE).forEach(r => {
+        const { id, ...rData } = r;
+        batch.set(doc(db,'businesses',internalId,'records',id), rData);
+      });
+      await batch.commit();
+      showToast('Migrate records: ' + Math.min(i+BATCH_SIZE, records.length) + '/' + records.length);
+    }
+
+    for(const u of users) {
+      const newRole = roleMap[u.role] || 'staff';
+      await setDoc(doc(db,'businesses',internalId,'members',u.id), {
+        uid: u.id, role: newRole, joinedAt: serverTimestamp(),
+        name: u.name || u.email, email: u.email
+      });
+      try {
+        await updateDoc(doc(db,'users',u.id), { businesses: arrayUnion({ internalId, role: newRole }) });
+      } catch(e) {
+        await setDoc(doc(db,'users',u.id), { businesses: [{ internalId, role: newRole }] }, { merge: true });
+      }
+    }
+
+    for(const m of messages) {
+      const { id, ...mData } = m;
+      await setDoc(doc(db,'businesses',internalId,'messages',id), mData);
+    }
+
+    for(const dr of deleteRequests) {
+      const { id, ...drData } = dr;
+      await setDoc(doc(db,'businesses',internalId,'deleteRequests',id), drData);
+    }
+
+    if(isMasterDev()) {
+      await updateDoc(doc(db,'users',currentUser.uid), { platformRole: 'master_dev' }).catch(()=>{});
+    }
+
+    showToast('✅ Migration เสร็จสมบูรณ์! Business ID: ' + internalId);
+    document.getElementById('migration-confirm-btn').style.display = 'none';
+  } catch(e) {
+    console.error(e);
+    showToast('Migration ล้มเหลว: ' + e.message, 'error');
+  }
+};
+
+function updateMigrationToolVisibility() {
+  const card = document.getElementById('migration-tool-card');
+  if(card) card.style.display = isMasterDev() ? 'block' : 'none';
+}
+
+window.handleImport = function(input){
+  const file=input.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=async e=>{
+    try {
+      const incoming=JSON.parse(e.target.result);
+      if(!incoming.records){showToast('ไฟล์ไม่ถูกต้อง','error');return;}
+      const existIds=new Set(allRecords.map(r=>r.id));
+      const dups=incoming.records.filter(r=>existIds.has(r.id));
+      if(dups.length>0){importBuffer=incoming;showConflictModal(dups,incoming.records.length);}
+      else{await importRecords(incoming,'add');}
+    } catch{showToast('อ่านไฟล์ไม่ได้','error');}
+  };
+  reader.readAsText(file);input.value='';
+}
+
+function showConflictModal(dups,total){
+  const dates=[...new Set(dups.map(r=>`${r.date?.d}/${r.date?.m}/${r.date?.y} (${r.cashier})` ))].slice(0,6);
+  document.getElementById('conflict-content').innerHTML=`<p style="font-size:14px;margin-bottom:10px">พบรายการซ้ำ <strong style="color:var(--yellow)">${dups.length} รายการ</strong> จากทั้งหมด ${total}</p><div style="background:var(--surface2);border:1px solid var(--border);border-radius:14px;padding:12px;margin-bottom:16px"><div style="font-size:11px;font-weight:700;color:var(--accent);margin-bottom:8px">วันที่ที่ซ้ำ</div>${dates.map(d=>`<div style="font-size:12px;color:var(--text2);padding:3px 0"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> ${d}</div>`).join('')}</div>`;
+  document.getElementById('conflict-options').innerHTML=`
+    <div class="conflict-option" onclick="resolveConflict('add')"><h4><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> นำเข้าทั้งหมด</h4><p>เพิ่มทุกรายการรวมถึงซ้ำ</p></div>
+    <div class="conflict-option" onclick="resolveConflict('replace')"><h4><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg> แทนที่รายการซ้ำ</h4><p>ใช้ข้อมูลใหม่ทับเดิม</p></div>
+    <div class="conflict-option" onclick="resolveConflict('skip')"><h4>⏭️ ข้ามรายการซ้ำ</h4><p>เพิ่มเฉพาะรายการใหม่</p></div>
+    <button class="btn btn-ghost btn-full mt8" onclick="closeModal('modal-conflict')">ยกเลิก</button>`;
+  showModal('modal-conflict');
+}
+
+window.resolveConflict = async function(mode){
+  if(!importBuffer)return;
+  await importRecords(importBuffer,mode);
+  importBuffer=null;closeModal('modal-conflict');
+}
+
+async function importRecords(data,mode){
+  const existIds=new Set(allRecords.map(r=>r.id));
+  let toAdd=[];
+  if(mode==='add') toAdd=data.records;
+  else if(mode==='replace'){
+    toAdd=data.records.filter(r=>!existIds.has(r.id));
+    // update existing
+    for(const r of data.records.filter(r=>existIds.has(r.id))){
+      try{await updateDoc(doc(db,'records',r.id),{items:r.items,note:r.note||''});}catch(e){}
+    }
+  } else { toAdd=data.records.filter(r=>!existIds.has(r.id)); }
+
+  let count=0;
+  for(const r of toAdd){
+    try{
+      await addDoc(collection(db,'records'),{
+        date:r.date,dateKey:r.dateKey||(r.date?dKey(r.date):0),cashier:r.cashier,type:r.type,
+        items:r.items,note:r.note||'',createdBy:currentUser.uid,createdByName:'นำเข้าข้อมูล',createdAt:serverTimestamp()
+      });count++;
+    }catch(e){}
+  }
+  showToast(`<svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Import ${count} รายการสำเร็จ`,'info');
+}
+
+// ============================================================
+// MODAL / TOAST
+// ============================================================
+window.showModal = function(id){document.getElementById(id).classList.add('show');}
+window.closeModal = function(id){document.getElementById(id).classList.remove('show');}
+document.querySelectorAll('.modal-overlay').forEach(o=>o.addEventListener('click',e=>{if(e.target===o)o.classList.remove('show');}));
+
+let _tt=null;
+window.showToast = function(msg,type=''){
+  const t=document.getElementById('toast');
+  if(_tt){clearTimeout(_tt);_tt=null;}
+  t.classList.remove('show');
+  void t.offsetWidth;
+  t.innerHTML=msg;t.className='toast'+(type?' '+type:'');
+  requestAnimationFrame(()=>{t.classList.add('show');_tt=setTimeout(()=>{t.classList.remove('show');_tt=null;},2500);});
+}
+
+// System theme
+window.matchMedia('(prefers-color-scheme:dark)').addEventListener('change',()=>{if((localStorage.getItem('themeMode')||'dark')==='auto')applyTheme();});
+
+// Enter key for login
+document.addEventListener('keydown',e=>{if(e.key==='Enter'){const loginVisible=document.getElementById('form-login').style.display!=='none';const authVisible=document.getElementById('auth-screen').style.display!=='none';if(authVisible&&loginVisible)doLogin();}});
+
+</script>
+
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js').catch(() => {});
+  });
+}
+</script>
