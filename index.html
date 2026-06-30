@@ -164,12 +164,8 @@ svg{display:inline-block;vertical-align:middle;flex-shrink:0}
 .s-empty{padding:40px;text-align:center;color:var(--text2);font-size:14px}
 
 /* BOTTOM NAV */
-.bottom-nav{position:fixed;bottom:0;left:0;right:0;background:var(--nav-bg);border-top:1px solid var(--border);display:flex;align-items:flex-end;z-index:300;padding-bottom:env(safe-area-inset-bottom);box-shadow:0 -4px 24px rgba(0,0,0,.2);transition:background .3s}
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;background:var(--nav-bg);border-top:1px solid var(--border);display:flex;z-index:300;padding-bottom:env(safe-area-inset-bottom);box-shadow:0 -4px 24px rgba(0,0,0,.2);transition:background .3s}
 .nav-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:10px 4px 8px;cursor:pointer;color:var(--text3);font-size:10px;font-weight:600;letter-spacing:.3px;gap:3px;transition:all .2s}
-.nav-fab-slot{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;position:relative;padding-bottom:8px}
-.nav-fab-notch{position:absolute;top:-22px;left:50%;transform:translateX(-50%);width:70px;height:36px;background:var(--nav-bg);border-radius:0 0 40px 40px;border:1px solid var(--border);border-top:none;box-shadow:0 6px 16px rgba(0,0,0,.18)}
-#fab-add{position:absolute;top:-36px;left:50%;transform:translateX(-50%);width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));border:3px solid var(--nav-bg);cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 18px rgba(0,229,255,.45);transition:transform .15s,box-shadow .15s;color:#0b0b12;z-index:10}
-#fab-add:hover,#fab-add:active{transform:translateX(-50%) scale(1.1);box-shadow:0 6px 26px rgba(0,229,255,.65)}
 .nav-icon{font-size:20px;transition:transform .2s;display:flex;align-items:center;justify-content:center;width:24px;height:24px}
 .nav-item.active{color:var(--accent)}
 .nav-item.active .nav-icon{transform:scale(1.12)}
@@ -518,24 +514,13 @@ svg{display:inline-block;vertical-align:middle;flex-shrink:0}
 
 <!-- TOP BAR -->
 <div class="top-bar">
-  <button id="biz-switcher-btn" onclick="openBusinessSwitcher()" style="display:flex;align-items:center;gap:8px;background:none;border:none;cursor:pointer;padding:4px 6px 4px 2px;border-radius:12px;color:inherit;font-family:inherit;text-align:left;min-width:0;flex:1;overflow:hidden">
-    <img src="logo-splash.png" id="top-bar-logo" alt="logo" style="width:34px;height:34px;border-radius:9px;object-fit:cover;flex-shrink:0"/>
-    <div style="min-width:0;flex:1">
-      <div style="display:flex;align-items:center;gap:4px;min-width:0">
-        <div id="biz-name-top" style="font-size:14px;font-weight:700;color:var(--text1);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:140px">BM NOTE</div>
-        <svg id="biz-switcher-chevron" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--text3)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><polyline points="6 9 12 15 18 9"/></svg>
-      </div>
-      <span class="role-badge" id="role-badge-top" style="margin-top:1px"></span>
-    </div>
+  <button id="biz-switcher-btn" onclick="openBusinessSwitcher()" style="display:flex;align-items:center;gap:6px;background:none;border:none;cursor:pointer;padding:4px 6px;border-radius:10px;color:inherit;font-family:inherit;text-align:left;min-width:0">
+    <div class="logo" id="biz-switcher-label" style="margin:0">BM NOTE<span id="user-role-sub">ระบบบันทึกรายรับ-รายเบิก</span></div>
+    <svg id="biz-switcher-chevron" style="display:inline-block;vertical-align:middle;flex-shrink:0;margin-left:2px" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
   </button>
-  <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
-    <button class="icon-btn" id="nav-inbox" onclick="switchTab('inbox')" title="แจ้งเตือน" style="position:relative">
-      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-      <span id="inbox-badge-dot" style="display:none;position:absolute;top:4px;right:5px;width:7px;height:7px;border-radius:50%;background:var(--red);border:1.5px solid var(--nav-bg)"></span>
-    </button>
-    <button class="icon-btn" id="theme-btn" onclick="toggleTheme()"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg></button>
-    <button class="icon-btn" onclick="openSearch()"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></button>
-  </div>
+  <span class="role-badge" id="role-badge-top"></span>
+  <button class="icon-btn" id="theme-btn" onclick="toggleTheme()"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg></button>
+  <button class="icon-btn" onclick="openSearch()"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></button>
 </div>
 
 <!-- TEST MODE BANNER -->
@@ -815,22 +800,6 @@ svg{display:inline-block;vertical-align:middle;flex-shrink:0}
   <!-- Admin only settings -->
   <div id="admin-settings" style="display:none">
     <div class="card">
-      <div class="card-title"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18M5 21V7l8-4v18M19 21V11l-6-4"/></svg> ข้อมูลธุรกิจ</div>
-      <div class="form-row"><div class="form-label">ชื่อธุรกิจ</div><input class="form-input" id="set-biz-name" placeholder="เช่น BP Snooker"/></div>
-      <div class="form-row"><div class="form-label">ประเภทธุรกิจ</div>
-        <select class="form-select" id="set-biz-type">
-          <option value="snooker">สนุกเกอร์</option>
-          <option value="cafe">คาเฟ่</option>
-          <option value="restaurant">ร้านอาหาร</option>
-          <option value="retail">ร้านค้าปลีก</option>
-          <option value="other">อื่นๆ</option>
-        </select>
-      </div>
-      <button class="btn btn-primary mt8" onclick="saveBusinessInfo()">
-        <svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> บันทึก
-      </button>
-    </div>
-    <div class="card">
       <div class="card-title"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg> บัญชีรับโอน</div>
       <div style="display:flex;align-items:center;justify-content:space-between;padding:4px 0 12px;border-bottom:1px solid var(--border);margin-bottom:12px">
         <span style="font-size:13px;color:var(--text2)">แสดงบัญชีรับโอนในรายงาน</span>
@@ -929,30 +898,23 @@ svg{display:inline-block;vertical-align:middle;flex-shrink:0}
 </button>
 
 <nav class="bottom-nav" id="bottom-nav">
-  <!-- Left 2 -->
   <div class="nav-item active" id="nav-dashboard" onclick="switchTab('dashboard')">
-    <div class="nav-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="18" y="3" width="4" height="18"/><rect x="10" y="8" width="4" height="13"/><rect x="2" y="13" width="4" height="8"/></svg></div>
-    <div>ภาพรวม</div>
+    <div class="nav-icon"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="18" y="3" width="4" height="18"/><rect x="10" y="8" width="4" height="13"/><rect x="2" y="13" width="4" height="8"/></svg></div><div>ภาพรวม</div>
   </div>
   <div class="nav-item" id="nav-records" onclick="switchTab('records')">
-    <div class="nav-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></svg></div>
-    <div>รายการ</div>
+    <div class="nav-icon"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></svg></div><div>รายการ</div>
   </div>
-  <!-- Center FAB slot -->
-  <div class="nav-fab-slot">
-    <div class="nav-fab-notch"></div>
-    <button id="fab-add" onclick="switchTab('add')" title="บันทึกรายการ">
-      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-    </button>
+  <div class="nav-item nav-fab-spacer" style="visibility:hidden;pointer-events:none">
+    <div class="nav-icon"></div><div></div>
   </div>
-  <!-- Right 2 -->
   <div class="nav-item" id="nav-report" onclick="switchTab('report')">
-    <div class="nav-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></div>
-    <div>รายงาน</div>
+    <div class="nav-icon"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg></div><div>รายงาน</div>
+  </div>
+  <div class="nav-item" id="nav-inbox" onclick="switchTab('inbox')">
+    <div class="nav-icon"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></div><div id="inbox-nav-label">กล่องข้อความ</div>
   </div>
   <div class="nav-item" id="nav-settings" onclick="switchTab('settings')">
-    <div class="nav-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></div>
-    <div>ตั้งค่า</div>
+    <div class="nav-icon"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></div><div>ตั้งค่า</div>
   </div>
 </nav>
 
@@ -1953,17 +1915,14 @@ async function refreshUserBusinessList() {
 }
 
 function updateBizSwitcherLabel() {
-  const nameEl = document.getElementById('biz-name-top');
+  const label = document.getElementById('biz-switcher-label');
   const chevron = document.getElementById('biz-switcher-chevron');
-  if(!nameEl) return;
+  if(!label) return;
   if(!currentBusinessId) {
-    nameEl.textContent = 'BM NOTE';
+    // Legacy mode: no business resolved, hide the dropdown affordance
     if(chevron) chevron.style.display = 'none';
     return;
   }
-  getDoc(doc(db,'businesses',currentBusinessId)).then(snap => {
-    if(snap.exists()) nameEl.textContent = snap.data().name || 'BM NOTE';
-  }).catch(()=>{});
   if(chevron) chevron.style.display = userBusinessList.length > 1 ? 'inline-block' : 'none';
 }
 
@@ -2018,7 +1977,7 @@ window.switchBusiness = async function(internalId) {
   loadSettingsUI();
   startRecordsListener();
   updateBusinessStatusUI();
-  updateBizSwitcherLabel();
+  document.getElementById('biz-switcher-label').innerHTML = 'BM NOTE<span id="user-role-sub">ระบบบันทึกรายรับ-รายเบิก</span>';
   setTimeout(renderDashboard, 200);
   showToast('✅ สลับธุรกิจแล้ว');
 };
@@ -2137,17 +2096,6 @@ function loadSettingsUI() {
   document.getElementById('set-bank').value = appSettings.bank;
   document.getElementById('set-account').value = appSettings.account;
   document.getElementById('set-transfer-enabled').checked = appSettings.transferEnabled === true;
-  if(currentBusinessId && currentRole === 'admin') {
-    getDoc(doc(db,'businesses',currentBusinessId)).then(snap => {
-      if(snap.exists()) {
-        const d = snap.data();
-        const nameEl = document.getElementById('set-biz-name');
-        const typeEl = document.getElementById('set-biz-type');
-        if(nameEl) nameEl.value = d.name || '';
-        if(typeEl) typeEl.value = d.type || 'other';
-      }
-    }).catch(()=>{});
-  }
   renderSettingsLists();
   const m = localStorage.getItem('themeMode')||'dark';
   ['auto','light','dark'].forEach(x=>document.getElementById(`th-${x}`)?.classList.toggle('active',x===m));
@@ -2165,21 +2113,6 @@ window.toggleTransferEnabled = async function(checked) {
   } catch(e) {
     console.error(e);
     showToast('บันทึกไม่สำเร็จ: ' + e.message, 'error');
-  }
-};
-
-window.saveBusinessInfo = async function() {
-  if(!currentBusinessId) { showToast('ไม่พบธุรกิจที่ใช้งานอยู่', 'error'); return; }
-  const name = document.getElementById('set-biz-name').value.trim();
-  const type = document.getElementById('set-biz-type').value;
-  if(!name) { showToast('กรุณากรอกชื่อธุรกิจ', 'error'); return; }
-  try {
-    await updateDoc(doc(db,'businesses',currentBusinessId), { name, type });
-    const nameEl = document.getElementById('biz-name-top');
-    if(nameEl) nameEl.textContent = name;
-    showToast('✅ บันทึกข้อมูลธุรกิจแล้ว');
-  } catch(e) {
-    showToast('เกิดข้อผิดพลาด: ' + e.message, 'error');
   }
 };
 
