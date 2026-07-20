@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="th" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>BM NOTE — UI/UX Static Reference</title>
+<meta name="description" content="Static, non-interactive reference gallery of the BM Note app screens, for design and UX review. Not the live application.">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   Design tokens — copied verbatim from the live app's styles.css
+   so this reference is visually faithful to the real product.
+   ============================================================ */
+:root{--sq:12px;--radius-md:24px;--radius-lg:36px}
+[data-theme="dark"]{
+  --bg:#0F172A;--surface:#16213a;--surface2:#1E293B;--surface3:#263449;
+  --border:#2d3f5c;--accent:#3B82F6;--accent-dim:rgba(59,130,246,.12);
+  --accent2:#1E40AF;--green:#22C55E;--green-dim:rgba(34,197,94,.14);
+  --red:#EF4444;--red-dim:rgba(239,68,68,.14);--yellow:#F59E0B;
+  --text:#E2E8F0;--text2:#94A3B8;--text3:#64748B;
+  --shadow-sm:0 2px 12px rgba(0,0,0,.35);--c1:#3B82F6;--c2:#22C55E;--c3:#F59E0B;
+  --btn-text-onaccent:#0F172A;
+}
+[data-theme="light"]{
+  --bg:#F8FAFC;--surface:#fff;--surface2:#F1F5F9;--surface3:#E2E8F0;
+  --border:#E2E8F0;--accent:#22C55E;--accent-dim:rgba(34,197,94,.12);
+  --accent2:#15803D;--green:#22C55E;--green-dim:rgba(34,197,94,.1);
+  --red:#EF4444;--red-dim:rgba(239,68,68,.1);--yellow:#F59E0B;
+  --text:#1E293B;--text2:#64748B;--text3:#94A3B8;
+  --shadow-sm:0 2px 12px rgba(15,23,42,.06);--c1:#22C55E;--c2:#3B82F6;--c3:#F59E0B;
+  --btn-text-onaccent:#0F172A;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:'IBM Plex Sans Thai',sans-serif;background:#0a0e1a;color:var(--text);-webkit-font-smoothing:antialiased}
+
+/* ---------- Meta page chrome (NOT part of the app itself) ---------- */
+.meta-banner{background:#111827;border-bottom:1px solid #1f2937;padding:20px 24px;text-align:center}
+.meta-banner h1{margin:0 0 6px;font-size:19px;color:#fff}
+.meta-banner p{margin:0 auto;max-width:680px;font-size:13px;color:#9ca3af;line-height:1.6}
+.meta-banner .tag{display:inline-block;background:#1f2937;color:#93c5fd;font-size:11px;font-weight:700;padding:4px 12px;border-radius:20px;margin-bottom:10px;letter-spacing:.3px}
+.theme-toggle{position:fixed;top:16px;right:16px;z-index:99;background:#1f2937;border:1px solid #374151;color:#fff;font-family:inherit;font-size:12px;font-weight:600;padding:8px 16px;border-radius:20px;cursor:pointer}
+
+.gallery{display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:28px;padding:32px;max-width:1400px;margin:0 auto}
+.screen-block{display:flex;flex-direction:column;align-items:center}
+.screen-label{font-size:12px;font-weight:700;color:#93c5fd;text-transform:uppercase;letter-spacing:.6px;margin-bottom:10px}
+
+/* ---------- Phone frame ---------- */
+.phone{width:360px;max-width:100%;height:720px;background:var(--bg);border-radius:32px;border:6px solid #1a1f2e;box-shadow:0 20px 60px rgba(0,0,0,.5);overflow:hidden;position:relative;color:var(--text);font-size:14px}
+.phone-inner{height:100%;overflow-y:auto;padding-bottom:70px}
+
+/* ---------- App components (copied from the live styles.css) ---------- */
+.top-bar{background:var(--bg);border-bottom:1px solid var(--border);padding:14px 16px;display:flex;align-items:center;gap:10px}
+.logo{font-family:'JetBrains Mono',monospace;font-weight:700;font-size:16px;letter-spacing:.5px}
+.logo span{display:block;font-family:'IBM Plex Sans Thai',sans-serif;font-size:10px;font-weight:400;color:var(--text2);letter-spacing:0}
+.role-badge{margin-left:auto;font-size:10px;font-weight:700;padding:4px 10px;border-radius:20px;background:rgba(255,170,0,.15);color:#ffaa00}
+.icon-btn{background:var(--surface2);border:none;width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--text2);margin-left:6px}
+
+.section-pad{padding:16px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--sq);padding:18px;margin-bottom:12px;box-shadow:var(--shadow-sm)}
+[data-theme="dark"] .card{background:rgba(22,33,58,.65)}
+.card-title{font-size:13px;font-weight:700;margin-bottom:10px;display:flex;align-items:center;gap:6px}
+
+.quick-stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:14px}
+.stat-card{background:var(--surface2);border:1px solid var(--border);border-radius:var(--sq);padding:12px;text-align:center}
+.stat-card .v{font-family:'JetBrains Mono',monospace;font-size:16px;font-weight:700}
+.stat-card .l{font-size:10px;color:var(--text2);margin-top:2px}
+
+.btn{padding:11px 20px;border:none;border-radius:var(--sq);font-family:inherit;font-size:14px;font-weight:600;display:inline-flex;align-items:center;justify-content:center;gap:6px;width:100%}
+.btn-primary{background:var(--accent);color:var(--btn-text-onaccent)}
+.btn-ghost{background:transparent;border:1.5px solid var(--border);color:var(--text2)}
+
+.cashier-group{display:flex;gap:8px;margin-bottom:14px}
+.cashier-btn{padding:7px 18px;border-radius:20px;border:1px solid var(--border);background:var(--surface2);color:var(--text2);font-size:13px;font-weight:700}
+.cashier-btn.active{background:var(--accent-dim);border-color:var(--accent);color:var(--accent)}
+
+.cat-group{display:flex;gap:8px;margin-bottom:14px}
+.cat-btn{flex:1;padding:9px;border-radius:var(--sq);border:1px solid var(--border);background:var(--surface2);color:var(--text2);font-size:13px;font-weight:700;text-align:center}
+.cat-btn.income.active{background:var(--green-dim);border-color:var(--green);color:var(--green)}
+.cat-btn.expense.active{background:var(--red-dim);border-color:var(--red);color:var(--red)}
+
+.items-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px}
+.item-cell{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:10px}
+.item-cell .n{font-size:11px;color:var(--text2);margin-bottom:4px}
+.item-cell .amt{font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:700}
+
+.filter-row{display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap}
+.filter-chip{padding:6px 14px;border:1px solid var(--border);background:var(--surface2);color:var(--text2);font-size:11px;font-weight:700;border-radius:20px}
+.filter-chip.active{background:var(--accent);color:var(--btn-text-onaccent);border-color:var(--accent)}
+
+.record-item{background:var(--surface);border:1px solid var(--border);border-radius:var(--sq);padding:14px;margin-bottom:10px}
+.record-item .row1{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px}
+.record-item .amt{font-family:'JetBrains Mono',monospace;font-weight:700;font-size:15px}
+.record-item .amt.income{color:var(--green)}
+.record-item .amt.expense{color:var(--red)}
+.record-item .meta{font-size:11px;color:var(--text2)}
+.badge{font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px}
+.badge.c1{background:rgba(59,130,246,.15);color:var(--c1)}
+.badge.c2{background:rgba(34,197,94,.15);color:var(--c2)}
+.badge.c3{background:rgba(245,158,11,.15);color:var(--c3)}
+
+.menu-row{display:flex;align-items:center;gap:10px;padding:13px 4px;border-bottom:1px solid var(--border);cursor:pointer}
+.menu-row .ic{width:36px;height:36px;border-radius:10px;background:var(--accent-dim);display:flex;align-items:center;justify-content:center;color:var(--accent);flex-shrink:0}
+.menu-row .t{font-size:13px;font-weight:600}
+.menu-row .s{font-size:11px;color:var(--text2)}
+.menu-row svg.chev{margin-left:auto;color:var(--text3)}
+
+.bottom-nav{position:absolute;bottom:0;left:0;right:0;height:64px;background:var(--nav-bg,var(--surface));border-top:1px solid var(--border);display:flex}
+.nav-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;font-size:9px;color:var(--text2)}
+.nav-item.active{color:var(--accent)}
+.fab{position:absolute;bottom:78px;left:50%;transform:translateX(-50%);width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;box-shadow:0 4px 16px rgba(59,130,246,.4)}
+
+.login-wrap{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;padding:32px 24px;text-align:center}
+.login-wrap .logo-big{font-family:'JetBrains Mono',monospace;font-weight:700;font-size:28px;margin-bottom:6px}
+.login-wrap .tagline{font-size:12px;color:var(--text2);margin-bottom:28px}
+.login-wrap .form-full{width:100%}
+.form-label{font-size:11px;color:var(--text2);margin-bottom:5px;font-weight:600}
+.form-row{margin-bottom:12px;text-align:left}
+.form-input{width:100%;padding:11px 14px;border-radius:10px;border:1px solid var(--border);background:var(--surface2);color:var(--text);font-family:inherit;font-size:13px}
+
+svg text{font-family:'IBM Plex Sans Thai',sans-serif}
+</style>
+</head>
+<body>
+
+<div class="meta-banner">
+  <div class="tag">Static UI Reference — Not the Live App</div>
+  <h1>BM NOTE — UI/UX Reference Gallery</h1>
+  <p>
+    หน้านี้เป็น mockup แบบ static (HTML/CSS ล้วน ไม่มี JavaScript หรือฐานข้อมูลจริง) จำลองหน้าจอหลักของแอป BM Note
+    ด้วยชุดสี/ฟอนต์/component เดียวกับแอปจริง สร้างขึ้นเพื่อให้ตรวจสอบ/วิเคราะห์ UI-UX ได้โดยไม่ต้อง login
+    <br>ข้อมูลทั้งหมดในหน้านี้เป็นข้อมูลตัวอย่าง ไม่ใช่ข้อมูลจริง
+  </p>
+</div>
+
+<button class="theme-toggle" onclick="document.documentElement.setAttribute('data-theme', document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark')">
+  สลับโหมดมืด/สว่าง
+</button>
+
+<div class="gallery">
+
+  <!-- ============ SCREEN 1: LOGIN ============ -->
+  <div class="screen-block">
+    <div class="screen-label">1 · หน้า Login</div>
+    <div class="phone">
+      <div class="login-wrap">
+        <div class="logo-big">BM NOTE</div>
+        <div class="tagline">ระบบบันทึกรายรับ-รายเบิก</div>
+        <div class="form-full">
+          <div class="form-row">
+            <div class="form-label">อีเมล</div>
+            <input class="form-input" value="email@example.com" readonly>
+          </div>
+          <div class="form-row">
+            <div class="form-label">รหัสผ่าน</div>
+            <input class="form-input" type="password" value="••••••••" readonly>
+          </div>
+          <div style="text-align:right;font-size:11px;color:var(--accent);margin:-4px 0 12px">ลืมรหัสผ่าน?</div>
+          <button class="btn btn-primary">เข้าสู่ระบบ</button>
+          <div style="text-align:center;font-size:11px;color:var(--text3);margin:14px 0">หรือ</div>
+          <button class="btn btn-ghost">เข้าสู่ระบบด้วย Google</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ SCREEN 2: DASHBOARD ============ -->
+  <div class="screen-block">
+    <div class="screen-label">2 · Dashboard</div>
+    <div class="phone">
+      <div class="phone-inner">
+        <div class="top-bar">
+          <div class="logo">BM NOTE<span>ร้านกาแฟสุขใจ</span></div>
+          <div class="role-badge">Owner</div>
+          <div class="icon-btn">☾</div>
+          <div class="icon-btn">⌕</div>
+        </div>
+        <div class="section-pad">
+          <div class="card">
+            <div class="card-title">ช่วงวันที่</div>
+            <div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:10px 14px;font-size:12px;color:var(--text2)">1 ก.ค. 2569 – 17 ก.ค. 2569</div>
+          </div>
+          <div class="quick-stats">
+            <div class="stat-card"><div class="v" style="color:var(--green)">42,150</div><div class="l">รายรับ</div></div>
+            <div class="stat-card"><div class="v" style="color:var(--red)">18,900</div><div class="l">รายจ่าย</div></div>
+            <div class="stat-card"><div class="v" style="color:var(--accent)">23,250</div><div class="l">กำไร</div></div>
+          </div>
+          <div class="card">
+            <div class="card-title">รายรับ vs รายเบิก รายวัน</div>
+            <svg viewBox="0 0 300 120" width="100%" height="120">
+              <g font-size="8" fill="var(--text3)">
+                <line x1="20" y1="100" x2="290" y2="100" stroke="var(--border)"/>
+                <rect x="30" y="60" width="14" height="40" rx="3" fill="var(--green)"/>
+                <rect x="48" y="75" width="14" height="25" rx="3" fill="var(--red)"/>
+                <rect x="80" y="40" width="14" height="60" rx="3" fill="var(--green)"/>
+                <rect x="98" y="70" width="14" height="30" rx="3" fill="var(--red)"/>
+                <rect x="130" y="55" width="14" height="45" rx="3" fill="var(--green)"/>
+                <rect x="148" y="80" width="14" height="20" rx="3" fill="var(--red)"/>
+                <rect x="180" y="30" width="14" height="70" rx="3" fill="var(--green)"/>
+                <rect x="198" y="65" width="14" height="35" rx="3" fill="var(--red)"/>
+                <rect x="230" y="45" width="14" height="55" rx="3" fill="var(--green)"/>
+                <rect x="248" y="72" width="14" height="28" rx="3" fill="var(--red)"/>
+              </g>
+            </svg>
+          </div>
+          <div class="card">
+            <div class="card-title">สัดส่วนแคชเชียร์</div>
+            <div style="display:flex;align-items:center;gap:16px">
+              <svg viewBox="0 0 42 42" width="90" height="90">
+                <circle r="15.9" cx="21" cy="21" fill="transparent" stroke="var(--c1)" stroke-width="6" stroke-dasharray="44 56" stroke-dashoffset="25"/>
+                <circle r="15.9" cx="21" cy="21" fill="transparent" stroke="var(--c2)" stroke-width="6" stroke-dasharray="33 67" stroke-dashoffset="-19"/>
+                <circle r="15.9" cx="21" cy="21" fill="transparent" stroke="var(--c3)" stroke-width="6" stroke-dasharray="23 77" stroke-dashoffset="-52"/>
+              </svg>
+              <div style="font-size:11px;display:flex;flex-direction:column;gap:6px">
+                <div><span class="badge c1">C1</span> 18,500</div>
+                <div><span class="badge c2">C2</span> 14,000</div>
+                <div><span class="badge c3">C3</span> 9,650</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="fab">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        </div>
+        <div class="bottom-nav">
+          <div class="nav-item active">▤<span>ภาพรวม</span></div>
+          <div class="nav-item">▥<span>รายการ</span></div>
+          <div class="nav-item">▦<span></span></div>
+          <div class="nav-item">▧<span>รายงาน</span></div>
+          <div class="nav-item">⚙<span>ตั้งค่า</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ SCREEN 3: ADD RECORD ============ -->
+  <div class="screen-block">
+    <div class="screen-label">3 · บันทึกรายการ</div>
+    <div class="phone">
+      <div class="phone-inner">
+        <div class="top-bar">
+          <div class="logo">BM NOTE<span>ร้านกาแฟสุขใจ</span></div>
+        </div>
+        <div class="section-pad">
+          <div class="card">
+            <div class="card-title">วันที่บันทึก</div>
+            <div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:10px 14px;font-size:12px;color:var(--text2)">17 กรกฎาคม 2569</div>
+          </div>
+          <div class="card">
+            <div class="card-title">แคชเชียร์</div>
+            <div class="cashier-group">
+              <div class="cashier-btn active">C1</div>
+              <div class="cashier-btn">C2</div>
+              <div class="cashier-btn">C3</div>
+            </div>
+            <div class="card-title">ประเภท</div>
+            <div class="cat-group">
+              <div class="cat-btn income active">♡ รายรับ</div>
+              <div class="cat-btn expense">♡ รายเบิก</div>
+            </div>
+            <div class="card-title">รายการ</div>
+            <div class="items-grid">
+              <div class="item-cell"><div class="n">เงินสด</div><div class="amt">1,250.00</div></div>
+              <div class="item-cell"><div class="n">ค่าจอดรถ</div><div class="amt">–</div></div>
+              <div class="item-cell"><div class="n">กำไรค่าข้าว</div><div class="amt">–</div></div>
+              <div class="item-cell"><div class="n">อื่นๆ</div><div class="amt">–</div></div>
+            </div>
+          </div>
+        </div>
+        <div class="fab" style="background:linear-gradient(135deg,var(--accent),var(--accent2))">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+        </div>
+        <div class="bottom-nav">
+          <div class="nav-item">▤<span>ภาพรวม</span></div>
+          <div class="nav-item">▥<span>รายการ</span></div>
+          <div class="nav-item">▦<span></span></div>
+          <div class="nav-item">▧<span>รายงาน</span></div>
+          <div class="nav-item">⚙<span>ตั้งค่า</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ SCREEN 4: RECORDS LIST ============ -->
+  <div class="screen-block">
+    <div class="screen-label">4 · รายการ</div>
+    <div class="phone">
+      <div class="phone-inner">
+        <div class="top-bar">
+          <div class="logo">BM NOTE<span>ร้านกาแฟสุขใจ</span></div>
+        </div>
+        <div class="section-pad">
+          <div class="filter-row">
+            <div class="filter-chip active">ทั้งหมด</div>
+            <div class="filter-chip">C1</div>
+            <div class="filter-chip">C2</div>
+            <div class="filter-chip">C3</div>
+          </div>
+          <div class="record-item">
+            <div class="row1"><span class="amt income">+1,250.00</span><span class="badge c1">C1</span></div>
+            <div class="meta">เงินสด · 17 ก.ค. 2569</div>
+          </div>
+          <div class="record-item">
+            <div class="row1"><span class="amt expense">−300.00</span><span class="badge c2">C2</span></div>
+            <div class="meta">ค่าน้ำแข็ง · 17 ก.ค. 2569</div>
+          </div>
+          <div class="record-item">
+            <div class="row1"><span class="amt income">+2,000.00</span><span class="badge c3">C3</span></div>
+            <div class="meta">กำไรค่าข้าว · 16 ก.ค. 2569</div>
+          </div>
+          <div class="record-item">
+            <div class="row1"><span class="amt expense">−850.00</span><span class="badge c1">C1</span></div>
+            <div class="meta">ต้นทุนค่าข้าว · 16 ก.ค. 2569</div>
+          </div>
+        </div>
+        <div class="bottom-nav">
+          <div class="nav-item">▤<span>ภาพรวม</span></div>
+          <div class="nav-item active">▥<span>รายการ</span></div>
+          <div class="nav-item">▦<span></span></div>
+          <div class="nav-item">▧<span>รายงาน</span></div>
+          <div class="nav-item">⚙<span>ตั้งค่า</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ SCREEN 5: REPORT ============ -->
+  <div class="screen-block">
+    <div class="screen-label">5 · เรียกรายงาน</div>
+    <div class="phone">
+      <div class="phone-inner">
+        <div class="top-bar">
+          <div class="logo">BM NOTE<span>ร้านกาแฟสุขใจ</span></div>
+        </div>
+        <div class="section-pad">
+          <div class="card">
+            <div class="card-title">ช่วงวันที่</div>
+            <div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:10px 14px;font-size:12px;color:var(--text2);margin-bottom:14px">1 – 17 ก.ค. 2569</div>
+            <div class="card-title">ประเภท</div>
+            <div class="cat-group">
+              <div class="cat-btn income active">♡ รายรับ</div>
+              <div class="cat-btn expense">♡ รายเบิก</div>
+            </div>
+            <button class="btn btn-primary">สร้างรายงาน</button>
+          </div>
+          <div class="card">
+            <div class="card-title">ผลลัพธ์</div>
+            <div style="font-family:'JetBrains Mono',monospace;font-size:11px;line-height:1.8;color:var(--text2);white-space:pre-wrap">17 ก.ค.: ยอดรวม 3,250.00 บาท
+(C1: สด 1,250.00 | C3: กำไรข้าว 2,000.00)
+
+16 ก.ค.: ยอดรวม 4,100.00 บาท
+(C1: สด 2,100.00 | C2: สด 2,000.00)
+
+ยอดรวมสุทธิ = 42,150.00 บาท
+C1: 18,500.00
+C2: 14,000.00
+C3: 9,650.00</div>
+          </div>
+        </div>
+        <div class="bottom-nav">
+          <div class="nav-item">▤<span>ภาพรวม</span></div>
+          <div class="nav-item">▥<span>รายการ</span></div>
+          <div class="nav-item">▦<span></span></div>
+          <div class="nav-item active">▧<span>รายงาน</span></div>
+          <div class="nav-item">⚙<span>ตั้งค่า</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ SCREEN 6: SETTINGS ============ -->
+  <div class="screen-block">
+    <div class="screen-label">6 · ตั้งค่า</div>
+    <div class="phone">
+      <div class="phone-inner">
+        <div class="top-bar">
+          <div class="logo">BM NOTE<span>ร้านกาแฟสุขใจ</span></div>
+        </div>
+        <div class="section-pad">
+          <div class="card">
+            <div class="card-title">บัญชีของฉัน</div>
+            <div style="font-size:12px;color:var(--text2)">สมชาย ใจดี · owner@example.com</div>
+          </div>
+          <div class="card" style="padding:6px 14px">
+            <div class="menu-row"><div class="ic">฿</div><div><div class="t">บัญชีรับโอน</div><div class="s">แสดง/ซ่อนในรายงาน</div></div><svg class="chev" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></div>
+            <div class="menu-row"><div class="ic">▤</div><div><div class="t">การแสดงกราฟ</div><div class="s">รายรับ-รายจ่าย</div></div><svg class="chev" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></div>
+            <div class="menu-row"><div class="ic">✎</div><div><div class="t">จัดการหัวข้อรายรับ-รายจ่าย</div></div><svg class="chev" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></div>
+            <div class="menu-row"><div class="ic">⊙</div><div><div class="t">จัดการแคชเชียร์</div></div><svg class="chev" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></div>
+            <div class="menu-row"><div class="ic">▦</div><div><div class="t">ตารางงาน</div></div><svg class="chev" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></div>
+            <div class="menu-row" style="border-bottom:none"><div class="ic">◎</div><div><div class="t">จัดการสมาชิก</div></div><svg class="chev" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></div>
+          </div>
+        </div>
+        <div class="bottom-nav">
+          <div class="nav-item">▤<span>ภาพรวม</span></div>
+          <div class="nav-item">▥<span>รายการ</span></div>
+          <div class="nav-item">▦<span></span></div>
+          <div class="nav-item">▧<span>รายงาน</span></div>
+          <div class="nav-item active">⚙<span>ตั้งค่า</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div style="text-align:center;padding:24px;font-size:11px;color:#4b5563">
+  BM Note — Static UI Reference · Generated for design review, not a live/functional build
+</div>
+
+</body>
+</html>
