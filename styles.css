@@ -26,125 +26,6 @@
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 body{background:var(--bg);color:var(--text);font-family:'IBM Plex Sans Thai',sans-serif;font-size:15px;min-height:100vh;padding-bottom:80px;transition:background .3s,color .3s;overscroll-behavior:none}
 
-/* ── PC / TABLET LAYOUT ── */
-@media (min-width: 768px) {
-  body { padding-bottom: 0; font-size: 15px; }
-
-  /* Top bar becomes a full-width strip that sits ABOVE the sidebar */
-  .top-bar {
-    position: fixed;
-    top: 0; left: 0; right: 0;
-    height: 60px;
-    padding: 0 20px;
-    z-index: 250;
-    justify-content: flex-start;
-  }
-  /* Push search / theme / role-badge to the right edge of the top bar */
-  .top-bar > .icon-btn,
-  .top-bar > .role-badge {
-    margin-left: auto;
-  }
-  .top-bar > .icon-btn ~ .icon-btn,
-  .top-bar > .icon-btn ~ .role-badge,
-  .top-bar > .role-badge ~ .icon-btn {
-    margin-left: 4px;
-  }
-
-  /* Narrow icon-first sidebar, starts below the top bar */
-  .bottom-nav {
-    position: fixed;
-    left: 0; top: 60px; bottom: 0; right: auto;
-    flex-direction: column;
-    width: 76px;
-    border-top: none;
-    border-right: 1px solid var(--border);
-    padding: 16px 0 24px;
-    gap: 4px;
-    box-shadow: 4px 0 24px rgba(0,0,0,.1);
-  }
-  .nav-item {
-    flex: none;
-    flex-direction: column;
-    justify-content: center;
-    padding: 12px 4px;
-    gap: 4px;
-    font-size: 9px;
-    border-radius: 14px;
-    margin: 0 10px;
-  }
-  .nav-icon { font-size: 26px; width: 28px; height: 28px; }
-  .nav-icon svg { width: 26px; height: 26px; }
-  .nav-item.active {
-    background: var(--accent-dim);
-    border-left: none;
-  }
-
-  /* Main content shifts right of the sidebar, down below the top bar */
-  .main {
-    margin-left: 76px;
-    margin-top: 60px;
-    padding: 22px 28px;
-    max-width: none;
-  }
-
-  /* Auth screen centered */
-  .auth-screen { padding-left: 0; }
-  .auth-card { max-width: 440px; }
-
-  /* Content uses space efficiently but keeps breathing room around cards */
-  .card { border-radius: 20px; }
-  .quick-stats { grid-template-columns: repeat(3, 1fr); }
-  .stats-grid { grid-template-columns: repeat(4, 1fr); }
-
-  /* Wider form layout */
-  .date-row { grid-template-columns: repeat(3, 1fr); gap: 12px; }
-
-  /* Search overlay / full-screen function pages adjust for the sidebar+top bar */
-  .search-overlay { left: 76px; top: 60px; }
-  .search-box { padding: 16px 24px; }
-  [id^="page-"] { left: 76px; top: 60px; }
-
-  /* Modal wider on PC */
-  .modal-box {
-    border-radius: 20px;
-    max-width: 520px;
-    max-height: 85vh;
-    margin-bottom: 40px;
-  }
-  .modal-overlay { align-items: center; }
-
-  /* Toast above bottom */
-  .toast { bottom: 24px; }
-
-  /* Record grid on PC */
-  #records-list { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-  .record-item { margin-bottom: 0; }
-
-  /* Report output wider */
-  .report-output { font-size: 13px; }
-}
-
-@media (min-width: 1200px) {
-  .bottom-nav { width: 88px; }
-  .nav-icon, .nav-icon svg { width: 28px; height: 28px; }
-  .main { margin-left: 88px; padding: 26px 40px; }
-  .search-overlay { left: 88px; }
-  [id^="page-"] { left: 88px; }
-}
-
-/* FAB: on wide screens, anchor to the bottom-right of the content area
-   instead of centering across the full viewport (which would look
-   off-center next to the sidebar). */
-@media (min-width: 768px) {
-  #fab-add {
-    left: auto !important;
-    right: 32px;
-    bottom: 32px;
-    transform: none !important;
-  }
-  #fab-add:hover { transform: scale(1.1) !important; }
-}
-
 /* SVG ICONS */
 svg{display:inline-block;vertical-align:middle;flex-shrink:0}
 .nav-icon svg{width:22px;height:22px}
@@ -363,3 +244,208 @@ svg{display:inline-block;vertical-align:middle;flex-shrink:0}
 
 @keyframes splashPulse { 0%,100%{transform:scale(1);opacity:1} 50%{transform:scale(1.05);opacity:.85} }
 @keyframes splashDot { 0%,80%,100%{opacity:.25;transform:scale(.8)} 40%{opacity:1;transform:scale(1)} }
+
+/* ═══════════════════════════════════════════════════════════════
+   DASHBOARD
+   The layout reacts to the width of the content area (container
+   queries), so it is right next to the sidebar, on a phone, on a
+   tablet in either orientation and on an ultra-wide monitor.
+   ═══════════════════════════════════════════════════════════════ */
+#tab-dashboard{container:dash / inline-size}
+.dash{display:grid;grid-template-columns:minmax(0,1fr);gap:14px;max-width:1600px;margin:0 auto;align-items:start}
+.dash > *{min-width:0}
+.dash .card{margin-bottom:0}
+.dash .card:hover{transform:none}
+.dash .card-title{font-size:14px;font-weight:600;letter-spacing:0;text-transform:none;color:var(--text);margin-bottom:12px}
+.dash .card-title svg{color:var(--accent)}
+
+/* order on narrow screens: filter → totals → trend → per-cashier → shares */
+.dash-filter{order:1}
+.dash-kpis{order:2}
+.dash-c-line{order:3}
+.dash-c-bar{order:4}
+.dash-donuts{order:5}
+
+/* filter bar */
+.dash-filter{display:grid;grid-template-columns:minmax(0,1fr);gap:10px}
+.dash-filter .card-title{margin:0}
+.dash-range{min-width:0}
+.dash-apply{width:100%}
+
+/* totals */
+.dash-kpis{display:grid;grid-template-columns:minmax(0,1fr);gap:14px}
+.kpi-group{min-width:0}
+.kpi-heading{font-size:13px;font-weight:600;color:var(--text2);margin:0 0 8px}
+.kpi-row{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.kpi{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:12px 10px;min-width:0}
+.kpi-label{font-size:12px;font-weight:600;color:var(--text2);margin-bottom:6px}
+.kpi-val{font-family:'JetBrains Mono',monospace;font-variant-numeric:tabular-nums;font-weight:700;line-height:1.15;font-size:clamp(14px,4.2cqw,28px);overflow-wrap:anywhere}
+.kpi-unit{font-size:11px;color:var(--text3);margin-top:4px}
+.kpi-today .kpi-val{font-size:clamp(14px,3.6cqw,20px)}
+.c-up{color:var(--green)}
+.c-down{color:var(--red)}
+.kpi.is-up .kpi-val{color:var(--green)}
+.kpi.is-down .kpi-val{color:var(--red)}
+.kpi-main{border-width:1.5px}
+.kpi-main.is-up{background:var(--green-dim);border-color:var(--green)}
+.kpi-main.is-down{background:var(--red-dim);border-color:var(--red)}
+
+/* charts fill a fixed-height box (Chart.js: maintainAspectRatio:false) */
+.dash .chart-wrap{height:230px;margin:4px 0}
+.dash-donuts{display:grid;grid-template-columns:minmax(0,1fr);gap:14px;align-items:start}
+.dash-donuts .chart-wrap{height:190px}
+.dash .chart-legend{justify-content:flex-start;gap:6px 14px}
+
+/* tablet / small content area */
+@container dash (min-width:560px){
+  .dash-filter{grid-template-columns:auto minmax(220px,340px) auto;justify-content:start;align-items:center;gap:14px}
+  .dash-apply{width:auto}
+  .dash-donuts{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .dash-donuts > :nth-child(3){grid-column:1 / -1}
+  .dash .chart-wrap{height:260px}
+  .dash-donuts .chart-wrap{height:210px}
+  .kpi{padding:14px 14px}
+}
+
+/* wide content area: a real multi-column dashboard */
+@container dash (min-width:860px){
+  .dash{grid-template-columns:repeat(12,minmax(0,1fr))}
+  .dash-filter,.dash-kpis,.dash-donuts{grid-column:1 / -1}
+  .dash-kpis{grid-template-columns:minmax(0,3fr) minmax(0,2fr);align-items:start}
+  .dash-c-line{grid-column:span 7;align-self:stretch}
+  .dash-c-bar{grid-column:span 5;align-self:stretch}
+  .dash-donuts{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .dash-donuts > :nth-child(3){grid-column:auto}
+  .dash .chart-wrap{height:300px}
+  .dash-donuts .chart-wrap{height:220px}
+}
+
+@media (prefers-reduced-motion:reduce){
+  .section{animation:none}
+  .kpi,.qs-card{transition:none}
+}
+
+/* ═══ PC / TABLET LAYOUT (kept at the end of the file so it overrides the base rules above;
+   when it sat near the top, base rules such as .main{max-width:640px} silently won) ═══ */
+@media (min-width: 768px) {
+  body { padding-bottom: 0; font-size: 15px; }
+
+  /* Top bar becomes a full-width strip that sits ABOVE the sidebar */
+  .top-bar {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    height: 60px;
+    padding: 0 20px;
+    z-index: 250;
+    justify-content: flex-start;
+  }
+  /* Push search / theme / role-badge to the right edge of the top bar */
+  .top-bar > .icon-btn,
+  .top-bar > .role-badge {
+    margin-left: auto;
+  }
+  .top-bar > .icon-btn ~ .icon-btn,
+  .top-bar > .icon-btn ~ .role-badge,
+  .top-bar > .role-badge ~ .icon-btn {
+    margin-left: 4px;
+  }
+
+  /* Narrow icon-first sidebar, starts below the top bar */
+  .bottom-nav {
+    position: fixed;
+    left: 0; top: 60px; bottom: 0; right: auto;
+    flex-direction: column;
+    width: 76px;
+    border-top: none;
+    border-right: 1px solid var(--border);
+    padding: 16px 0 24px;
+    gap: 4px;
+    box-shadow: 4px 0 24px rgba(0,0,0,.1);
+  }
+  .nav-item {
+    flex: none;
+    flex-direction: column;
+    justify-content: center;
+    padding: 12px 4px;
+    gap: 4px;
+    font-size: 9px;
+    border-radius: 14px;
+    margin: 0 10px;
+  }
+  .nav-icon { font-size: 26px; width: 28px; height: 28px; }
+  .nav-icon svg { width: 26px; height: 26px; }
+  .nav-item.active {
+    background: var(--accent-dim);
+    border-left: none;
+  }
+
+  /* Main content shifts right of the sidebar, down below the top bar */
+  .main {
+    margin-left: 76px;
+    margin-top: 60px;
+    padding: 22px 28px;
+    max-width: none;
+  }
+
+  /* Auth screen centered */
+  .auth-screen { padding-left: 0; }
+  .auth-card { max-width: 440px; }
+
+  /* Content uses space efficiently but keeps breathing room around cards */
+  .card { border-radius: 20px; }
+  .quick-stats { grid-template-columns: repeat(3, 1fr); }
+  .stats-grid { grid-template-columns: repeat(4, 1fr); }
+
+  /* Wider form layout */
+  .date-row { grid-template-columns: repeat(3, 1fr); gap: 12px; }
+
+  /* Search overlay / full-screen function pages adjust for the sidebar+top bar */
+  .search-overlay { left: 76px; top: 60px; }
+  .search-box { padding: 16px 24px; }
+  [id^="page-"] { left: 76px; top: 60px; }
+
+  /* Modal wider on PC */
+  .modal-box {
+    border-radius: 20px;
+    max-width: 520px;
+    max-height: 85vh;
+    margin-bottom: 40px;
+  }
+  .modal-overlay { align-items: center; }
+
+  /* Toast above bottom */
+  .toast { bottom: 24px; }
+
+  /* Record grid on PC */
+  #records-list { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .record-item { margin-bottom: 0; }
+
+  /* Report output wider */
+  .report-output { font-size: 13px; }
+}
+
+@media (min-width: 1200px) {
+  .bottom-nav { width: 88px; }
+  .nav-icon, .nav-icon svg { width: 28px; height: 28px; }
+  .main { margin-left: 88px; padding: 26px 40px; }
+  .search-overlay { left: 88px; }
+  [id^="page-"] { left: 88px; }
+}
+
+/* FAB: on wide screens, anchor to the bottom-right of the content area
+   instead of centering across the full viewport (which would look
+   off-center next to the sidebar). */
+@media (min-width: 768px) {
+  #fab-add {
+    left: auto !important;
+    right: 32px;
+    bottom: 32px;
+    transform: none !important;
+  }
+  #fab-add:hover { transform: scale(1.1) !important; }
+}
+
+/* Pages not yet redesigned keep a readable column (replaced page by page) */
+@media (min-width: 768px) {
+  .section:not(#tab-dashboard){max-width:760px;margin-left:auto;margin-right:auto}
+}
