@@ -264,7 +264,9 @@ svg{display:inline-block;vertical-align:middle;flex-shrink:0}
 .dash-kpis{order:2}
 .dash-c-line{order:3}
 .dash-c-bar{order:4}
-.dash-donuts{order:5}
+.dash-c-profit{order:5}
+.dash-c-week{order:6}
+.dash-donuts{order:7}
 
 /* filter bar */
 .dash-filter{display:grid;grid-template-columns:minmax(0,1fr);gap:10px}
@@ -402,7 +404,7 @@ svg{display:inline-block;vertical-align:middle;flex-shrink:0}
   /* Search overlay / full-screen function pages adjust for the sidebar+top bar */
   .search-overlay { left: 76px; top: 60px; }
   .search-box { padding: 16px 24px; }
-  [id^="page-"] { left: 76px; top: 60px; }
+  [id^="page-"] { left: 76px !important; top: 60px !important; }  /* !important: the pages carry inline inset:0, which otherwise wins and hides their header under the top bar */
 
   /* Modal wider on PC */
   .modal-box {
@@ -429,7 +431,7 @@ svg{display:inline-block;vertical-align:middle;flex-shrink:0}
   .nav-icon, .nav-icon svg { width: 28px; height: 28px; }
   .main { margin-left: 88px; padding: 26px 40px; }
   .search-overlay { left: 88px; }
-  [id^="page-"] { left: 88px; }
+  [id^="page-"] { left: 88px !important; }
 }
 
 /* FAB: on wide screens, anchor to the bottom-right of the content area
@@ -445,10 +447,6 @@ svg{display:inline-block;vertical-align:middle;flex-shrink:0}
   #fab-add:hover { transform: scale(1.1) !important; }
 }
 
-/* Pages not yet redesigned keep a readable column (replaced page by page) */
-@media (min-width: 768px) {
-  .section:not(#tab-dashboard){max-width:760px;margin-left:auto;margin-right:auto}
-}
 
 /* ═══ ADD PAGE — search the item list ═══ */
 .item-search{position:relative;display:flex;align-items:center;margin-bottom:6px}
@@ -490,3 +488,103 @@ svg{display:inline-block;vertical-align:middle;flex-shrink:0}
   .im-chip,.im-seg-btn{min-height:36px}
   .item-input{min-height:40px}
 }
+
+
+/* ═══════════════════════════════════════════════════════════════
+   DASHBOARD additions: change vs previous period, 2 more charts
+   ═══════════════════════════════════════════════════════════════ */
+@container dash (min-width:860px){
+  .dash-c-profit{grid-column:span 7;align-self:stretch}
+  .dash-c-week{grid-column:span 5;align-self:stretch}
+}
+.kpi-heading small{font-weight:500;color:var(--text3);margin-left:8px}
+.kpi-delta{display:inline-flex;align-items:center;gap:4px;margin-top:8px;padding:2px 8px;border-radius:12px;background:var(--surface2);color:var(--text2);font-size:11px;font-weight:700;line-height:1.5}
+.kpi-delta.good{color:var(--green);background:var(--green-dim)}
+.kpi-delta.bad{color:var(--red);background:var(--red-dim)}
+.kpi-sub{font-size:11px;color:var(--text2);margin-top:6px;font-weight:600}
+.dash-empty-note{font-size:12px;color:var(--text2)}
+
+/* ═══════════════════════════════════════════════════════════════
+   PAGES — every tab lays itself out from the width it really has
+   ═══════════════════════════════════════════════════════════════ */
+.section{container:pg / inline-size;max-width:1600px;margin-left:auto;margin-right:auto}
+
+/* Add record */
+.add-grid{display:grid;grid-template-columns:minmax(0,1fr);gap:14px;align-items:start;grid-template-areas:"date" "cashier" "type" "items" "note"}
+.add-grid > .card{margin-bottom:0}
+.add-date{grid-area:date}.add-cashier{grid-area:cashier}.add-type{grid-area:type}.add-items{grid-area:items}.add-note{grid-area:note}
+.add-date .date-row{display:block}
+.items-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,280px),1fr));gap:8px}
+.items-grid .item-row{margin-bottom:0}
+@container pg (min-width:860px){
+  .add-grid{grid-template-columns:minmax(0,7fr) minmax(300px,5fr);grid-template-areas:"items date" "items cashier" "items type" "items note"}
+}
+
+/* Records */
+.rec-layout{display:grid;grid-template-columns:minmax(0,1fr);gap:14px;align-items:start}
+.rec-layout .card{margin-bottom:0}
+.rec-main{min-width:0}
+.rec-summary{display:flex;flex-wrap:wrap;gap:4px 14px;margin-top:12px;font-size:13px;font-weight:700;color:var(--text2)}
+.rec-summary:empty{display:none}
+#records-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,320px),1fr));gap:12px;align-items:start}
+#records-list .record-item{margin-bottom:0}
+#records-list > .empty,#records-list > .loading-wrap{grid-column:1 / -1}
+.rec-day{grid-column:1 / -1;display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin-top:8px;padding:0 2px 6px;border-bottom:1px solid var(--border);font-size:13px;font-weight:700;color:var(--text)}
+.rec-day:first-child{margin-top:0}
+.rec-day small{display:flex;gap:10px;font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:600}
+@container pg (min-width:860px){
+  .rec-layout{grid-template-columns:300px minmax(0,1fr)}
+  .rec-filter{position:sticky;top:76px}
+}
+
+/* Report */
+.rpt-layout{display:grid;grid-template-columns:minmax(0,1fr);gap:14px;align-items:start}
+.rpt-side{display:grid;gap:14px;min-width:0}
+.rpt-side > .card{margin-bottom:0}
+.rpt-side .date-row{display:block}
+.rpt-main{min-width:0}
+.rpt-main > .card{margin:0}
+.rpt-empty{display:none;flex-direction:column;align-items:center;justify-content:center;gap:8px;min-height:280px;text-align:center;color:var(--text2);border-style:dashed;box-shadow:none}
+.rpt-layout.has-result .rpt-empty{display:none!important}
+#rpt-daily-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,300px),1fr));gap:12px;align-items:start}
+#rpt-daily-cards > *{margin-bottom:0}
+@container pg (min-width:860px){
+  .rpt-layout{grid-template-columns:minmax(320px,380px) minmax(0,1fr)}
+  .rpt-side{position:sticky;top:76px;max-height:calc(100vh - 92px);overflow-y:auto;padding-right:2px}
+  .rpt-empty{display:flex}
+}
+
+/* Inbox */
+@container pg (min-width:760px){
+  #inbox-admin:not([style*="none"]),#inbox-member:not([style*="none"]){display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;align-items:start}
+  #tab-inbox .card{margin:0}
+}
+
+/* Settings */
+@container pg (min-width:760px){
+  .set-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:14px;align-items:start}
+  .set-grid > .card,.set-grid > #admin-settings > .card{margin-bottom:0}
+  #admin-settings:not([style*="none"]){display:contents!important}
+}
+
+/* Full-screen settings pages */
+.sp-wrap{max-width:480px;margin:0 auto;padding:0 0 80px 0}
+.sp-body{padding:16px}
+.pa-grid > .card{margin-bottom:0}
+@media (min-width:768px){
+  .sp-wrap{max-width:960px}
+  #page-settings-bank .sp-wrap,#page-settings-graph .sp-wrap,#page-settings-cashiers .sp-wrap{max-width:640px}
+  #page-user-manager .sp-wrap{max-width:900px}
+  #page-platform-admin .sp-wrap{max-width:1120px}
+  .sp-body{display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:14px;padding:20px 24px;align-items:start}
+  .sp-body > .card{margin-bottom:0}
+  .sp-body > :not(.card){grid-column:1 / -1}
+  #um-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:12px;padding:20px 24px!important;align-items:start}
+  #um-list > *{margin-bottom:0}
+  .pa-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:12px;align-items:start}
+  #pa-overview-panel,#pa-bugs-panel,#pa-business-detail-panel{padding:20px 24px!important}
+}
+
+/* keyboard hint only where a keyboard is likely */
+.kbd-hint{display:none}
+@media (hover:hover) and (pointer:fine){ .kbd-hint{display:inline} }
