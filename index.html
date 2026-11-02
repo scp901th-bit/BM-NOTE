@@ -302,7 +302,9 @@
       <button type="button" class="item-search-clear" id="item-search-clear" aria-label="ล้างคำค้น" onclick="clearItemSearch()" hidden><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><line x1="6" y1="6" x2="18" y2="18"/><line x1="18" y1="6" x2="6" y2="18"/></svg></button>
     </div>
     <div class="item-search-meta" id="item-search-meta" aria-live="polite"></div>
+    <div class="items-fav-hint" id="items-fav-hint" hidden>แตะดาว ☆ ที่หัวข้อเพื่อปักหมุดเป็นรายการโปรด จะขึ้นบนสุดเสมอ ไม่ต้องพิมพ์หรือเลื่อนหา</div>
     <div class="items-grid" id="items-grid"></div>
+    <button type="button" class="items-more" id="items-more" onclick="toggleItemsMore()" hidden></button>
     <div class="item-locked-note" id="items-locked-note"></div>
     <div class="add-item-row mt8">
       <input class="form-input" id="new-item-name" placeholder="เพิ่มหัวข้อใหม่..." data-i18n-placeholder="add_new_item"/>
@@ -393,6 +395,7 @@
       <button class="cat-btn neutral active" id="rpt-all" style="font-size:13px" onclick="setRptDetail('all')" data-i18n="everything">ทุกอย่าง</button>
       <button class="cat-btn neutral" id="rpt-custom" style="font-size:13px" onclick="setRptDetail('custom')" data-i18n="customize">กำหนดเอง</button>
     </div>
+    <div class="rpt-lock-hint" id="rpt-lock-hint" style="display:none"></div>
     <div id="rpt-custom-items" style="display:none;margin-top:12px"></div>
   </div>
   <button class="btn btn-primary btn-full" onclick="generateReport()"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="18" y="3" width="4" height="18"/><rect x="10" y="8" width="4" height="13"/><rect x="2" y="13" width="4" height="8"/></svg> <span data-i18n="generate_report">สร้างรายงาน</span></button>
@@ -819,7 +822,7 @@
       <div style="font-weight:700;font-size:16px" data-i18n="manage_items">จัดการหัวข้อรายรับ-รายจ่าย</div>
     </div>
     <div class="sp-body">
-      <div style="font-size:12px;color:var(--text2);margin-bottom:12px;background:var(--surface2);padding:10px 12px;border-radius:12px;line-height:1.6" data-i18n="item_scope_hint">หัวข้อไม่ถูกลบ แค่เลือกว่าให้แสดงตรงไหน — ติ๊ก = แสดง, กุญแจ = ล็อค (ซ่อนเฉพาะจุดนั้น ข้อมูลที่บันทึกไว้ยังอยู่) | XLSX: แสดง = มีคอลัมน์, อื่นๆ = รวมเข้าอื่นๆ, ตัดออก = ไม่อยู่ในไฟล์</div>
+      <div style="font-size:12px;color:var(--text2);margin-bottom:12px;background:var(--surface2);padding:10px 12px;border-radius:12px;line-height:1.6" data-i18n="item_scope_hint">หัวข้อไม่ถูกลบ แค่เลือกว่าให้แสดงตรงไหน — ติ๊ก = แสดง, กุญแจ = ล็อค: หน้าบันทึกจะซ่อน, รายงานจะไม่ติ๊กให้แต่ยังเลือกเองได้, กราฟแดชบอร์ดจะซ่อน (ข้อมูลที่บันทึกไว้ยังอยู่) | XLSX: แสดง = มีคอลัมน์, อื่นๆ = รวมเข้าอื่นๆ, ตัดออก = ไม่อยู่ในไฟล์</div>
       <div class="card">
         <div class="card-title"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg> <span data-i18n="income_items">หัวข้อรายรับ</span></div>
         <div id="income-items-list"></div>
@@ -2813,7 +2816,7 @@ function renderSettingsLists() {
         </div>
         <div class="im-locks">
           ${chip('add',addOn,'หน้าบันทึก','แสดงในหน้าบันทึก — กดเพื่อล็อค','ล็อคอยู่ — ไม่แสดงในหน้าบันทึก (ข้อมูลที่บันทึกไว้ยังอยู่)')}
-          ${chip('report',repOn,'รายงาน/กราฟ','แสดงในรายงานและกราฟ — กดเพื่อล็อค','ล็อคอยู่ — ไม่แสดงในหน้าเรียกรายงานและกราฟ')}
+          ${chip('report',repOn,'รายงาน/กราฟ','เลือกให้ในรายงาน และแสดงในกราฟ — กดเพื่อล็อค','ล็อคอยู่ — รายงานไม่ติ๊กให้อัตโนมัติ (ติ๊กเองได้) และกราฟซ่อน')}
           <div class="im-xlsx" role="group" aria-label="ค่าเริ่มต้น Export XLSX"><span class="im-xlsx-label">XLSX</span>${seg('show','แสดง')}${seg('other','อื่นๆ')}${seg('none','ตัดออก')}</div>
         </div>
       </div>`;
@@ -2894,6 +2897,7 @@ window.renameItem = async function(type, idx, newName) {
     if(li !== -1) { appSettings[k][li] = newName; prefsChanged = true; }
   });
   if(prefsChanged) await saveItemPrefs();
+  { const fo = favLoad(); const fa = fo[type]; const fi = fa.indexOf(oldName); if(fi !== -1) { fa[fi] = newName; favSave(fo); } }
   await saveItemsToFirestore();
   renderItemsGrid(true);
   // Migrate all historical records that have this item key
@@ -3100,7 +3104,7 @@ const I18N = {
     search_records_ph: 'ค้นหา หมายเหตุ / รายการ / ผู้บันทึก',
     rpt_empty_title: 'ยังไม่มีรายงาน',
     rpt_empty_desc: 'เลือกช่วงวันที่ แคชเชียร์ และประเภทที่ซ้าย แล้วกด “สร้างรายงาน” ผลลัพธ์จะแสดงที่นี่',
-    item_scope_hint: 'หัวข้อไม่ถูกลบ แค่เลือกว่าให้แสดงตรงไหน — ติ๊ก = แสดง, กุญแจ = ล็อค (ซ่อนเฉพาะจุดนั้น ข้อมูลที่บันทึกไว้ยังอยู่) | XLSX: แสดง = มีคอลัมน์, อื่นๆ = รวมเข้าอื่นๆ, ตัดออก = ไม่อยู่ในไฟล์',
+    item_scope_hint: 'หัวข้อไม่ถูกลบ แค่เลือกว่าให้แสดงตรงไหน — ติ๊ก = แสดง, กุญแจ = ล็อค: หน้าบันทึกจะซ่อน, รายงานจะไม่ติ๊กให้แต่ยังเลือกเองได้, กราฟแดชบอร์ดจะซ่อน (ข้อมูลที่บันทึกไว้ยังอยู่) | XLSX: แสดง = มีคอลัมน์, อื่นๆ = รวมเข้าอื่นๆ, ตัดออก = ไม่อยู่ในไฟล์',
     xlsx_lock_note: 'ค่าเริ่มต้นตามที่ล็อคไว้ใน ตั้งค่า › จัดการหัวข้อ — ปรับเฉพาะครั้งนี้ได้',
 
     create_invite_code: 'สร้างรหัสเชิญ', platform_admin: 'Admin โปรแกรม', system_overview: 'ภาพรวมทั้งระบบ',
@@ -3196,7 +3200,7 @@ const I18N = {
     search_records_ph: 'Search notes / items / who recorded',
     rpt_empty_title: 'No report yet',
     rpt_empty_desc: 'Pick a date range, cashier and type on the left, then press “Generate report”. The result appears here.',
-    item_scope_hint: 'Items are never deleted — you only choose where each one appears. Check = shown, lock = hidden in that place (saved data stays) | XLSX: Show = own column, Others = merged into Others, Skip = left out of the file',
+    item_scope_hint: 'Items are never deleted — you only choose where each one appears. Check = shown, lock = Add page hides it, Report leaves it un-ticked (you can still tick it), dashboard charts hide it (saved data stays) | XLSX: Show = own column, Others = merged into Others, Skip = left out of the file',
     xlsx_lock_note: 'Starts from the selections locked in Settings › Manage items — you can change them for this export only',
 
     create_invite_code: 'Create Invite Code', platform_admin: 'Platform Admin', system_overview: 'System Overview',
@@ -3809,39 +3813,96 @@ window.setCat = function(c){
   renderItemsGrid();
 }
 // ==== BM:ADD-PAGE-BEGIN (searchable item list + Enter to save) ====
+const ITEMS_VISIBLE = 3;      // items shown at first; the rest collapse into "••••"
+let itemsExpanded = false;
+const STAR_ICON = on => `<svg width="18" height="18" viewBox="0 0 24 24" fill="${on?'currentColor':'none'}" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>`;
+// Favourites are personal (each person pins what they use), kept per user + business on this device.
+function favKey(){ return 'bmnote:fav:' + ((currentUser && currentUser.uid) || 'anon') + ':' + (currentBusinessId || 'default'); }
+function favLoad(){
+  try {
+    const o = JSON.parse(localStorage.getItem(favKey()) || '{}') || {};
+    return { income: Array.isArray(o.income) ? o.income : [], expense: Array.isArray(o.expense) ? o.expense : [] };
+  } catch(e) { return { income: [], expense: [] }; }
+}
+function favSave(o){ try { localStorage.setItem(favKey(), JSON.stringify(o)); } catch(e) {} }
+
 function renderItemsGrid(keep){
   const grid = document.getElementById('items-grid');
   if(!grid) return;
+  if(!keep) itemsExpanded = false;
   const prev = {};
   if(keep) grid.querySelectorAll('.item-input').forEach(i => { if(i.value !== '') prev[i.dataset.item] = i.value; });
   const all = currentCat==='income' ? incomeItems : expenseItems;
-  const items = all.filter(n => !appSettings.lockedAddItems.includes(n));
-  grid.innerHTML = items.map(name => `
-    <div class="item-row" data-name="${escHtml(name)}">
+  const unlocked = all.filter(n => !appSettings.lockedAddItems.includes(n));
+  const favs = favLoad()[currentCat];
+  const favItems = unlocked.filter(n => favs.includes(n));
+  const others = unlocked.filter(n => !favs.includes(n));
+  const row = (name, isFav) => `
+    <div class="item-row${isFav?' is-fav':''}" data-name="${escHtml(name)}">
+      <button type="button" class="fav-btn${isFav?' on':''}" aria-pressed="${isFav}" title="${isFav?'เลิกปักหมุด':'ปักหมุดเป็นรายการโปรด'}" aria-label="${isFav?'เลิกปักหมุด':'ปักหมุดเป็นรายการโปรด'}: ${escHtml(name)}" onclick="toggleFavItem(this)">${STAR_ICON(isFav)}</button>
       <span class="item-label">${escHtml(name)}</span>
       <input class="item-input" type="number" placeholder="0" data-item="${escHtml(name)}" min="0" inputmode="numeric" enterkeyhint="done" aria-label="${escHtml(name)}"/>
-    </div>`).join('');
+    </div>`;
+  grid.dataset.favs = favItems.length;
+  grid.innerHTML =
+    (favItems.length ? `<div class="items-sub">${STAR_ICON(true)}<span>รายการโปรด</span></div>` + favItems.map(n => row(n,true)).join('') + (others.length ? `<div class="items-sub"><span>รายการอื่น</span></div>` : '') : '')
+    + others.map(n => row(n,false)).join('');
   if(keep) grid.querySelectorAll('.item-input').forEach(i => { if(prev[i.dataset.item] !== undefined) i.value = prev[i.dataset.item]; });
   const note = document.getElementById('items-locked-note');
   if(note) {
-    const n = all.length - items.length;
+    const n = all.length - unlocked.length;
     note.textContent = n > 0 ? `มี ${n} หัวข้อที่ล็อคไว้ ไม่แสดงในหน้านี้ (ตั้งค่า › จัดการหัวข้อรายรับ-รายจ่าย)` : '';
   }
   filterItemsGrid();
 }
-// Typing narrows the list; a row you already filled in stays visible so nothing is silently hidden.
+window.toggleFavItem = function(btn){
+  const name = btn.closest('.item-row').dataset.name;
+  const o = favLoad();
+  const arr = o[currentCat];
+  const k = arr.indexOf(name);
+  if(k === -1) arr.push(name); else arr.splice(k, 1);
+  favSave(o);
+  renderItemsGrid(true);
+  const r = [...document.querySelectorAll('#items-grid .item-row')].find(x => x.dataset.name === name);
+  const b = r && r.querySelector('.fav-btn');
+  if(b) b.focus();
+};
+window.toggleItemsMore = function(){ itemsExpanded = !itemsExpanded; filterItemsGrid(); };
+// Typing narrows the list (all items, not only the first few); a row you already filled in stays visible.
+// With no search text: favourites always show, then the first few other items, then "••••".
 window.filterItemsGrid = function(){
   const inp = document.getElementById('item-search');
   const raw = inp ? inp.value.trim() : '';
   const q = raw.toLowerCase();
+  const grid = document.getElementById('items-grid');
+  if(grid) grid.classList.toggle('searching', !!q);
   const rows = [...document.querySelectorAll('#items-grid .item-row')];
-  let matches = 0;
+  let matches = 0, shownOthers = 0, othersTotal = 0, hiddenByCollapse = 0;
   rows.forEach(r => {
     const isMatch = !q || (r.dataset.name || '').toLowerCase().includes(q);
     const filled = r.querySelector('.item-input').value !== '';
+    const fav = r.classList.contains('is-fav');
     if(isMatch) matches++;
-    r.classList.toggle('is-hidden', !(isMatch || filled));
+    let hide = !(isMatch || filled);
+    if(!hide && !q && !fav) {
+      othersTotal++;
+      if(shownOthers >= ITEMS_VISIBLE && !itemsExpanded && !filled) { hide = true; hiddenByCollapse++; }
+      else shownOthers++;
+    }
+    r.classList.toggle('is-hidden', hide);
   });
+  const more = document.getElementById('items-more');
+  if(more) {
+    if(!q && hiddenByCollapse > 0) {
+      more.hidden = false; more.setAttribute('aria-expanded', 'false');
+      more.innerHTML = `<span class="dots" aria-hidden="true">••••</span><span>แสดงอีก ${hiddenByCollapse} รายการ</span>`;
+    } else if(!q && itemsExpanded && othersTotal > ITEMS_VISIBLE) {
+      more.hidden = false; more.setAttribute('aria-expanded', 'true');
+      more.innerHTML = '<span>แสดงน้อยลง</span>';
+    } else more.hidden = true;
+  }
+  const fh = document.getElementById('items-fav-hint');
+  if(fh) fh.hidden = !!q || rows.length === 0 || Number(grid && grid.dataset.favs) > 0;
   const clr = document.getElementById('item-search-clear');
   if(clr) clr.hidden = !raw;
   const meta = document.getElementById('item-search-meta');
@@ -5577,18 +5638,31 @@ window.setRptCat = function(c){
   document.getElementById('cashier-expense-section').style.display=c==='expense'?'block':'none';
   renderRptCustomItems();
 }
-window.setRptDetail = function(d){rptDetail=d;document.getElementById('rpt-all').classList.toggle('active',d==='all');document.getElementById('rpt-custom').classList.toggle('active',d==='custom');document.getElementById('rpt-custom-items').style.display=d==='custom'?'block':'none';}
+window.setRptDetail = function(d){rptDetail=d;document.getElementById('rpt-all').classList.toggle('active',d==='all');document.getElementById('rpt-custom').classList.toggle('active',d==='custom');document.getElementById('rpt-custom-items').style.display=d==='custom'?'block':'none';updateRptLockHint();}
 window.toggleRptCashier = function(btn){document.querySelectorAll('#rpt-cashier-group .cashier-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');rptCashier=btn.dataset.c;}
 function renderRptCustomItems(){
-  const items=(rptCat==='income'?incomeItems:expenseItems).filter(n=>!appSettings.lockedReportItems.includes(n));
-  document.getElementById('rpt-custom-items').innerHTML=items.map(n=>`<label class="check-item"><input type="checkbox" class="rpt-chk" value="${escHtml(n)}" checked/><span>${escHtml(n)}</span></label>`).join('');
+  // Locked items are only un-ticked by default: they stay in the list so they can be ticked by hand.
+  const all=(rptCat==='income'?incomeItems:expenseItems);
+  document.getElementById('rpt-custom-items').innerHTML=all.map(n=>{
+    const locked=appSettings.lockedReportItems.includes(n);
+    return `<label class="check-item${locked?' is-locked':''}"><input type="checkbox" class="rpt-chk" value="${escHtml(n)}" ${locked?'':'checked'}/><span>${escHtml(n)}</span>${locked?`<span class="lock-tag">${IM_ICON.lock}ล็อค</span>`:''}</label>`;
+  }).join('');
+  updateRptLockHint();
+}
+function updateRptLockHint(){
+  const el=document.getElementById('rpt-lock-hint');
+  if(!el) return;
+  const locked=(rptCat==='income'?incomeItems:expenseItems).filter(n=>appSettings.lockedReportItems.includes(n));
+  if(rptDetail!=='all'||!locked.length){ el.style.display='none'; el.innerHTML=''; return; }
+  el.style.display='flex';
+  el.innerHTML=`${IM_ICON.lock}<span>“ทุกอย่าง” ไม่รวม ${locked.length} หัวข้อที่ล็อค: <b>${locked.map(escHtml).join(', ')}</b></span><button type="button" class="link-btn" onclick="setRptDetail('custom')">เลือกเอง</button>`;
 }
 
 window.generateReport = function(){
   const {from,to} = getDateRangeFromPicker('rpt-daterange');
-  // Locked items (set in Settings > จัดการหัวข้อรายรับ-รายจ่าย) are excluded from report
-  // calling in BOTH "all" and "custom" modes. This has no effect on XLSX export or on
-  // saving records — those read from their own independent selections.
+  // Locked items (Settings > จัดการหัวข้อรายรับ-รายจ่าย) are simply NOT ticked for you:
+  // "ทุกอย่าง" leaves them out, "กำหนดเอง" still lists them so they can be ticked by hand.
+  // No effect on XLSX export or on saving records — those have their own selections.
   const allCatItemsUnlocked = (rptCat==='income'?incomeItems:expenseItems).filter(n=>!appSettings.lockedReportItems.includes(n));
   const sel = rptDetail==='all' ? allCatItemsUnlocked : [...document.querySelectorAll('.rpt-chk:checked')].map(c=>c.value);
 

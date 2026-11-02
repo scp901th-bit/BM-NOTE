@@ -588,3 +588,32 @@ svg{display:inline-block;vertical-align:middle;flex-shrink:0}
 /* keyboard hint only where a keyboard is likely */
 .kbd-hint{display:none}
 @media (hover:hover) and (pointer:fine){ .kbd-hint{display:inline} }
+
+
+/* ═══ ADD PAGE — favourites and the collapsed "••••" list ═══ */
+.items-sub{grid-column:1 / -1;display:flex;align-items:center;gap:6px;margin:8px 2px 0;font-size:12px;font-weight:700;color:var(--text2)}
+.items-sub:first-child{margin-top:0}
+.items-sub svg{width:14px;height:14px;color:#f5b301}
+.items-grid.searching .items-sub{display:none}
+.item-row{padding-left:8px}
+.fav-btn{flex:none;width:36px;height:36px;display:inline-flex;align-items:center;justify-content:center;border:none;background:transparent;color:var(--text3);border-radius:10px;cursor:pointer;transition:color .15s,background .15s}
+.fav-btn:hover{background:var(--surface3);color:var(--text)}
+.fav-btn.on{color:#f5b301}
+.fav-btn:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.item-row.is-fav{border-color:rgba(245,179,1,.4)}
+.items-fav-hint{font-size:12px;color:var(--text3);margin:0 2px 10px;line-height:1.5}
+.items-fav-hint[hidden]{display:none}
+.items-more{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;margin-top:10px;padding:11px;border:1px dashed var(--border);background:transparent;color:var(--text2);border-radius:12px;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;transition:border-color .15s,color .15s}
+.items-more:hover{border-color:var(--accent);color:var(--accent)}
+.items-more:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.items-more[hidden]{display:none}
+.items-more .dots{letter-spacing:3px;font-size:16px;line-height:1}
+@media (pointer:coarse){ .fav-btn{width:40px;height:40px} }
+
+/* ═══ REPORT — locked items stay listed, just not ticked ═══ */
+.rpt-lock-hint{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-top:10px;font-size:12px;color:var(--text2);line-height:1.6}
+.rpt-lock-hint svg{width:13px;height:13px;color:var(--yellow);flex:none}
+.rpt-lock-hint .link-btn,.rpt-lock-hint b{font-weight:700}
+.rpt-lock-hint .link-btn{background:none;border:none;color:var(--accent);font-family:inherit;font-size:12px;cursor:pointer;text-decoration:underline;padding:2px 4px}
+.lock-tag{display:inline-flex;align-items:center;gap:4px;margin-left:8px;padding:1px 9px;border-radius:10px;font-size:11px;font-weight:700;color:var(--yellow);background:rgba(255,170,0,.12)}
+.lock-tag svg{width:11px;height:11px}
