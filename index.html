@@ -247,9 +247,9 @@
   </div>
   <div id="qs-wrap" class="dash-kpis"></div>
   <div class="card dash-c dash-c-bar"><div class="card-title"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg> <span data-i18n="daily_income">รายรับรายวัน</span></div><div class="chart-wrap"><canvas id="ch-bar" height="200"></canvas></div><div class="chart-legend" id="lg-bar"></div></div>
-  <div class="dash-donuts"><div class="card dash-c"><div class="card-title"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/></svg> <span data-i18n="cashier_ratio">สัดส่วนแคชเชียร์</span></div><div style="max-width:260px;margin:0 auto"><div class="chart-wrap"><canvas id="ch-dc" height="260"></canvas></div></div><div class="chart-legend" id="lg-dc"></div></div>
-  <div class="card dash-c"><div class="card-title"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/></svg> <span data-i18n="income_type_ratio">ประเภทรายรับ</span></div><div style="max-width:260px;margin:0 auto"><div class="chart-wrap"><canvas id="ch-dt" height="260"></canvas></div></div><div class="chart-legend" id="lg-dt"></div></div>
-  <div class="card dash-c"><div class="card-title"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/></svg> <span data-i18n="expense_ratio">สัดส่วนรายเบิก</span></div><div style="max-width:260px;margin:0 auto"><div class="chart-wrap"><canvas id="ch-de" height="260"></canvas></div></div><div class="chart-legend" id="lg-de"></div></div></div>
+  <div class="dash-donuts"><div class="card dash-c"><div class="card-title"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/></svg> <span data-i18n="cashier_ratio">สัดส่วนแคชเชียร์</span></div><div class="donut-body"><div style="max-width:260px;margin:0 auto"><div class="chart-wrap"><canvas id="ch-dc" height="260"></canvas></div></div><div class="chart-legend" id="lg-dc"></div></div></div>
+  <div class="card dash-c"><div class="card-title"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/></svg> <span data-i18n="income_type_ratio">ประเภทรายรับ</span></div><div class="donut-body"><div style="max-width:260px;margin:0 auto"><div class="chart-wrap"><canvas id="ch-dt" height="260"></canvas></div></div><div class="chart-legend" id="lg-dt"></div></div></div>
+  <div class="card dash-c"><div class="card-title"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/></svg> <span data-i18n="expense_ratio">สัดส่วนรายเบิก</span></div><div class="donut-body"><div style="max-width:260px;margin:0 auto"><div class="chart-wrap"><canvas id="ch-de" height="260"></canvas></div></div><div class="chart-legend" id="lg-de"></div></div></div></div>
   <div class="card dash-c dash-c-profit">
     <div class="card-title"><svg style="display:inline-block;vertical-align:middle" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg> <span>กำไรรายวัน และกำไรสะสม</span></div>
     <div class="chart-wrap"><canvas id="ch-profit" height="220" role="img" aria-label="กราฟกำไรรายวันและกำไรสะสม"></canvas></div>
@@ -413,7 +413,7 @@
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></svg>
       <span data-i18n="results">ผลลัพธ์</span>
     </div>
-    <div class="stats-grid" id="rpt-stats"></div>
+    <div id="rpt-stats"></div>
 
     <!-- View Mode Tabs -->
     <div class="cat-group" style="margin-bottom:12px">
@@ -481,25 +481,25 @@
 <!-- SETTINGS -->
 <div class="section" id="tab-settings">
 <div class="set-grid">
-  <div class="card">
+  <div class="card set-account">
     <div class="card-title"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> <span data-i18n="my_account">บัญชีของฉัน</span></div>
     <div id="user-info-card"></div>
     <button class="btn btn-ghost btn-sm mt8" onclick="openChangePasswordModal()"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg> เปลี่ยนรหัสผ่าน</button>
     <button class="btn btn-ghost btn-sm mt8" onclick="doLogout()"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg> <span data-i18n="logout">ออกจากระบบ</span></button>
   </div>
-  <div class="card">
-    <div class="card-title"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18M5 21V7l8-4v18M19 21V11l-6-4"/></svg> <span data-i18n="create_new_business">สร้างธุรกิจใหม่</span></div>
-    <div style="font-size:12px;color:var(--text2);margin-bottom:10px">สร้างอีกธุรกิจ/กลุ่มแยกอิสระจากที่มีอยู่ สลับไปมาได้ตลอด</div>
-    <button class="btn btn-primary btn-full" onclick="openCreateBusinessForm()">
-      <svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-      <span data-i18n="create_new_business">สร้างธุรกิจใหม่</span>
-    </button>
+  <div class="card set-general">
+    <div class="card-title"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg> <span data-i18n="settings_general">ทั่วไป</span></div>
+    <div class="set-tiles">
+      <button type="button" class="set-tile" onclick="switchTab('inbox')"><svg stroke="currentColor" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg><span class="set-tile-label" data-i18n="tile_inbox">ข้อความ</span><span class="set-tile-tip" data-i18n="notifications_messages">การแจ้งเตือน / ข้อความ</span></button>
+      <button type="button" class="set-tile" onclick="openBugReportModal()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2l1.88 1.88M14.12 3.88L16 2M9 7.13v-1a3.003 3.003 0 1 1 6 0v1"/><path d="M12 20c-3.3 0-6-2.7-6-6v-3a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v3c0 3.3-2.7 6-6 6z"/><path d="M12 20v2M6 13H2M22 13h-4M4 8l-1.5-1M20 8l1.5-1M4 18l-1.5 1M20 18l1.5 1"/></svg><span class="set-tile-label" data-i18n="tile_bug">แจ้งบัค</span><span class="set-tile-tip" data-i18n="report_bug_title">แจ้งปัญหา / รายงานบัค</span></button>
+      <button type="button" class="set-tile" onclick="openCreateBusinessForm()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18M5 21V7l8-4v18M19 21V11l-6-4"/></svg><span class="set-tile-label" data-i18n="tile_newbiz">ธุรกิจใหม่</span><span class="set-tile-tip" data-i18n="create_new_business">สร้างธุรกิจใหม่</span></button>
+    </div>
   </div>
-  <div class="card">
+  <div class="card set-line">
     <div class="card-title"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg> <span data-i18n="line_connection">การเชื่อมต่อ LINE</span></div>
     <div id="line-connect-card-body"><div style="font-size:12px;color:var(--text2)" data-i18n="loading">กำลังโหลด...</div></div>
   </div>
-  <div class="card" style="border:1px solid #ff3d71">
+  <div class="card set-danger" style="border:1px solid #ff3d71">
     <div class="card-title" style="color:#ff3d71"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v2m0 4h.01M21.73 18 13.73 4a2 2 0 0 0-3.46 0L2.27 18a2 2 0 0 0 1.73 3h16a2 2 0 0 0 1.73-3z"/></svg> <span data-i18n="danger_zone">โซนอันตราย</span></div>
     <div id="delete-account-warning" style="font-size:12px;color:var(--text2);margin-bottom:10px" data-i18n="delete_account_warning">การลบบัญชีไม่สามารถย้อนกลับได้ หากคุณเป็นเจ้าของธุรกิจ ธุรกิจนั้นจะถูกลบทั้งหมด</div>
     <button class="btn btn-full" style="background:rgba(255,61,113,.12);color:#ff3d71;border:1px solid rgba(255,61,113,.3);font-weight:700" onclick="openDeleteAccountModal()">
@@ -507,27 +507,7 @@
       <span data-i18n="delete_my_account">ลบบัญชีของฉัน</span>
     </button>
   </div>
-  <div class="card">
-    <div class="card-title"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2l1.88 1.88M14.12 3.88L16 2M9 7.13v-1a3.003 3.003 0 1 1 6 0v1"/><path d="M12 20c-3.3 0-6-2.7-6-6v-3a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v3c0 3.3-2.7 6-6 6z"/><path d="M12 20v2M6 13H2M22 13h-4M4 8l-1.5-1M20 8l1.5-1M4 18l-1.5 1M20 18l1.5 1"/></svg> <span data-i18n="report_bug_title">แจ้งปัญหา / รายงานบัค</span></div>
-    <div style="font-size:12px;color:var(--text2);margin-bottom:10px" data-i18n="report_bug_desc">พบปัญหาการใช้งาน? แจ้งมาที่นี่ ทีมงานจะได้รับและแก้ไขให้</div>
-    <button class="btn btn-full" style="background:var(--surface2);color:var(--accent)" onclick="openBugReportModal()">
-      <svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-      <span data-i18n="report_bug_btn">แจ้งบัค / ปัญหาการใช้งาน</span>
-    </button>
-  </div>
-  <div class="card" style="cursor:pointer" onclick="switchTab('inbox')">
-    <div style="display:flex;align-items:center;gap:12px">
-      <div style="width:40px;height:40px;border-radius:12px;background:var(--accent-dim);display:flex;align-items:center;justify-content:center;flex-shrink:0">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
-      </div>
-      <div style="flex:1">
-        <div style="font-weight:700;font-size:14px" data-i18n="notifications_messages">การแจ้งเตือน / ข้อความ</div>
-        <div style="font-size:12px;color:var(--text2)" data-i18n="notifications_messages_desc">คำขอลบ, ข้อความจากสมาชิก, การแจ้งเตือนต่างๆ</div>
-      </div>
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text2)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
-    </div>
-  </div>
-  <div class="card">
+  <div class="card set-pref">
     <div class="card-title"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20z"/><path d="M12 2v20"/></svg> <span data-i18n="theme">ธีม</span></div>
     <div class="cat-group">
       <button class="cat-btn neutral" id="th-auto" onclick="setThemeMode('auto')"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg> <span data-i18n="auto">อัตโนมัติ</span></button>
@@ -535,7 +515,7 @@
       <button class="cat-btn neutral active" id="th-dark" onclick="setThemeMode('dark')"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg> <span data-i18n="dark_mode">กลางคืน</span></button>
     </div>
   </div>
-  <div class="card">
+  <div class="card set-pref">
     <div class="card-title"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg> <span data-i18n="language">ภาษา</span></div>
     <div class="cat-group">
       <button class="cat-btn neutral active" id="lang-th" onclick="setLanguage('th')">ไทย (TH)</button>
@@ -544,56 +524,16 @@
   </div>
   <!-- Admin only settings -->
   <div id="admin-settings" style="display:none">
-    <div class="card">
-      <div class="card-title"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg> <span data-i18n="bank_account">บัญชีรับโอน</span></div>
-      <div style="font-size:12px;color:var(--text2);margin-bottom:10px" data-i18n="bank_account_desc">แสดง/ซ่อนบัญชีรับโอนในรายงาน และแก้ไขข้อมูลบัญชี</div>
-      <button class="btn btn-ghost btn-full" onclick="openSettingsPage('bank')">
-        <span data-i18n="open_bank_settings">เปิดตั้งค่าบัญชีรับโอน</span>
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-left:auto"><polyline points="9 18 15 12 9 6"/></svg>
-      </button>
-    </div>
-    <div class="card">
-      <div class="card-title"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="18" y="3" width="4" height="18"/><rect x="10" y="8" width="4" height="13"/><rect x="2" y="13" width="4" height="8"/></svg> <span data-i18n="graph_display">การแสดงกราฟ (รายรับ-รายจ่าย)</span></div>
-      <div style="font-size:12px;color:var(--text2);margin-bottom:10px" data-i18n="graph_display_desc">เลือกหมวดที่จะแสดง/ซ่อนในกราฟหน้าแรก (ใช้ตัวล็อคเดียวกับหน้าเรียกรายงาน)</div>
-      <button class="btn btn-ghost btn-full" onclick="openSettingsPage('graph')">
-        <span data-i18n="open_graph_settings">เปิดตั้งค่ากราฟ</span>
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-left:auto"><polyline points="9 18 15 12 9 6"/></svg>
-      </button>
-    </div>
-    <div class="card">
-      <div class="card-title"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg> <span data-i18n="manage_items">จัดการหัวข้อรายรับ-รายจ่าย</span></div>
-      <div style="font-size:12px;color:var(--text2);margin-bottom:10px" data-i18n="manage_items_desc">เพิ่ม/ลบ/แก้ไขหัวข้อ และล็อคหัวข้อไม่ให้ขึ้นในหน้าเรียกรายงาน</div>
-      <button class="btn btn-ghost btn-full" onclick="openSettingsPage('items')">
-        <span data-i18n="open_manage_items">เปิดจัดการหัวข้อ</span>
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-left:auto"><polyline points="9 18 15 12 9 6"/></svg>
-      </button>
-    </div>
-    <div class="card">
-      <div class="card-title"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><line x1="21.17" y1="8" x2="12" y2="8"/><line x1="3.95" y1="6.06" x2="8.54" y2="14"/><line x1="10.88" y1="21.94" x2="15.46" y2="14"/></svg> จัดการแคชเชียร์</div>
-      <div style="font-size:12px;color:var(--text2);margin-bottom:10px">ตั้งชื่อ, ลำดับ, เพิ่ม/ลดจำนวนช่องแคชเชียร์ในระบบ</div>
-      <button class="btn btn-ghost btn-full" onclick="openSettingsPage('cashiers')">
-        เปิดจัดการแคชเชียร์
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-left:auto"><polyline points="9 18 15 12 9 6"/></svg>
-      </button>
-    </div>
-    <div class="card">
-      <div class="card-title"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg> ตารางงาน</div>
-      <div style="font-size:12px;color:var(--text2);margin-bottom:10px">ปฏิทินกำหนดว่าพนักงานคนไหนทำงานวันไหน</div>
-      <button class="btn btn-ghost btn-full" onclick="openSchedulePage()">
-        เปิดตารางงาน
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-left:auto"><polyline points="9 18 15 12 9 6"/></svg>
-      </button>
-    </div>
-    <div class="card">
-      <div class="card-title">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-        <span data-i18n="manage_members">จัดการสมาชิก</span>
+    <div class="card set-biz">
+      <div class="card-title"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18M5 21V7l8-4v18M19 21V11l-6-4"/></svg> <span data-i18n="settings_business">ตั้งค่าธุรกิจ</span></div>
+      <div class="set-tiles">
+      <button type="button" class="set-tile" onclick="openSettingsPage('bank')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg><span class="set-tile-label" data-i18n="tile_bank">บัญชีโอน</span><span class="set-tile-tip" data-i18n="bank_account">บัญชีรับโอน</span></button>
+      <button type="button" class="set-tile" onclick="openSettingsPage('graph')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="18" y="3" width="4" height="18"/><rect x="10" y="8" width="4" height="13"/><rect x="2" y="13" width="4" height="8"/></svg><span class="set-tile-label" data-i18n="tile_graph">กราฟ</span><span class="set-tile-tip" data-i18n="graph_display">การแสดงกราฟ (รายรับ-รายจ่าย)</span></button>
+      <button type="button" class="set-tile" onclick="openSettingsPage('items')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg><span class="set-tile-label" data-i18n="tile_items">หัวข้อ</span><span class="set-tile-tip" data-i18n="manage_items">จัดการหัวข้อรายรับ-รายจ่าย</span></button>
+      <button type="button" class="set-tile" onclick="openSettingsPage('cashiers')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><line x1="21.17" y1="8" x2="12" y2="8"/><line x1="3.95" y1="6.06" x2="8.54" y2="14"/><line x1="10.88" y1="21.94" x2="15.46" y2="14"/></svg><span class="set-tile-label" data-i18n="tile_cashiers">แคชเชียร์</span><span class="set-tile-tip" >จัดการแคชเชียร์</span></button>
+      <button type="button" class="set-tile" onclick="openSchedulePage()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg><span class="set-tile-label" data-i18n="tile_schedule">ตารางงาน</span><span class="set-tile-tip" >ตารางงาน</span></button>
+      <button type="button" class="set-tile" onclick="openUserManagerPage()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg><span class="set-tile-label" data-i18n="tile_members">สมาชิก</span><span class="set-tile-tip" data-i18n="manage_members">จัดการสมาชิก</span></button>
       </div>
-      <button class="btn btn-ghost btn-full" onclick="openUserManagerPage()">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
-        <span data-i18n="view_manage_accounts">ดูและจัดการ Account ทั้งหมด</span>
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-left:auto"><polyline points="9 18 15 12 9 6"/></svg>
-      </button>
     </div>
 
     <div class="card" id="dev-exportimport-card" style="display:none">
@@ -3102,6 +3042,8 @@ const I18N = {
     income_items: 'หัวข้อรายรับ', expense_items: 'หัวข้อรายเบิก',
     search_item_ph: 'พิมพ์ค้นหารายการ...',
     search_records_ph: 'ค้นหา หมายเหตุ / รายการ / ผู้บันทึก',
+    tile_inbox: 'ข้อความ', tile_bug: 'แจ้งบัค', tile_newbiz: 'ธุรกิจใหม่', tile_bank: 'บัญชีโอน', tile_graph: 'กราฟ', tile_items: 'หัวข้อ', tile_cashiers: 'แคชเชียร์', tile_schedule: 'ตารางงาน', tile_members: 'สมาชิก',
+    settings_general: 'ทั่วไป', settings_business: 'ตั้งค่าธุรกิจ',
     rpt_empty_title: 'ยังไม่มีรายงาน',
     rpt_empty_desc: 'เลือกช่วงวันที่ แคชเชียร์ และประเภทที่ซ้าย แล้วกด “สร้างรายงาน” ผลลัพธ์จะแสดงที่นี่',
     item_scope_hint: 'หัวข้อไม่ถูกลบ แค่เลือกว่าให้แสดงตรงไหน — ติ๊ก = แสดง, กุญแจ = ล็อค: หน้าบันทึกจะซ่อน, รายงานจะไม่ติ๊กให้แต่ยังเลือกเองได้, กราฟแดชบอร์ดจะซ่อน (ข้อมูลที่บันทึกไว้ยังอยู่) | XLSX: แสดง = มีคอลัมน์, อื่นๆ = รวมเข้าอื่นๆ, ตัดออก = ไม่อยู่ในไฟล์',
@@ -3198,6 +3140,8 @@ const I18N = {
     income_items: 'Income Items', expense_items: 'Expense Items',
     search_item_ph: 'Type to search items...',
     search_records_ph: 'Search notes / items / who recorded',
+    tile_inbox: 'Inbox', tile_bug: 'Report bug', tile_newbiz: 'New business', tile_bank: 'Transfer', tile_graph: 'Charts', tile_items: 'Items', tile_cashiers: 'Cashiers', tile_schedule: 'Schedule', tile_members: 'Members',
+    settings_general: 'General', settings_business: 'Business settings',
     rpt_empty_title: 'No report yet',
     rpt_empty_desc: 'Pick a date range, cashier and type on the left, then press “Generate report”. The result appears here.',
     item_scope_hint: 'Items are never deleted — you only choose where each one appears. Check = shown, lock = Add page hides it, Report leaves it un-ticked (you can still tick it), dashboard charts hide it (saved data stays) | XLSX: Show = own column, Others = merged into Others, Skip = left out of the file',
@@ -5704,8 +5648,9 @@ window.generateReport = function(){
     cashierOrderIds().forEach(c=>{if(cTot[c])text+=`${cashierName(c)}: ${fmtN(cTot[c])} บาท\n`;});
     if(gTotal['ค่าจอดรถ'])text+=`ค่ารถ: ${fmtN(gTotal['ค่าจอดรถ'])} บาท\n`;
     if(gTotal['กำไรค่าข้าว'])text+=`กำไรค่าข้าว: ${fmtN(gTotal['กำไรค่าข้าว'])} บาท\n`;
-    const statCashierCards = cashierOrderIds().map(c=>`<div class="stat-card"><div class="stat-label">${cashierName(c)}</div><div class="stat-value income">${fmtN(cTot[c]||0)}</div></div>`).join('');
-    document.getElementById('rpt-stats').innerHTML=`<div class="stat-card"><div class="stat-label">ยอดรวมสุทธิ</div><div class="stat-value income">${fmtN(Object.values(gTotal).reduce((a,b)=>a+b,0))}</div></div><div class="stat-card"><div class="stat-label">จำนวนวัน</div><div class="stat-value neutral">${sorted.length}</div></div>${statCashierCards}`;
+    const statCashierCards = cashierOrderIds().map(c=>`<div class="stat-card"><div class="stat-label">${escHtml(cashierName(c))}</div><div class="stat-value income">${fmtN(cTot[c]||0)}</div></div>`).join('');
+    // Row 1: net total + number of days.  Row 2 (own line): income split by cashier.
+    document.getElementById('rpt-stats').innerHTML=`<div class="stats-grid"><div class="stat-card"><div class="stat-label">ยอดรวมสุทธิ</div><div class="stat-value income">${fmtN(Object.values(gTotal).reduce((a,b)=>a+b,0))}</div></div><div class="stat-card"><div class="stat-label">จำนวนวัน</div><div class="stat-value neutral">${sorted.length}</div></div></div>${statCashierCards?`<div class="stats-sub">รายได้แยกตามแคชเชียร์</div><div class="stats-grid stats-cashiers">${statCashierCards}</div>`:''}`;
   } else {
     const byDay={};
     recs.forEach(r=>{const k=r.dateKey||(r.date?dKey(r.date):0);if(!byDay[k])byDay[k]={date:r.date,cashiers:{}};if(!byDay[k].cashiers[r.cashier])byDay[k].cashiers[r.cashier]={};Object.entries(r.items||{}).forEach(([ik,v])=>{byDay[k].cashiers[r.cashier][ik]=(byDay[k].cashiers[r.cashier][ik]||0)+v;gTotal[ik]=(gTotal[ik]||0)+v;});});
@@ -5736,7 +5681,7 @@ window.generateReport = function(){
     if(appSettings.transferEnabled) {
       text+=`\n\nหมายเหตุ\n\n${appSettings.name}\nธนาคาร ${appSettings.bank}\n${appSettings.account}`;
     }
-    document.getElementById('rpt-stats').innerHTML=`<div class="stat-card"><div class="stat-label">ยอดโอนรวม</div><div class="stat-value expense">${fmtN(runTotal)}</div></div><div class="stat-card"><div class="stat-label">จำนวนวัน</div><div class="stat-value neutral">${sorted.length}</div></div>`;
+    document.getElementById('rpt-stats').innerHTML=`<div class="stats-grid"><div class="stat-card"><div class="stat-label">ยอดโอนรวม</div><div class="stat-value expense">${fmtN(runTotal)}</div></div><div class="stat-card"><div class="stat-label">จำนวนวัน</div><div class="stat-value neutral">${sorted.length}</div></div></div>`;
   }
   document.getElementById('rpt-output').textContent=text;
 

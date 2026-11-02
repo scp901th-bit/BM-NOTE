@@ -555,16 +555,14 @@ svg{display:inline-block;vertical-align:middle;flex-shrink:0}
 }
 
 /* Inbox */
-@container pg (min-width:760px){
+@container pg (min-width:640px){
   #inbox-admin:not([style*="none"]),#inbox-member:not([style*="none"]){display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;align-items:start}
   #tab-inbox .card{margin:0}
 }
 
 /* Settings */
-@container pg (min-width:760px){
-  .set-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:14px;align-items:start}
-  .set-grid > .card,.set-grid > #admin-settings > .card{margin-bottom:0}
-  #admin-settings:not([style*="none"]){display:contents!important}
+@container pg (min-width:640px){
+  .set-grid{grid-template-columns:repeat(auto-fill,minmax(320px,1fr))}
 }
 
 /* Full-screen settings pages */
@@ -617,3 +615,105 @@ svg{display:inline-block;vertical-align:middle;flex-shrink:0}
 .rpt-lock-hint .link-btn{background:none;border:none;color:var(--accent);font-family:inherit;font-size:12px;cursor:pointer;text-decoration:underline;padding:2px 4px}
 .lock-tag{display:inline-flex;align-items:center;gap:4px;margin-left:8px;padding:1px 9px;border-radius:10px;font-size:11px;font-weight:700;color:var(--yellow);background:rgba(255,170,0,.12)}
 .lock-tag svg{width:11px;height:11px}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   SETTINGS — icon tiles. Mouse: icon only, the name shows on hover.
+   Touch (no hover): the short name sits under the icon.
+   ═══════════════════════════════════════════════════════════════ */
+.set-grid{display:grid;grid-template-columns:minmax(0,1fr);gap:12px;align-items:start}
+.set-grid > .card,.set-grid > #admin-settings > .card{margin-bottom:0}
+#admin-settings:not([style*="none"]){display:contents!important}   /* its cards join the grid so they can be ordered */
+.set-account{order:1}.set-biz{order:2}.set-general{order:3}.set-pref{order:4}.set-line{order:5}.set-danger{order:8}
+#admin-settings > .card:not(.set-biz){order:9}
+.set-tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(84px,1fr));gap:10px}
+.set-tile{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;min-height:86px;padding:12px 6px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--sq);color:var(--text);font-family:inherit;cursor:pointer;transition:border-color .15s,background .15s,transform .12s}
+.set-tile svg{width:26px;height:26px;color:var(--accent);flex:none}
+.set-tile-label{font-size:12px;font-weight:600;line-height:1.25;text-align:center}
+.set-tile-tip{display:none}
+.set-tile:hover{border-color:var(--accent);background:var(--surface3)}
+.set-tile:active{transform:scale(.97)}
+.set-tile:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+@media (hover:hover) and (pointer:fine){
+  .set-tiles{grid-template-columns:repeat(auto-fill,64px);gap:10px}
+  .set-tile{min-height:64px;padding:0}
+  .set-tile svg{width:26px;height:26px}
+  .set-tile-label{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}   /* read by screen readers, not shown */
+  .set-tile-tip,.set-pref .cat-btn[id^="th-"] > span{display:block;position:absolute;left:50%;bottom:calc(100% + 8px);transform:translate(-50%,4px);white-space:nowrap;background:var(--surface3);color:var(--text);border:1px solid var(--border);padding:6px 11px;border-radius:8px;font-size:12px;font-weight:600;letter-spacing:0;opacity:0;pointer-events:none;transition:opacity .12s,transform .12s;z-index:30;box-shadow:0 6px 18px rgba(0,0,0,.28)}
+  .set-tile:hover .set-tile-tip,.set-tile:focus-visible .set-tile-tip,.set-pref .cat-btn[id^="th-"]:hover > span,.set-pref .cat-btn[id^="th-"]:focus-visible > span{opacity:1;transform:translate(-50%,0)}
+  .set-pref .cat-btn[id^="th-"]{position:relative;display:flex;align-items:center;justify-content:center}
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   DASHBOARD — packed tighter: cards in a row share one height, the charts
+   grow to fill their card, small cards put the legend beside the donut
+   ═══════════════════════════════════════════════════════════════ */
+.dash{gap:10px}
+.dash .card{padding:14px 16px}
+.dash-filter{padding:10px 14px}
+.dash-kpis{gap:10px}
+.dash-c{display:flex;flex-direction:column}
+.dash-c > .card-title{flex:none;margin-bottom:8px}
+.dash .chart-wrap{position:relative;flex:1 1 auto;height:auto;min-height:var(--ch,230px);margin:0}
+.dash .chart-wrap > canvas{position:absolute;inset:0;width:100%!important;height:100%!important}
+.dash .chart-legend{flex:none;margin-top:8px}
+.dash-donuts{align-items:stretch;gap:10px}
+.dash-donuts .card{container:dcard / inline-size}
+.donut-body{display:flex;flex-direction:column;flex:1 1 auto;min-height:0}
+.donut-body > div[style*="max-width"]{width:100%}
+.dash{--ch:230px}
+.dash-donuts{--ch:190px}
+@container dash (min-width:560px){ .dash{--ch:250px} .dash-donuts{--ch:200px} }
+@container dash (min-width:860px){ .dash{--ch:290px} .dash-donuts{--ch:200px} }
+@container dcard (min-width:430px){
+  .donut-body{flex-direction:row;align-items:center;gap:18px}
+  .donut-body > div[style*="max-width"]{flex:0 0 190px;max-width:190px!important;margin:0!important}
+  .donut-body .chart-legend{flex:1;flex-direction:column;align-items:flex-start;justify-content:center;margin:0;gap:8px}
+}
+/* phone: the date range + update button on one row */
+@container dash (max-width:559px){
+  .dash-filter{grid-template-columns:minmax(0,1fr) auto;gap:6px 8px;align-items:center}
+  .dash-filter .card-title{grid-column:1 / -1}
+  .dash-apply{width:auto;padding-left:16px;padding-right:16px}
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   REPORT — totals row, then income by cashier on its own row
+   ═══════════════════════════════════════════════════════════════ */
+.stats-sub{font-size:12px;font-weight:700;color:var(--text2);margin:2px 2px 8px}
+#rpt-stats > .stats-grid:not(.stats-cashiers){grid-template-columns:repeat(2,minmax(0,1fr))}
+.stats-cashiers{grid-template-columns:repeat(auto-fit,minmax(110px,1fr))}
+
+/* ═══════════════════════════════════════════════════════════════
+   PHONE
+   ═══════════════════════════════════════════════════════════════ */
+@media (max-width:639px){
+  .main{padding:12px 12px 100px}
+  .card{padding:14px;margin-bottom:10px}
+  .card-title{margin-bottom:10px}
+  .add-grid,.rec-layout,.rpt-layout,.rpt-side,.sp-body,.set-grid{gap:10px}
+  .record-item{padding:12px}
+}
+@container pg (max-width:639px){
+  /* date / cashier / type: slim rows (titles stay for screen readers) so the item list is reached sooner */
+  .add-date,.add-cashier,.add-type{position:relative;padding:10px 12px}
+  .add-date > .card-title,.add-cashier > .card-title,.add-type > .card-title,.rec-filter > .card-title{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;margin:0}
+  .rec-filter{position:relative;padding:12px}
+  .rec-filter .filter-row{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;margin-bottom:8px;padding-bottom:2px}
+  .rec-filter .filter-row::-webkit-scrollbar{display:none}
+  .rec-filter .filter-chip{flex:none}
+}
+@media (pointer:coarse){
+  .filter-chip,.cashier-btn,.cat-btn{min-height:40px}
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   TABLET (content area about 640–860px)
+   ═══════════════════════════════════════════════════════════════ */
+@container pg (min-width:640px) and (max-width:859px){
+  .add-grid{grid-template-columns:minmax(0,3fr) minmax(250px,2fr);grid-template-areas:"items date" "items cashier" "items type" "items note"}
+  .rec-layout{grid-template-columns:230px minmax(0,1fr)}
+  .rec-filter{position:sticky;top:76px}
+  .rpt-side{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .rpt-side > :first-child,.rpt-side > :not(.card){grid-column:1 / -1}
+}
