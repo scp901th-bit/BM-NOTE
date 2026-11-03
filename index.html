@@ -303,7 +303,10 @@
     </div>
     <div class="item-search-meta" id="item-search-meta" aria-live="polite"></div>
     <div class="items-fav-hint" id="items-fav-hint" hidden>แตะดาว ☆ ที่หัวข้อเพื่อปักหมุดเป็นรายการโปรด จะขึ้นบนสุดเสมอ ไม่ต้องพิมพ์หรือเลื่อนหา</div>
-    <div class="items-grid" id="items-grid"></div>
+    <div class="items-wrap" id="items-wrap">
+      <div class="items-grid" id="items-grid"></div>
+      <div class="items-gutter"><button type="button" class="items-collapse" id="items-collapse" aria-label="แสดงน้อยลง" title="แสดงน้อยลง" aria-expanded="true" onclick="toggleItemsMore()" hidden><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="17 11 12 6 7 11"/><polyline points="17 18 12 13 7 18"/></svg></button></div>
+    </div>
     <button type="button" class="items-more" id="items-more" onclick="toggleItemsMore()" hidden></button>
     <div class="item-locked-note" id="items-locked-note"></div>
     <div class="add-item-row mt8">
@@ -391,11 +394,14 @@
       <button class="cat-btn income active" id="rpt-income" onclick="setRptCat('income')"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="14" height="14" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M12 21.593c-.525-.438-9.993-8.008-9.993-13.368 0-3.397 2.75-6.225 6.243-6.225 2.021 0 3.799.95 4.75 2.393C14 2.95 15.778 2 17.75 2c3.493 0 6.25 2.828 6.25 6.225 0 5.36-9.467 12.93-10 13.368z"/></svg> <span data-i18n="income">รายรับ</span></button>
       <button class="cat-btn expense" id="rpt-expense" onclick="setRptCat('expense')"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="14" height="14" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M12 21.593c-.525-.438-9.993-8.008-9.993-13.368 0-3.397 2.75-6.225 6.243-6.225 2.021 0 3.799.95 4.75 2.393C14 2.95 15.778 2 17.75 2c3.493 0 6.25 2.828 6.25 6.225 0 5.36-9.467 12.93-10 13.368z"/></svg> <span data-i18n="expense">รายเบิก</span></button>
     </div>
-    <div class="cat-group">
+    <div class="cat-group rpt-detail-row">
       <button class="cat-btn neutral active" id="rpt-all" style="font-size:13px" onclick="setRptDetail('all')" data-i18n="everything">ทุกอย่าง</button>
       <button class="cat-btn neutral" id="rpt-custom" style="font-size:13px" onclick="setRptDetail('custom')" data-i18n="customize">กำหนดเอง</button>
+      <div class="rpt-lock" id="rpt-lock" style="display:none">
+        <button type="button" class="rpt-lock-btn" id="rpt-lock-btn" aria-expanded="false" aria-controls="rpt-lock-pop" title="มีหัวข้อที่ล็อค — กดเพื่อดู" onclick="toggleRptLockPop(event)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span class="rpt-lock-count" id="rpt-lock-count">0</span></button>
+        <div class="rpt-lock-pop" id="rpt-lock-pop" role="dialog" aria-label="หัวข้อที่ล็อค" hidden></div>
+      </div>
     </div>
-    <div class="rpt-lock-hint" id="rpt-lock-hint" style="display:none"></div>
     <div id="rpt-custom-items" style="display:none;margin-top:12px"></div>
   </div>
   <button class="btn btn-primary btn-full" onclick="generateReport()"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="18" y="3" width="4" height="18"/><rect x="10" y="8" width="4" height="13"/><rect x="2" y="13" width="4" height="8"/></svg> <span data-i18n="generate_report">สร้างรายงาน</span></button>
@@ -481,63 +487,66 @@
 <!-- SETTINGS -->
 <div class="section" id="tab-settings">
 <div class="set-grid">
-  <div class="card set-account">
-    <div class="card-title"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> <span data-i18n="my_account">บัญชีของฉัน</span></div>
+  <div class="set-search">
+    <div class="item-search"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.5" y2="16.5"/></svg><input type="search" id="set-q" class="form-input" placeholder="ค้นหาการตั้งค่า เช่น กราฟ, สมาชิก, ธีม..." data-i18n-placeholder="search_settings_ph" autocomplete="off" spellcheck="false" aria-label="ค้นหาการตั้งค่า" oninput="filterSettings()" onkeydown="settingsSearchKey(event)"/></div>
+    <div class="item-search-meta" id="set-q-meta" aria-live="polite"></div>
+  </div>
+  <div class="card set-account" data-kw="บัญชี รหัสผ่าน ออกจากระบบ อีเมล account password logout email">
+    <div role="heading" aria-level="2" class="card-title"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> <span data-i18n="my_account">บัญชีของฉัน</span></div>
     <div id="user-info-card"></div>
     <button class="btn btn-ghost btn-sm mt8" onclick="openChangePasswordModal()"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg> เปลี่ยนรหัสผ่าน</button>
     <button class="btn btn-ghost btn-sm mt8" onclick="doLogout()"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg> <span data-i18n="logout">ออกจากระบบ</span></button>
   </div>
   <div class="card set-general">
-    <div class="card-title"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg> <span data-i18n="settings_general">ทั่วไป</span></div>
+    <div role="heading" aria-level="2" class="card-title"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg> <span data-i18n="settings_general">ทั่วไป</span></div>
     <div class="set-tiles">
-      <button type="button" class="set-tile" onclick="switchTab('inbox')"><svg stroke="currentColor" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg><span class="set-tile-label" data-i18n="tile_inbox">ข้อความ</span><span class="set-tile-tip" data-i18n="notifications_messages">การแจ้งเตือน / ข้อความ</span></button>
-      <button type="button" class="set-tile" onclick="openBugReportModal()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2l1.88 1.88M14.12 3.88L16 2M9 7.13v-1a3.003 3.003 0 1 1 6 0v1"/><path d="M12 20c-3.3 0-6-2.7-6-6v-3a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v3c0 3.3-2.7 6-6 6z"/><path d="M12 20v2M6 13H2M22 13h-4M4 8l-1.5-1M20 8l1.5-1M4 18l-1.5 1M20 18l1.5 1"/></svg><span class="set-tile-label" data-i18n="tile_bug">แจ้งบัค</span><span class="set-tile-tip" data-i18n="report_bug_title">แจ้งปัญหา / รายงานบัค</span></button>
-      <button type="button" class="set-tile" onclick="openCreateBusinessForm()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18M5 21V7l8-4v18M19 21V11l-6-4"/></svg><span class="set-tile-label" data-i18n="tile_newbiz">ธุรกิจใหม่</span><span class="set-tile-tip" data-i18n="create_new_business">สร้างธุรกิจใหม่</span></button>
+      <button type="button" class="set-tile" data-kw="ข้อความ แจ้งเตือน คำขอลบ กล่องข้อความ inbox notification message" onclick="switchTab('inbox')"><svg stroke="currentColor" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg><span class="set-tile-label" data-i18n="tile_inbox">ข้อความ</span><span class="set-tile-tip"><b data-i18n="notifications_messages">การแจ้งเตือน / ข้อความ</b><span class="set-tile-desc" data-i18n="notifications_messages_desc">คำขอลบ, ข้อความจากสมาชิก, การแจ้งเตือนต่างๆ</span></span></button>
+      <button type="button" class="set-tile" data-kw="บัค ปัญหา แจ้ง รายงาน bug report problem" onclick="openBugReportModal()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2l1.88 1.88M14.12 3.88L16 2M9 7.13v-1a3.003 3.003 0 1 1 6 0v1"/><path d="M12 20c-3.3 0-6-2.7-6-6v-3a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v3c0 3.3-2.7 6-6 6z"/><path d="M12 20v2M6 13H2M22 13h-4M4 8l-1.5-1M20 8l1.5-1M4 18l-1.5 1M20 18l1.5 1"/></svg><span class="set-tile-label" data-i18n="tile_bug">แจ้งบัค</span><span class="set-tile-tip"><b data-i18n="report_bug_title">แจ้งปัญหา / รายงานบัค</b><span class="set-tile-desc" data-i18n="report_bug_desc">พบปัญหาการใช้งาน? แจ้งมาที่นี่ ทีมงานจะได้รับและแก้ไขให้</span></span></button>
+      <button type="button" class="set-tile" data-kw="ธุรกิจ สร้าง เพิ่ม ร้าน business new" onclick="openCreateBusinessForm()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18M5 21V7l8-4v18M19 21V11l-6-4"/></svg><span class="set-tile-label" data-i18n="tile_newbiz">ธุรกิจใหม่</span><span class="set-tile-tip"><b data-i18n="create_new_business">สร้างธุรกิจใหม่</b><span class="set-tile-desc" data-i18n="create_new_business_desc">สร้างอีกธุรกิจ/กลุ่มแยกอิสระจากที่มีอยู่ สลับไปมาได้ตลอด</span></span></button>
     </div>
   </div>
-  <div class="card set-line">
-    <div class="card-title"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg> <span data-i18n="line_connection">การเชื่อมต่อ LINE</span></div>
+  <div class="card set-line" data-kw="line ไลน์ เชื่อมต่อ แจ้งเตือน notify connect">
+    <div role="heading" aria-level="2" class="card-title"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg> <span data-i18n="line_connection">การเชื่อมต่อ LINE</span></div>
     <div id="line-connect-card-body"><div style="font-size:12px;color:var(--text2)" data-i18n="loading">กำลังโหลด...</div></div>
   </div>
-  <div class="card set-danger" style="border:1px solid #ff3d71">
-    <div class="card-title" style="color:#ff3d71"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v2m0 4h.01M21.73 18 13.73 4a2 2 0 0 0-3.46 0L2.27 18a2 2 0 0 0 1.73 3h16a2 2 0 0 0 1.73-3z"/></svg> <span data-i18n="danger_zone">โซนอันตราย</span></div>
+  <div class="card set-danger" data-kw="ลบบัญชี อันตราย delete account danger" style="border:1px solid #ff3d71">
+    <div role="heading" aria-level="2" class="card-title" style="color:#ff3d71"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v2m0 4h.01M21.73 18 13.73 4a2 2 0 0 0-3.46 0L2.27 18a2 2 0 0 0 1.73 3h16a2 2 0 0 0 1.73-3z"/></svg> <span data-i18n="danger_zone">โซนอันตราย</span></div>
     <div id="delete-account-warning" style="font-size:12px;color:var(--text2);margin-bottom:10px" data-i18n="delete_account_warning">การลบบัญชีไม่สามารถย้อนกลับได้ หากคุณเป็นเจ้าของธุรกิจ ธุรกิจนั้นจะถูกลบทั้งหมด</div>
     <button class="btn btn-full" style="background:rgba(255,61,113,.12);color:#ff3d71;border:1px solid rgba(255,61,113,.3);font-weight:700" onclick="openDeleteAccountModal()">
       <svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
       <span data-i18n="delete_my_account">ลบบัญชีของฉัน</span>
     </button>
   </div>
-  <div class="card set-pref">
-    <div class="card-title"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20z"/><path d="M12 2v20"/></svg> <span data-i18n="theme">ธีม</span></div>
+  <div class="card set-pref" data-kw="ธีม ภาษา สี มืด สว่าง กลางวัน กลางคืน ไทย อังกฤษ theme language dark light thai english">
+    <div role="heading" aria-level="2" class="card-title"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2a10 10 0 0 0 0 20z" fill="currentColor" stroke="none"/></svg> <span data-i18n="appearance">การแสดงผล</span></div>
+    <div class="set-row"><div class="set-row-label" data-i18n="theme">ธีม</div>
     <div class="cat-group">
       <button class="cat-btn neutral" id="th-auto" onclick="setThemeMode('auto')"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg> <span data-i18n="auto">อัตโนมัติ</span></button>
       <button class="cat-btn neutral" id="th-light" onclick="setThemeMode('light')"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg> <span data-i18n="light_mode">กลางวัน</span></button>
       <button class="cat-btn neutral active" id="th-dark" onclick="setThemeMode('dark')"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg> <span data-i18n="dark_mode">กลางคืน</span></button>
-    </div>
-  </div>
-  <div class="card set-pref">
-    <div class="card-title"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg> <span data-i18n="language">ภาษา</span></div>
+    </div></div>
+    <div class="set-row"><div class="set-row-label" data-i18n="language">ภาษา</div>
     <div class="cat-group">
       <button class="cat-btn neutral active" id="lang-th" onclick="setLanguage('th')">ไทย (TH)</button>
       <button class="cat-btn neutral" id="lang-en" onclick="setLanguage('en')">English (EN)</button>
-    </div>
+    </div></div>
   </div>
   <!-- Admin only settings -->
   <div id="admin-settings" style="display:none">
     <div class="card set-biz">
-      <div class="card-title"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18M5 21V7l8-4v18M19 21V11l-6-4"/></svg> <span data-i18n="settings_business">ตั้งค่าธุรกิจ</span></div>
+      <div role="heading" aria-level="2" class="card-title"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18M5 21V7l8-4v18M19 21V11l-6-4"/></svg> <span data-i18n="settings_business">ตั้งค่าธุรกิจ</span></div>
       <div class="set-tiles">
-      <button type="button" class="set-tile" onclick="openSettingsPage('bank')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg><span class="set-tile-label" data-i18n="tile_bank">บัญชีโอน</span><span class="set-tile-tip" data-i18n="bank_account">บัญชีรับโอน</span></button>
-      <button type="button" class="set-tile" onclick="openSettingsPage('graph')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="18" y="3" width="4" height="18"/><rect x="10" y="8" width="4" height="13"/><rect x="2" y="13" width="4" height="8"/></svg><span class="set-tile-label" data-i18n="tile_graph">กราฟ</span><span class="set-tile-tip" data-i18n="graph_display">การแสดงกราฟ (รายรับ-รายจ่าย)</span></button>
-      <button type="button" class="set-tile" onclick="openSettingsPage('items')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg><span class="set-tile-label" data-i18n="tile_items">หัวข้อ</span><span class="set-tile-tip" data-i18n="manage_items">จัดการหัวข้อรายรับ-รายจ่าย</span></button>
-      <button type="button" class="set-tile" onclick="openSettingsPage('cashiers')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><line x1="21.17" y1="8" x2="12" y2="8"/><line x1="3.95" y1="6.06" x2="8.54" y2="14"/><line x1="10.88" y1="21.94" x2="15.46" y2="14"/></svg><span class="set-tile-label" data-i18n="tile_cashiers">แคชเชียร์</span><span class="set-tile-tip" >จัดการแคชเชียร์</span></button>
-      <button type="button" class="set-tile" onclick="openSchedulePage()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg><span class="set-tile-label" data-i18n="tile_schedule">ตารางงาน</span><span class="set-tile-tip" >ตารางงาน</span></button>
-      <button type="button" class="set-tile" onclick="openUserManagerPage()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg><span class="set-tile-label" data-i18n="tile_members">สมาชิก</span><span class="set-tile-tip" data-i18n="manage_members">จัดการสมาชิก</span></button>
+      <button type="button" class="set-tile" data-kw="บัญชี โอน ธนาคาร พร้อมเพย์ bank transfer account" onclick="openSettingsPage('bank')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg><span class="set-tile-label" data-i18n="tile_bank">บัญชีโอน</span><span class="set-tile-tip"><b data-i18n="bank_account">บัญชีรับโอน</b><span class="set-tile-desc" data-i18n="bank_account_desc">แสดง/ซ่อนบัญชีรับโอนในรายงาน และแก้ไขข้อมูลบัญชี</span></span></button>
+      <button type="button" class="set-tile" data-kw="กราฟ แผนภูมิ แดชบอร์ด chart graph dashboard" onclick="openSettingsPage('graph')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="18" y="3" width="4" height="18"/><rect x="10" y="8" width="4" height="13"/><rect x="2" y="13" width="4" height="8"/></svg><span class="set-tile-label" data-i18n="tile_graph">กราฟ</span><span class="set-tile-tip"><b data-i18n="graph_display">การแสดงกราฟ (รายรับ-รายจ่าย)</b><span class="set-tile-desc" data-i18n="graph_display_desc">เลือกหมวดที่จะแสดง/ซ่อนในกราฟหน้าแรก</span></span></button>
+      <button type="button" class="set-tile" data-kw="หัวข้อ รายการ ล็อค ลำดับ เรียง items lock order xlsx" onclick="openSettingsPage('items')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg><span class="set-tile-label" data-i18n="tile_items">หัวข้อ</span><span class="set-tile-tip"><b data-i18n="manage_items">จัดการหัวข้อรายรับ-รายจ่าย</b><span class="set-tile-desc" data-i18n="manage_items_desc">เพิ่ม/ลบ/เรียงลำดับหัวข้อ และเลือกว่าแต่ละหัวข้อจะแสดงที่หน้าบันทึก รายงาน และ XLSX หรือไม่</span></span></button>
+      <button type="button" class="set-tile" data-kw="แคชเชียร์ ช่อง ชื่อ cashier" onclick="openSettingsPage('cashiers')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><line x1="21.17" y1="8" x2="12" y2="8"/><line x1="3.95" y1="6.06" x2="8.54" y2="14"/><line x1="10.88" y1="21.94" x2="15.46" y2="14"/></svg><span class="set-tile-label" data-i18n="tile_cashiers">แคชเชียร์</span><span class="set-tile-tip"><b data-i18n="manage_cashiers">จัดการแคชเชียร์</b><span class="set-tile-desc" data-i18n="manage_cashiers_desc">ตั้งชื่อ, ลำดับ, เพิ่ม/ลดจำนวนช่องแคชเชียร์ในระบบ</span></span></button>
+      <button type="button" class="set-tile" data-kw="ตารางงาน ปฏิทิน พนักงาน กะ schedule shift calendar" onclick="openSchedulePage()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg><span class="set-tile-label" data-i18n="tile_schedule">ตารางงาน</span><span class="set-tile-tip"><b data-i18n="schedule_title">ตารางงาน</b><span class="set-tile-desc" data-i18n="schedule_desc">ปฏิทินกำหนดว่าพนักงานคนไหนทำงานวันไหน</span></span></button>
+      <button type="button" class="set-tile" data-kw="สมาชิก ผู้ใช้ บัญชี สิทธิ์ member user role account" onclick="openUserManagerPage()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg><span class="set-tile-label" data-i18n="tile_members">สมาชิก</span><span class="set-tile-tip"><b data-i18n="manage_members">จัดการสมาชิก</b><span class="set-tile-desc" data-i18n="manage_members_desc">ดูและจัดการบัญชีและสิทธิ์ของสมาชิกทั้งหมด</span></span></button>
       </div>
     </div>
 
     <div class="card" id="dev-exportimport-card" style="display:none">
-      <div class="card-title" style="color:var(--accent)"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16.5 9.4l-9-5.19"/><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg> Export / Import</div>
+      <div role="heading" aria-level="2" class="card-title" style="color:var(--accent)"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16.5 9.4l-9-5.19"/><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg> Export / Import</div>
       <div class="flex gap8" style="flex-wrap:wrap">
         <button class="btn btn-ghost btn-sm" onclick="exportData()"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg> Export JSON</button>
         <button class="btn btn-ghost btn-sm" onclick="document.getElementById('import-file').click()"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Import JSON</button>
@@ -546,7 +555,7 @@
     </div>
 
     <div class="card" id="dev-fullbackup-card" style="display:none;border:1px solid var(--yellow)">
-      <div class="card-title" style="color:var(--yellow)"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><path d="M12 12L3.27 6.96"/><path d="M12 12l8.73-5.04"/><path d="M12 12v9.5"/></svg> Full Backup (ก่อนอัปเดตระบบใหญ่)</div>
+      <div role="heading" aria-level="2" class="card-title" style="color:var(--yellow)"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><path d="M12 12L3.27 6.96"/><path d="M12 12l8.73-5.04"/><path d="M12 12v9.5"/></svg> Full Backup (ก่อนอัปเดตระบบใหญ่)</div>
       <div style="font-size:12px;color:var(--text2);margin-bottom:10px">ดึงข้อมูลทั้งหมด: รายการ, ผู้ใช้+สิทธิ์, ตั้งค่า, ข้อความ, คำขอลบ — ไฟล์เดียวครบ ใช้กู้คืนได้ทุกอย่าง</div>
       <button class="btn btn-full" style="background:linear-gradient(135deg,#b8860b,#daa520);color:#fff;font-weight:700" onclick="exportFullBackup()">
         <svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
@@ -555,19 +564,19 @@
     </div>
 
     <div class="card" id="platform-admin-card" style="display:none;border:2px solid #ffaa00">
-      <div class="card-title" style="color:#ffaa00"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg> Admin (ระดับโปรแกรม)</div>
+      <div role="heading" aria-level="2" class="card-title" style="color:#ffaa00"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg> Admin (ระดับโปรแกรม)</div>
       <div style="font-size:12px;color:var(--text2);margin-bottom:12px">ภาพรวมทุกธุรกิจในระบบ + กล่องแจ้งบัคจากผู้ใช้ทั้งหมด</div>
       <button class="btn btn-full" style="background:rgba(255,170,0,.12);color:#ffaa00;border:1px solid rgba(255,170,0,.3);font-weight:700" onclick="openPlatformAdminPage()">
         เปิดแดชบอร์ด Admin โปรแกรม
       </button>
     </div>
     <div class="card" id="business-status-card" style="display:none;border:1px solid var(--accent)">
-      <div class="card-title" style="color:var(--accent)"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18M5 21V7l8-4v18M19 21V11l-6-4"/></svg> สถานะ Business</div>
+      <div role="heading" aria-level="2" class="card-title" style="color:var(--accent)"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18M5 21V7l8-4v18M19 21V11l-6-4"/></svg> สถานะ Business</div>
       <div id="business-status-content" style="font-size:12px;color:var(--text2)"></div>
     </div>
 
     <div class="card" id="migration-tool-card" style="display:none;border:2px solid #ff3d71">
-      <div class="card-title" style="color:#ff3d71"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v2m0 4h.01M21.73 18 13.73 4a2 2 0 0 0-3.46 0L2.27 18a2 2 0 0 0 1.73 3h16a2 2 0 0 0 1.73-3z"/></svg> Multi-Business Migration (Master Dev เท่านั้น)</div>
+      <div role="heading" aria-level="2" class="card-title" style="color:#ff3d71"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v2m0 4h.01M21.73 18 13.73 4a2 2 0 0 0-3.46 0L2.27 18a2 2 0 0 0 1.73 3h16a2 2 0 0 0 1.73-3z"/></svg> Multi-Business Migration (Master Dev เท่านั้น)</div>
       <div style="font-size:12px;color:var(--text2);margin-bottom:12px">ย้ายข้อมูลปัจจุบันทั้งหมดเข้า business แรก "BP Snooker" — ต้อง Full Backup ก่อนเสมอ</div>
       <button class="btn btn-full btn-ghost" style="border:1px solid #ff3d71;color:#ff3d71;margin-bottom:8px" onclick="runMigrationDryRun()">
         <svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
@@ -2074,6 +2083,7 @@ async function resolveAuthAndInit(user) {
     document.getElementById('auth-screen').style.display = 'none';
     document.getElementById('app').style.display = 'block';
     hideSplash();
+    startFavSync();
     await initApp();
     if(window.__openAdminDashboardAfterInit) {
       window.__openAdminDashboardAfterInit = false;
@@ -2082,6 +2092,7 @@ async function resolveAuthAndInit(user) {
   } else {
     currentUser = null;
     currentBusinessId = null;
+    stopFavSync();
     document.getElementById('auth-screen').style.display = 'flex';
     document.getElementById('app').style.display = 'none';
     allRecords = [];
@@ -2273,6 +2284,7 @@ window.switchBusiness = async function(internalId) {
   showToast('กำลังสลับธุรกิจ...');
   currentBusinessId = internalId;
   localStorage.setItem('lastBusinessId', internalId);
+  startFavSync();
   await loadAppSettings();
   renderItemsGrid();
   renderCashierSelector();
@@ -3032,7 +3044,7 @@ const I18N = {
     open_bank_settings: 'เปิดตั้งค่าบัญชีรับโอน',
     graph_display: 'การแสดงกราฟ (รายรับ-รายจ่าย)', graph_display_desc: 'เลือกหมวดที่จะแสดง/ซ่อนในกราฟหน้าแรก',
     open_graph_settings: 'เปิดตั้งค่ากราฟ',
-    manage_items: 'จัดการหัวข้อรายรับ-รายจ่าย', manage_items_desc: 'เพิ่ม/ลบ/แก้ไขหัวข้อ และล็อคหัวข้อไม่ให้ขึ้นในหน้าเรียกรายงาน',
+    manage_items: 'จัดการหัวข้อรายรับ-รายจ่าย', manage_items_desc: 'เพิ่ม/ลบ/เรียงลำดับหัวข้อ และเลือกว่าแต่ละหัวข้อจะแสดงที่หน้าบันทึก รายงาน และ XLSX หรือไม่',
     open_manage_items: 'เปิดจัดการหัวข้อ',
     manage_members: 'จัดการสมาชิก', view_manage_accounts: 'ดูและจัดการ Account ทั้งหมด',
     show_bank_in_report: 'แสดงบัญชีรับโอนในรายงาน', recipient_name: 'ชื่อผู้รับ', bank: 'ธนาคาร',
@@ -3044,6 +3056,11 @@ const I18N = {
     search_records_ph: 'ค้นหา หมายเหตุ / รายการ / ผู้บันทึก',
     tile_inbox: 'ข้อความ', tile_bug: 'แจ้งบัค', tile_newbiz: 'ธุรกิจใหม่', tile_bank: 'บัญชีโอน', tile_graph: 'กราฟ', tile_items: 'หัวข้อ', tile_cashiers: 'แคชเชียร์', tile_schedule: 'ตารางงาน', tile_members: 'สมาชิก',
     settings_general: 'ทั่วไป', settings_business: 'ตั้งค่าธุรกิจ',
+    search_settings_ph: 'ค้นหาการตั้งค่า เช่น กราฟ, สมาชิก, ธีม...', appearance: 'การแสดงผล',
+    create_new_business_desc: 'สร้างอีกธุรกิจ/กลุ่มแยกอิสระจากที่มีอยู่ สลับไปมาได้ตลอด',
+    manage_cashiers: 'จัดการแคชเชียร์', manage_cashiers_desc: 'ตั้งชื่อ, ลำดับ, เพิ่ม/ลดจำนวนช่องแคชเชียร์ในระบบ',
+    schedule_title: 'ตารางงาน', schedule_desc: 'ปฏิทินกำหนดว่าพนักงานคนไหนทำงานวันไหน',
+    manage_members_desc: 'ดูและจัดการบัญชีและสิทธิ์ของสมาชิกทั้งหมด',
     rpt_empty_title: 'ยังไม่มีรายงาน',
     rpt_empty_desc: 'เลือกช่วงวันที่ แคชเชียร์ และประเภทที่ซ้าย แล้วกด “สร้างรายงาน” ผลลัพธ์จะแสดงที่นี่',
     item_scope_hint: 'หัวข้อไม่ถูกลบ แค่เลือกว่าให้แสดงตรงไหน — ติ๊ก = แสดง, กุญแจ = ล็อค: หน้าบันทึกจะซ่อน, รายงานจะไม่ติ๊กให้แต่ยังเลือกเองได้, กราฟแดชบอร์ดจะซ่อน (ข้อมูลที่บันทึกไว้ยังอยู่) | XLSX: แสดง = มีคอลัมน์, อื่นๆ = รวมเข้าอื่นๆ, ตัดออก = ไม่อยู่ในไฟล์',
@@ -3130,7 +3147,7 @@ const I18N = {
     open_bank_settings: 'Open Bank Account Settings',
     graph_display: 'Chart Display (Income-Expense)', graph_display_desc: 'Choose which categories to show/hide on the home chart (shares the same lock as the Report screen)',
     open_graph_settings: 'Open Chart Settings',
-    manage_items: 'Manage Income/Expense Items', manage_items_desc: 'Add/remove/edit items, and lock items out of the report screen',
+    manage_items: 'Manage Income/Expense Items', manage_items_desc: 'Add/remove/reorder items and choose where each one appears: add page, report, XLSX',
     open_manage_items: 'Open Item Manager',
     manage_members: 'Manage Members', view_manage_accounts: 'View and manage all accounts',
     show_bank_in_report: 'Show bank account on reports', recipient_name: 'Recipient Name', bank: 'Bank',
@@ -3142,6 +3159,11 @@ const I18N = {
     search_records_ph: 'Search notes / items / who recorded',
     tile_inbox: 'Inbox', tile_bug: 'Report bug', tile_newbiz: 'New business', tile_bank: 'Transfer', tile_graph: 'Charts', tile_items: 'Items', tile_cashiers: 'Cashiers', tile_schedule: 'Schedule', tile_members: 'Members',
     settings_general: 'General', settings_business: 'Business settings',
+    search_settings_ph: 'Search settings, e.g. charts, members, theme...', appearance: 'Appearance',
+    create_new_business_desc: 'Create another independent business/group you can switch to at any time',
+    manage_cashiers: 'Manage cashiers', manage_cashiers_desc: 'Rename, reorder, add or remove cashier slots',
+    schedule_title: 'Work schedule', schedule_desc: 'A calendar of who works on which day',
+    manage_members_desc: 'View and manage the accounts and roles of all members',
     rpt_empty_title: 'No report yet',
     rpt_empty_desc: 'Pick a date range, cashier and type on the left, then press “Generate report”. The result appears here.',
     item_scope_hint: 'Items are never deleted — you only choose where each one appears. Check = shown, lock = Add page hides it, Report leaves it un-ticked (you can still tick it), dashboard charts hide it (saved data stays) | XLSX: Show = own column, Others = merged into Others, Skip = left out of the file',
@@ -3756,6 +3778,41 @@ window.setCat = function(c){
   document.getElementById('cat-expense').classList.toggle('active',c==='expense');
   renderItemsGrid();
 }
+// ==== BM:SETTINGS-SEARCH-BEGIN ====
+window.filterSettings = function(){
+  const inp = document.getElementById('set-q');
+  const raw = inp ? inp.value.trim() : '';
+  const q = raw.toLowerCase();
+  const root = document.getElementById('tab-settings');
+  if(!root) return;
+  root.querySelectorAll('.set-tile').forEach(b => {
+    const hay = ((b.textContent || '') + ' ' + (b.dataset.kw || '')).toLowerCase();
+    b.classList.toggle('set-hide', !!q && !hay.includes(q));
+  });
+  root.querySelectorAll('.set-tiles-card').forEach(c => {
+    c.classList.toggle('set-hide', !!q && !c.querySelector('.set-tile:not(.set-hide)'));
+  });
+  root.querySelectorAll('.set-grid > .card:not(.set-tiles-card), #admin-settings > .card:not(.set-tiles-card)').forEach(c => {
+    const hay = ((c.dataset.kw || '') + ' ' + (c.textContent || '')).toLowerCase();
+    c.classList.toggle('set-hide', !!q && !hay.includes(q));
+  });
+  const meta = document.getElementById('set-q-meta');
+  if(!meta) return;
+  if(!q) { meta.textContent = ''; return; }
+  const visible = [...root.querySelectorAll('.set-tile, .set-grid > .card:not(.set-tiles-card), #admin-settings > .card:not(.set-tiles-card)')]
+    .filter(e => !e.classList.contains('set-hide') && e.offsetParent !== null).length;
+  meta.textContent = visible ? `พบ ${visible} รายการ` : `ไม่พบการตั้งค่าที่ตรงกับ “${raw}”`;
+};
+window.settingsSearchKey = function(e){
+  if(e.isComposing || e.keyCode === 229) return;
+  if(e.key === 'Escape') { e.target.value = ''; filterSettings(); }
+  else if(e.key === 'Enter') {
+    const first = document.querySelector('#tab-settings .set-tile:not(.set-hide)');
+    if(first && first.offsetParent !== null) { e.preventDefault(); first.click(); }
+  }
+};
+// ==== BM:SETTINGS-SEARCH-END ====
+
 // ==== BM:ADD-PAGE-BEGIN (searchable item list + Enter to save) ====
 const ITEMS_VISIBLE = 3;      // items shown at first; the rest collapse into "••••"
 let itemsExpanded = false;
@@ -3768,7 +3825,39 @@ function favLoad(){
     return { income: Array.isArray(o.income) ? o.income : [], expense: Array.isArray(o.expense) ? o.expense : [] };
   } catch(e) { return { income: [], expense: [] }; }
 }
-function favSave(o){ try { localStorage.setItem(favKey(), JSON.stringify(o)); } catch(e) {} }
+function favSave(o, push){
+  try { localStorage.setItem(favKey(), JSON.stringify(o)); } catch(e) {}    // instant, works offline
+  if(push !== false) favPush(o);                                          // then follow the account to other devices
+}
+// users/{uid}/prefs/favorites — Firestore rules let only that exact uid read or write it.
+function favDocRef(){ return doc(db, 'users', currentUser.uid, 'prefs', 'favorites'); }
+async function favPush(o){
+  if(!currentUser || !currentBusinessId) return;
+  try {
+    await setDoc(favDocRef(), { byBiz: { [currentBusinessId]: { income: o.income, expense: o.expense } }, updatedAt: serverTimestamp() }, { merge: true });
+  } catch(e) { console.warn('favorites could not be synced:', e && e.code); }
+}
+let favUnsub = null, favSyncKey = '';
+function stopFavSync(){ if(favUnsub) { try { favUnsub(); } catch(e) {} favUnsub = null; } favSyncKey = ''; }
+function startFavSync(){
+  if(!currentUser || !currentBusinessId) return;
+  const uid = currentUser.uid, biz = currentBusinessId, key = uid + '|' + biz;
+  if(favSyncKey === key) return;
+  stopFavSync(); favSyncKey = key;
+  try {
+    favUnsub = onSnapshot(favDocRef(), snap => {
+      if(!currentUser || currentUser.uid !== uid || currentBusinessId !== biz) return;
+      const remote = snap.exists() && snap.data().byBiz ? snap.data().byBiz[biz] : null;
+      if(remote) {
+        const o = { income: Array.isArray(remote.income) ? remote.income : [], expense: Array.isArray(remote.expense) ? remote.expense : [] };
+        if(JSON.stringify(o) !== JSON.stringify(favLoad())) { favSave(o, false); renderItemsGrid(true); }
+      } else {
+        const local = favLoad();                                           // first time on the server: upload what this device already pinned
+        if(local.income.length || local.expense.length) favPush(local);
+      }
+    }, err => console.warn('favorites sync unavailable:', err && err.code));
+  } catch(e) { console.warn('favorites sync unavailable'); }
+}
 
 function renderItemsGrid(keep){
   const grid = document.getElementById('items-grid');
@@ -3836,15 +3925,19 @@ window.filterItemsGrid = function(){
     r.classList.toggle('is-hidden', hide);
   });
   const more = document.getElementById('items-more');
+  const collapse = document.getElementById('items-collapse');
+  const wrap = document.getElementById('items-wrap');
+  const showMore = !q && hiddenByCollapse > 0;
+  const showCollapse = !q && itemsExpanded && othersTotal > ITEMS_VISIBLE;
   if(more) {
-    if(!q && hiddenByCollapse > 0) {
-      more.hidden = false; more.setAttribute('aria-expanded', 'false');
+    more.hidden = !showMore;
+    if(showMore) {
+      more.setAttribute('aria-expanded', 'false');
       more.innerHTML = `<span class="dots" aria-hidden="true">••••</span><span>แสดงอีก ${hiddenByCollapse} รายการ</span>`;
-    } else if(!q && itemsExpanded && othersTotal > ITEMS_VISIBLE) {
-      more.hidden = false; more.setAttribute('aria-expanded', 'true');
-      more.innerHTML = '<span>แสดงน้อยลง</span>';
-    } else more.hidden = true;
+    }
   }
+  if(collapse) collapse.hidden = !showCollapse;     // icon only, docked to the right edge, middle of the list
+  if(wrap) wrap.classList.toggle('has-collapse', showCollapse);
   const fh = document.getElementById('items-fav-hint');
   if(fh) fh.hidden = !!q || rows.length === 0 || Number(grid && grid.dataset.favs) > 0;
   const clr = document.getElementById('item-search-clear');
@@ -5594,13 +5687,33 @@ function renderRptCustomItems(){
   updateRptLockHint();
 }
 function updateRptLockHint(){
-  const el=document.getElementById('rpt-lock-hint');
-  if(!el) return;
+  const wrap=document.getElementById('rpt-lock');
+  if(!wrap) return;
   const locked=(rptCat==='income'?incomeItems:expenseItems).filter(n=>appSettings.lockedReportItems.includes(n));
-  if(rptDetail!=='all'||!locked.length){ el.style.display='none'; el.innerHTML=''; return; }
-  el.style.display='flex';
-  el.innerHTML=`${IM_ICON.lock}<span>“ทุกอย่าง” ไม่รวม ${locked.length} หัวข้อที่ล็อค: <b>${locked.map(escHtml).join(', ')}</b></span><button type="button" class="link-btn" onclick="setRptDetail('custom')">เลือกเอง</button>`;
+  if(rptDetail!=='all'||!locked.length){ wrap.style.display='none'; closeRptLockPop(); return; }
+  wrap.style.display='block';
+  document.getElementById('rpt-lock-count').textContent=locked.length;
+  document.getElementById('rpt-lock-btn').setAttribute('aria-label',`มี ${locked.length} หัวข้อที่ล็อค — กดเพื่อดูรายละเอียด`);
+  document.getElementById('rpt-lock-pop').innerHTML=
+    `<div class="rpt-lock-pop-title">“ทุกอย่าง” ไม่รวม ${locked.length} หัวข้อที่ล็อค</div>`+
+    `<ul>${locked.map(n=>`<li>${escHtml(n)}</li>`).join('')}</ul>`+
+    `<button type="button" class="link-btn" onclick="setRptDetail('custom')">เลือกเอง</button>`;
 }
+function closeRptLockPop(){
+  const pop=document.getElementById('rpt-lock-pop'), btn=document.getElementById('rpt-lock-btn');
+  if(pop) pop.hidden=true;
+  if(btn) btn.setAttribute('aria-expanded','false');
+}
+window.toggleRptLockPop=function(e){
+  if(e) e.stopPropagation();
+  const pop=document.getElementById('rpt-lock-pop'), btn=document.getElementById('rpt-lock-btn');
+  if(!pop||!btn) return;
+  const open=pop.hidden;
+  pop.hidden=!open;
+  btn.setAttribute('aria-expanded',String(open));
+};
+document.addEventListener('click',e=>{ if(!e.target.closest || !e.target.closest('.rpt-lock')) closeRptLockPop(); });
+document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeRptLockPop(); });
 
 window.generateReport = function(){
   const {from,to} = getDateRangeFromPicker('rpt-daterange');
