@@ -33,11 +33,6 @@
 <div id="auth-screen" class="auth-screen">
 
   <!-- ADMIN ENTRY (Platform Admin login — top-right corner, visible on every auth screen) -->
-  <button onclick="openAdminLoginModal()" style="position:fixed;top:16px;right:16px;z-index:50;background:var(--surface2);border:1px solid var(--border);border-radius:20px;padding:7px 14px;font-size:12px;font-weight:600;color:var(--text2);cursor:pointer;display:flex;align-items:center;gap:6px">
-    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-    Admin
-  </button>
-
   <!-- LANDING -->
   <div id="screen-landing" style="width:100%;max-width:420px;display:flex;flex-direction:column;align-items:center">
     <img src="logo-splash.png" alt="BM NOTE" style="width:80px;height:80px;object-fit:contain;margin-bottom:12px;border-radius:20px"/>
@@ -904,12 +899,16 @@
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
       </button>
     </div>
-    <div style="display:flex;gap:8px;padding:16px 16px 0">
+    <div style="display:flex;gap:8px;padding:16px 16px 0;flex-wrap:wrap">
       <button class="btn btn-sm" id="pa-tab-overview" style="flex:1;background:var(--accent);color:#fff;font-weight:700" onclick="switchPlatformAdminTab('overview')" data-i18n="business_overview">ภาพรวมธุรกิจ</button>
       <button class="btn btn-sm btn-ghost" id="pa-tab-bugs" style="flex:1" onclick="switchPlatformAdminTab('bugs')"><span data-i18n="report_bug_btn_short">แจ้งบัค</span> <span id="pa-bug-count" style="display:none"></span></button>
+      <button class="btn btn-sm btn-ghost" id="pa-tab-users" style="flex:1" onclick="switchPlatformAdminTab('users')">ผู้ใช้</button>
+      <button class="btn btn-sm btn-ghost" id="pa-tab-security" style="flex:1" onclick="switchPlatformAdminTab('security')">ความปลอดภัย</button>
     </div>
     <div id="pa-overview-panel" style="padding:16px"></div>
     <div id="pa-bugs-panel" style="padding:16px;display:none"></div>
+    <div id="pa-users-panel" style="padding:16px;display:none"></div>
+    <div id="pa-security-panel" style="padding:16px;display:none"></div>
     <div id="pa-business-detail-panel" style="padding:16px;display:none"></div>
   </div>
 </div>
@@ -955,6 +954,7 @@
         <select class="form-select" id="invite-role">
           <option value="staff">พนักงาน (Staff)</option>
           <option value="supervisor">หัวหน้าพนักงาน (Supervisor)</option>
+          <option value="admin" id="invite-role-admin-opt">ผู้ดูแลระบบ (Admin) — จัดการได้เกือบทั้งหมด</option>
         </select>
       </div>
       <button class="btn btn-primary btn-full mt8" onclick="generateInvite()" data-i18n="create_invite_code">สร้างรหัสเชิญ</button>
@@ -1085,29 +1085,6 @@
   </div>
 </div>
 
-<!-- PLATFORM ADMIN LOGIN (from the auth/login screens) -->
-<div class="modal-overlay" id="modal-admin-login">
-  <div class="modal-box">
-    <div class="modal-handle"></div>
-    <div class="modal-title"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg> เข้าสู่ระบบ Admin โปรแกรม</div>
-    <div style="font-size:12px;color:var(--text2);margin:8px 0 4px">สำหรับผู้ดูแลระบบที่ได้รับสิทธิ์เท่านั้น</div>
-    <div class="auth-error" id="admin-login-error"></div>
-    <div class="form-row" style="margin-top:8px">
-      <div class="form-label">อีเมล</div>
-      <input class="form-input" id="admin-login-email" type="email" placeholder="email@example.com" inputmode="email"/>
-    </div>
-    <div class="form-row">
-      <div class="form-label">รหัสผ่าน</div>
-      <input class="form-input" id="admin-login-pass" type="password" placeholder="รหัสผ่าน"/>
-    </div>
-    <button class="btn btn-primary btn-full mt8" onclick="doAdminLogin()" id="btn-admin-login">
-      <svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
-      เข้าสู่ระบบ Admin
-    </button>
-    <button class="btn btn-ghost btn-full mt8" onclick="closeModal('modal-admin-login')" data-i18n="cancel">ยกเลิก</button>
-  </div>
-</div>
-
 <!-- XLSX EXPORT MODAL -->
 <div class="modal-overlay" id="modal-xlsx">
   <div class="modal" style="max-width:480px;max-height:88vh;overflow-y:auto">
@@ -1195,6 +1172,44 @@
   </div>
   <div id="debug-log"></div>
 </div>
+<div id="dev-gate" style="display:none;position:fixed;inset:0;z-index:350;background:var(--bg);align-items:center;justify-content:center;padding:20px;overflow-y:auto">
+  <div class="auth-card" style="width:100%;max-width:400px">
+    <div class="auth-logo">BM NOTE</div>
+    <div class="auth-sub">โหมดนักพัฒนา</div>
+    <div class="auth-error" id="dev-gate-error"></div>
+    <div id="dev-gate-email" style="font-size:12px;color:var(--text2);text-align:center;margin-bottom:10px;word-break:break-all"></div>
+    <div id="dev-gate-verify" style="display:none;background:var(--surface2);border-radius:12px;padding:12px;margin-bottom:10px;font-size:12px;color:var(--text2);line-height:1.6">
+      อีเมลนี้ยังไม่ได้ยืนยัน โหมดนักพัฒนาต้องใช้อีเมลที่ยืนยันแล้ว (เข้าสู่ระบบด้วย Google จะยืนยันให้อัตโนมัติ)
+      <div style="display:flex;gap:8px;margin-top:8px"><button class="btn btn-ghost btn-sm" style="flex:1" onclick="devSendVerify()">ส่งอีเมลยืนยัน</button><button class="btn btn-ghost btn-sm" style="flex:1" onclick="devRecheckVerify()">ตรวจสอบอีกครั้ง</button></div>
+    </div>
+    <div class="form-row">
+      <div class="form-label">รหัสนักพัฒนา</div>
+      <input class="form-input" id="dev-gate-pass" type="password" autocomplete="off" onkeydown="if(event.key==='Enter')unlockDevMode()"/>
+    </div>
+    <button class="btn btn-primary btn-full mt8" id="btn-dev-unlock" onclick="unlockDevMode()">ปลดล็อกโหมดนักพัฒนา</button>
+    <button class="btn btn-ghost btn-full mt8" onclick="skipDevGate()">ใช้งานแอปธุรกิจตามปกติ</button>
+    <button class="btn btn-ghost btn-full mt8" onclick="openDevSetup()">ตั้ง/เปลี่ยนรหัสนักพัฒนา</button>
+    <button class="btn btn-ghost btn-full mt8" onclick="doLogout()">ออกจากระบบ</button>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-dev-setup">
+  <div class="modal-box">
+    <div class="modal-handle"></div>
+    <div class="modal-title">ตั้ง/เปลี่ยนรหัสนักพัฒนา</div>
+    <div style="font-size:12px;color:var(--text2);margin:8px 0;line-height:1.6">ตั้งรหัสอย่างน้อย 10 ตัวอักษร รหัสไม่ถูกเก็บไว้ที่ใด ระบบจะสร้างค่ายืนยัน (64 ตัวอักษร) ให้นำไปวางใน <b>firestore.rules</b> แทนค่า PASTE_PROOF_HEX_HERE ของอีเมลคุณ แล้วกด Publish</div>
+    <div class="form-row"><div class="form-label">รหัสใหม่</div><input class="form-input" id="dev-setup-pass" type="password" autocomplete="new-password"/></div>
+    <div class="form-row"><div class="form-label">ยืนยันรหัสอีกครั้ง</div><input class="form-input" id="dev-setup-pass2" type="password" autocomplete="new-password"/></div>
+    <button class="btn btn-primary btn-full mt8" onclick="generateDevProof()">สร้างค่ายืนยัน</button>
+    <div id="dev-setup-result-wrap" style="display:none;margin-top:12px">
+      <div style="font-size:12px;color:var(--text2);margin-bottom:6px" id="dev-setup-for"></div>
+      <div id="dev-setup-result" style="background:var(--surface2);border-radius:12px;padding:10px 12px;font-family:'JetBrains Mono',monospace;font-size:11px;word-break:break-all;color:var(--accent)"></div>
+      <button class="btn btn-ghost btn-full mt8" onclick="copyDevProof()">คัดลอกค่ายืนยัน</button>
+    </div>
+    <button class="btn btn-ghost btn-full mt8" onclick="closeModal('modal-dev-setup')">ปิด</button>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
@@ -1206,7 +1221,7 @@
 <!-- Firebase -->
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, updateProfile, GoogleAuthProvider, signInWithPopup, EmailAuthProvider, reauthenticateWithCredential, updatePassword, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, updateProfile, GoogleAuthProvider, signInWithPopup, EmailAuthProvider, reauthenticateWithCredential, updatePassword, sendPasswordResetEmail, sendEmailVerification } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 import { getFirestore, collection, collectionGroup, doc, addDoc, getDoc, getDocs, setDoc, updateDoc, deleteDoc, onSnapshot, query, orderBy, where, serverTimestamp, writeBatch, arrayUnion } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 const firebaseConfig = {
@@ -1334,6 +1349,7 @@ const MASTER_DEV_EMAILS = [
 // STATE
 // ============================================================
 let currentUser = null;
+let currentMemberRole = null; // real role in the active business (owner|admin|supervisor|staff|staff_trial)
 let currentRole = 'staff'; // 'owner' | 'staff'
 let currentBusinessId = null; // Multi-Business: internalId of active business (Phase 1.0)
 
@@ -1342,10 +1358,12 @@ let currentBusinessId = null; // Multi-Business: internalId of active business (
 // This only maps what's SHOWN on screen to the new business role names.
 const ROLE_DISPLAY = {
   owner: { label: 'Owner', icon: '', badgeClass: 'badge-admin' },
+  admin: { label: 'ผู้ดูแลระบบ', icon: '', badgeClass: 'badge-admin' },
   supervisor: { label: 'หัวหน้าพนักงาน', icon: '', badgeClass: 'badge-supervisor' },
   staff: { label: 'Staff', icon: '', badgeClass: 'badge-income' },
   staff_trial: { label: 'Staff (ทดลอง)', icon: '', badgeClass: 'badge-income' }
 };
+function viewerIsBizAdmin() { return currentMemberRole === 'admin'; }
 function roleLabel(r) { return ROLE_DISPLAY[r]?.label || r; }
 function roleIcon(r) { return ROLE_DISPLAY[r]?.icon || ''; }
 let userBusinessList = []; // cached [{internalId, role}] for current user (Phase 1.0 switcher)
@@ -1450,53 +1468,6 @@ function showAuthError(msg, errorElId) {
   el.scrollIntoView({behavior:'smooth', block:'center'});
 }
 
-window.openAdminLoginModal = function() {
-  document.getElementById('admin-login-email').value = '';
-  document.getElementById('admin-login-pass').value = '';
-  document.getElementById('admin-login-error').textContent = '';
-  document.getElementById('admin-login-error').style.display = 'none';
-  document.getElementById('modal-admin-login').classList.add('show');
-};
-
-window.doAdminLogin = async function() {
-  const email = document.getElementById('admin-login-email').value.trim();
-  const pass = document.getElementById('admin-login-pass').value;
-  const errEl = document.getElementById('admin-login-error');
-  const showErr = (msg) => { errEl.textContent = msg; errEl.style.display = 'block'; };
-  if(!email || !pass) { showErr('กรุณากรอกข้อมูลให้ครบ'); return; }
-
-  const btn = document.getElementById('btn-admin-login');
-  btn.disabled = true;
-  btn.innerHTML = '<span style="display:inline-block;width:16px;height:16px;border:2px solid #fff;border-top-color:transparent;border-radius:50%;animation:spin .7s linear infinite"></span> กำลังตรวจสอบ...';
-
-  try {
-    const cred = await signInWithEmailAndPassword(auth, email, pass);
-    if(!MASTER_DEV_EMAILS.includes(cred.user.email)) {
-      await signOut(auth);
-      showErr('อีเมลนี้ไม่มีสิทธิ์ Admin โปรแกรม');
-      btn.disabled = false;
-      btn.innerHTML = 'เข้าสู่ระบบ Admin';
-      return;
-    }
-    // Authorized — close this modal and let the normal auth flow
-    // (resolveAuthAndInit → initApp) finish, then it will auto-open
-    // the Platform Admin dashboard per the __openAdminDashboardAfterInit flag.
-    closeModal('modal-admin-login');
-    window.__openAdminDashboardAfterInit = true;
-  } catch(e) {
-    console.error('Admin login error:', e.code, e.message);
-    const msgs = {
-      'auth/user-not-found': 'ไม่พบบัญชีนี้',
-      'auth/wrong-password': 'รหัสผ่านไม่ถูกต้อง',
-      'auth/invalid-email': 'อีเมลไม่ถูกต้อง',
-      'auth/invalid-credential': 'อีเมลหรือรหัสผ่านไม่ถูกต้อง',
-      'auth/too-many-requests': 'ลองผิดหลายครั้งเกินไป กรุณารอสักครู่'
-    };
-    showErr(msgs[e.code] || ('เกิดข้อผิดพลาด: ' + e.message));
-    btn.disabled = false;
-    btn.innerHTML = 'เข้าสู่ระบบ Admin';
-  }
-};
 
 // ============================================================
 // CHANGE PASSWORD (logged-in user, old password → new → confirm)
@@ -1654,6 +1625,7 @@ window.doRegister = async function() {
 window.doLogout = async function() {
   if(!confirm('ออกจากระบบ?')) return;
   if(unsubRecords) unsubRecords();
+  try { if(currentUser && MASTER_DEV_EMAILS.includes(currentUser.email)) await deleteDoc(doc(db,'devSessions',currentUser.uid)); } catch(e) {}
   await signOut(auth);
 }
 
@@ -1885,7 +1857,7 @@ function inviteProblem(inv) {
 }
 // One atomic batch: member doc + invite marked used + user profile. Rules verify all three together.
 async function commitJoin(inv, user, name, email, isNewUser) {
-  const role = inv.data.role === 'supervisor' ? 'supervisor' : 'staff';
+  const role = ['supervisor','admin'].includes(inv.data.role) ? inv.data.role : 'staff';
   const batch = writeBatch(db);
   batch.set(doc(db, 'businesses', inv.bizId, 'members', user.uid), {
     uid: user.uid, role, joinedAt: serverTimestamp(), name, email, joinedViaInviteCode: inv.id
@@ -1975,7 +1947,7 @@ window.showJoinConfirm = async function() {
     if(mine.some(b => b.internalId === inv.bizId)) { window.__pendingJoin = null; showToast('คุณอยู่ในธุรกิจนี้อยู่แล้ว'); return; }
     window.__joinInv = inv;
     document.getElementById('join-invite-biz').textContent = inv.data.bizName || 'ธุรกิจ';
-    document.getElementById('join-invite-role').textContent = inv.data.role === 'supervisor' ? 'หัวหน้าพนักงาน (Supervisor)' : 'พนักงาน (Staff)';
+    document.getElementById('join-invite-role').textContent = ({admin:'ผู้ดูแลระบบ (Admin)', supervisor:'หัวหน้าพนักงาน (Supervisor)'})[inv.data.role] || 'พนักงาน (Staff)';
     document.getElementById('btn-join-confirm').disabled = false;
     document.getElementById('modal-join-invite').classList.add('show');
   } catch(e) {
@@ -2072,6 +2044,93 @@ function hideSplash() {
 
 // AUTH STATE LISTENER
 // ============================================================
+// ============================================================
+// DEVELOPER MODE GATE — verified allowlisted email + personal passcode.
+// The passcode is turned into a PBKDF2 proof; Firestore rules compare it with the
+// value only the project owner holds, so the check is enforced server-side.
+// ============================================================
+async function devProof(passcode, email) {
+  const enc = new TextEncoder();
+  const key = await crypto.subtle.importKey('raw', enc.encode(passcode), 'PBKDF2', false, ['deriveBits']);
+  const bits = await crypto.subtle.deriveBits({ name: 'PBKDF2', hash: 'SHA-256', salt: enc.encode('bmnote-dev-v1:' + String(email || '').toLowerCase()), iterations: 200000 }, key, 256);
+  return Array.from(new Uint8Array(bits)).map(b => b.toString(16).padStart(2, '0')).join('');
+}
+let devFailCount = 0, devLockedUntil = 0;
+window.showDevGate = function() {
+  const g = document.getElementById('dev-gate');
+  document.getElementById('auth-screen').style.display = 'none';
+  document.getElementById('dev-gate-email').textContent = currentUser ? currentUser.email : '';
+  document.getElementById('dev-gate-error').classList.remove('show');
+  document.getElementById('dev-gate-verify').style.display = (currentUser && !currentUser.emailVerified) ? 'block' : 'none';
+  document.getElementById('dev-gate-pass').value = '';
+  g.style.display = 'flex';
+  setTimeout(() => { const p = document.getElementById('dev-gate-pass'); if(p) p.focus(); }, 50);
+};
+window.hideDevGate = function() { const g = document.getElementById('dev-gate'); if(g) g.style.display = 'none'; };
+function devGateError(msg) { showAuthError(msg, 'dev-gate-error'); }
+window.unlockDevMode = async function() {
+  const user = auth.currentUser;
+  if(!user || !MASTER_DEV_EMAILS.includes(user.email)) return;
+  if(!user.emailVerified) { devGateError('ต้องยืนยันอีเมลก่อน (กดส่งอีเมลยืนยัน หรือเข้าสู่ระบบด้วย Google)'); return; }
+  if(Date.now() < devLockedUntil) { devGateError('ลองผิดหลายครั้ง กรุณารอ ' + Math.ceil((devLockedUntil - Date.now()) / 1000) + ' วินาที'); return; }
+  const pass = document.getElementById('dev-gate-pass').value;
+  if(pass.length < 8) { devGateError('กรอกรหัสนักพัฒนา'); return; }
+  const btn = document.getElementById('btn-dev-unlock');
+  btn.disabled = true;
+  try {
+    const proof = await devProof(pass, user.email);
+    await setDoc(doc(db, 'devSessions', user.uid), { proof, unlockedUntil: new Date(Date.now() + 8 * 60 * 60 * 1000) });
+    devFailCount = 0;
+    window.__devGateDone = true; window.__devUnlocked = true;
+    hideDevGate();
+    if(window.__appInitialized) { openPlatformAdminPage(); }
+    else { window.__openAdminDashboardAfterInit = true; await resolveAuthAndInit(user); }
+  } catch(e) {
+    if(e.code === 'permission-denied') {
+      devFailCount++;
+      if(devFailCount >= 3) devLockedUntil = Date.now() + Math.min(300000, 15000 * Math.pow(2, devFailCount - 3));
+      devGateError('รหัสไม่ถูกต้อง (หรือยังไม่ได้ตั้งค่ายืนยันใน firestore.rules)');
+    } else { devGateError('เกิดข้อผิดพลาด: ' + (e.code || e.message)); }
+  } finally {
+    btn.disabled = false;
+    const p = document.getElementById('dev-gate-pass'); if(p) p.value = '';
+  }
+};
+window.skipDevGate = function() {
+  window.__devGateDone = true;
+  hideDevGate();
+  if(!window.__appInitialized && auth.currentUser) resolveAuthAndInit(auth.currentUser);
+};
+window.devSendVerify = async function() {
+  try { await sendEmailVerification(auth.currentUser); showToast('ส่งอีเมลยืนยันแล้ว กรุณาเช็กกล่องจดหมาย', 'success'); }
+  catch(e) { devGateError('ส่งไม่สำเร็จ: ' + (e.code || e.message)); }
+};
+window.devRecheckVerify = async function() {
+  try {
+    await auth.currentUser.reload(); await auth.currentUser.getIdToken(true);
+    currentUser = auth.currentUser; showDevGate();
+    showToast(auth.currentUser.emailVerified ? 'ยืนยันอีเมลแล้ว' : 'ยังไม่ได้ยืนยัน');
+  } catch(e) { devGateError('ตรวจสอบไม่สำเร็จ'); }
+};
+window.openDevSetup = function() {
+  ['dev-setup-pass', 'dev-setup-pass2'].forEach(id => { const el = document.getElementById(id); if(el) el.value = ''; });
+  document.getElementById('dev-setup-result-wrap').style.display = 'none';
+  document.getElementById('modal-dev-setup').classList.add('show');
+};
+window.generateDevProof = async function() {
+  const u = auth.currentUser; if(!u) return;
+  const p1 = document.getElementById('dev-setup-pass').value, p2 = document.getElementById('dev-setup-pass2').value;
+  if(p1.length < 10) { showToast('รหัสต้องยาวอย่างน้อย 10 ตัวอักษร', 'error'); return; }
+  if(p1 !== p2) { showToast('รหัสสองช่องไม่ตรงกัน', 'error'); return; }
+  const proof = await devProof(p1, u.email);
+  const r = document.getElementById('dev-setup-result');
+  r.textContent = proof; r.dataset.raw = proof;
+  document.getElementById('dev-setup-for').textContent = 'ค่ายืนยันสำหรับ ' + u.email;
+  document.getElementById('dev-setup-result-wrap').style.display = 'block';
+  document.getElementById('dev-setup-pass').value = ''; document.getElementById('dev-setup-pass2').value = '';
+};
+window.copyDevProof = function() { const v = document.getElementById('dev-setup-result').dataset.raw; if(v) copyText(v, 'คัดลอกค่ายืนยันแล้ว'); };
+
 async function resolveAuthAndInit(user) {
   if(window.__registrationInProgress) {
     if(isMasterDev && isMasterDev()) console.log('[AUTH] Skipping resolveAuthAndInit — registration in progress');
@@ -2079,6 +2138,7 @@ async function resolveAuthAndInit(user) {
   }
   if(user) {
     currentUser = user;
+    if(MASTER_DEV_EMAILS.includes(user.email) && !window.__devGateDone) { showDevGate(); hideSplash(); return; }
     // Check role
     // ADMIN_EMAILS always wins — cannot be demoted via Firestore
     const isHardAdmin = ADMIN_EMAILS.includes(user.email);
@@ -2139,11 +2199,25 @@ async function resolveAuthAndInit(user) {
       currentBusinessId = null;
     }
 
+    currentMemberRole = null;
+    if(currentBusinessId) {
+      try {
+        const ms = await getDoc(doc(db,'businesses',currentBusinessId,'members',user.uid));
+        if(ms.exists()) {
+          const mr = ms.data().role;
+          currentMemberRole = mr;
+          // admin gets the full management UI (mapped to owner); owner-only actions are guarded separately
+          currentRole = mr === 'admin' ? 'owner' : (['owner','supervisor','staff','staff_trial'].includes(mr) ? mr : 'staff');
+        }
+      } catch(e) { console.warn('member role lookup failed', e && e.code); }
+    }
+
     document.getElementById('auth-screen').style.display = 'none';
     document.getElementById('app').style.display = 'block';
     hideSplash();
     startFavSync();
     await initApp();
+    window.__appInitialized = true;
     if(window.__pendingJoin) showJoinConfirm();
     if(window.__openAdminDashboardAfterInit) {
       window.__openAdminDashboardAfterInit = false;
@@ -2152,6 +2226,9 @@ async function resolveAuthAndInit(user) {
   } else {
     currentUser = null;
     currentBusinessId = null;
+    currentMemberRole = null;
+    window.__devGateDone = false; window.__devUnlocked = false; window.__appInitialized = false;
+    hideDevGate();
     stopFavSync();
     document.getElementById('auth-screen').style.display = 'flex';
     document.getElementById('app').style.display = 'none';
@@ -2223,7 +2300,7 @@ async function loadExportPermission() {
 
 function setupRoleUI() {
   const badge = document.getElementById('role-badge-top');
-  const topRoleLabel = roleLabel(currentRole).toUpperCase();
+  const topRoleLabel = roleLabel(currentMemberRole==='admin' ? 'admin' : currentRole).toUpperCase();
   const roleCss = currentRole==='owner'?'owner':currentRole==='staff_trial'?'staff_trial':'staff';
   badge.textContent = topRoleLabel;
   badge.className = 'role-badge '+roleCss;
@@ -2433,6 +2510,7 @@ window.openCreateInvite = function() {
   document.getElementById('invite-create-form').style.display = 'block';
   document.getElementById('invite-result').style.display = 'none';
   document.getElementById('invite-role').value = 'staff';
+  { const o = document.getElementById('invite-role-admin-opt'); if(o) { const no = viewerIsBizAdmin() || currentRole !== 'owner'; o.disabled = no; o.hidden = no; } }
   document.getElementById('modal-create-invite').classList.add('show');
 };
 
@@ -2496,7 +2574,9 @@ window.generateInvite = async function() {
     }
   } catch(e) { console.error(e); }
 
-  const role = document.getElementById('invite-role').value === 'supervisor' ? 'supervisor' : 'staff';
+  let role = document.getElementById('invite-role').value;
+  if(!['staff','supervisor','admin'].includes(role)) role = 'staff';
+  if(role === 'admin' && (currentRole !== 'owner' || viewerIsBizAdmin())) { showToast('เฉพาะเจ้าของเท่านั้นที่เชิญผู้ดูแลระบบได้', 'error'); return; }
   try {
     // pick a PIN that is not already taken (lookup docs are direct-get only)
     let code = null;
@@ -4854,8 +4934,8 @@ window.openUserManager = async function() {
   try {
     const snap = await getDocs(bizUsersCol());
     if(snap.empty){ el.innerHTML='<div class="empty">ยังไม่มีสมาชิก</div>'; return; }
-    const roleColors = { owner:'var(--yellow)', supervisor:'#2dd4bf', staff:'var(--accent)', staff_trial:'var(--purple)' };
-    const roleLabels = { owner:'Owner', supervisor:'หัวหน้าพนักงาน', staff:'Staff', staff_trial:'Staff (ทดลอง)' };
+    const roleColors = { owner:'var(--yellow)', admin:'#f97316', supervisor:'#2dd4bf', staff:'var(--accent)', staff_trial:'var(--purple)' };
+    const roleLabels = { owner:'Owner', admin:'ผู้ดูแลระบบ', supervisor:'หัวหน้าพนักงาน', staff:'Staff', staff_trial:'Staff (ทดลอง)' };
     el.innerHTML = snap.docs.map(d => {
       const u = d.data();
       const uid = d.id;
@@ -4874,9 +4954,9 @@ window.openUserManager = async function() {
             ${roleLabels[role]||role}
           </span>
         </div>
-        ${isMe ? '<div style="font-size:11px;color:var(--text3);text-align:center">— บัญชีของคุณ —</div>' : `
+        ${isMe ? '<div style="font-size:11px;color:var(--text3);text-align:center">— บัญชีของคุณ —</div>' : (viewerIsBizAdmin() && (role==='owner'||role==='admin')) ? '<div style="font-size:11px;color:var(--text3);text-align:center">— เฉพาะเจ้าของที่จัดการสิทธิ์นี้ได้ —</div>' : `
         <div class="cat-group">
-          <button class="cat-btn neutral ${role==='owner'?'active':''}" onclick="setUserRole('${uid}','owner',this)" style="font-size:12px">Owner</button>
+          ${viewerIsBizAdmin() ? '' : `<button class="cat-btn neutral ${role==='owner'?'active':''}" onclick="setUserRole('${uid}','owner',this)" style="font-size:12px">Owner</button><button class="cat-btn neutral ${role==='admin'?'active':''}" onclick="setUserRole('${uid}','admin',this)" style="font-size:12px">ผู้ดูแล</button>`}
           <button class="cat-btn neutral ${role==='supervisor'?'active':''}" onclick="setUserRole('${uid}','supervisor',this)" style="font-size:12px">หัวหน้า</button>
           <button class="cat-btn neutral ${role==='staff'?'active':''}" onclick="setUserRole('${uid}','staff',this)" style="font-size:12px">Staff</button>
           <button class="cat-btn neutral ${role==='staff_trial'?'active':''}" onclick="setUserRole('${uid}','staff_trial',this)" style="font-size:12px">Staff (ทดลอง)</button>
@@ -4906,6 +4986,8 @@ window.adminRenameUser = async function(uid, btn) {
 }
 
 window.setUserRole = async function(uid, role, btn) {
+  if(!['owner','admin','supervisor','staff','staff_trial'].includes(role)) return;
+  if(viewerIsBizAdmin() && (role==='owner' || role==='admin')) { showToast('เฉพาะเจ้าของเท่านั้นที่ตั้งสิทธิ์นี้ได้','error'); return; }
   try {
     await updateDoc(bizUserDoc(uid), { role });
     const row = btn.closest('.cat-group');
@@ -4914,8 +4996,8 @@ window.setUserRole = async function(uid, role, btn) {
     // Update role badge in the card
     const card = btn.closest('[data-uid]');
     if(card){
-      const roleColors = { owner:'var(--yellow)', supervisor:'#2dd4bf', staff:'var(--accent)', staff_trial:'var(--purple)' };
-      const roleLabels = { owner:'Owner', supervisor:'หัวหน้าพนักงาน', staff:'Staff', staff_trial:'Staff (ทดลอง)' };
+      const roleColors = { owner:'var(--yellow)', admin:'#f97316', supervisor:'#2dd4bf', staff:'var(--accent)', staff_trial:'var(--purple)' };
+      const roleLabels = { owner:'Owner', admin:'ผู้ดูแลระบบ', supervisor:'หัวหน้าพนักงาน', staff:'Staff', staff_trial:'Staff (ทดลอง)' };
       const badge = card.querySelector('.role-label-badge');
       if(badge){ badge.textContent = roleLabels[role]||role; badge.style.color = roleColors[role]||'var(--text2)'; }
     }
@@ -5092,9 +5174,9 @@ window.loadUserManagerPage = async function() {
     const snap = await getDocs(bizUsersCol());
     if(snap.empty){ el.innerHTML='<div class="empty">ยังไม่มีสมาชิก</div>'; return; }
     countEl.textContent = snap.size + ' บัญชีในระบบ';
-    const roleColors = { owner:'var(--yellow)', supervisor:'#2dd4bf', staff:'var(--accent)', staff_trial:'var(--purple)' };
-    const roleLabels = { owner:'Owner', supervisor:'หัวหน้าพนักงาน', staff:'Staff', staff_trial:'Staff (ทดลอง)' };
-    const roleBg = { owner:'rgba(255,170,0,.12)', supervisor:'rgba(45,212,191,.15)', staff:'var(--accent-dim)', staff_trial:'rgba(140,60,255,.15)' };
+    const roleColors = { owner:'var(--yellow)', admin:'#f97316', supervisor:'#2dd4bf', staff:'var(--accent)', staff_trial:'var(--purple)' };
+    const roleLabels = { owner:'Owner', admin:'ผู้ดูแลระบบ', supervisor:'หัวหน้าพนักงาน', staff:'Staff', staff_trial:'Staff (ทดลอง)' };
+    const roleBg = { owner:'rgba(255,170,0,.12)', admin:'rgba(249,115,22,.15)', supervisor:'rgba(45,212,191,.15)', staff:'var(--accent-dim)', staff_trial:'rgba(140,60,255,.15)' };
     const cards = snap.docs.map(d => {
       const u = d.data();
       const uid = d.id;
@@ -5110,6 +5192,8 @@ window.loadUserManagerPage = async function() {
       let bodyHtml;
       if(isMe) {
         bodyHtml = '<div style="font-size:12px;color:var(--text3);text-align:center;padding:6px 0">— \u0e1a\u0e31\u0e0d\u0e0a\u0e35\u0e02\u0e2d\u0e07\u0e04\u0e38\u0e13 —</div>';
+      } else if(viewerIsBizAdmin() && (role==='owner'||role==='admin')) {
+        bodyHtml = '<div style="font-size:12px;color:var(--text3);text-align:center;padding:6px 0">— เฉพาะเจ้าของที่จัดการสิทธิ์นี้ได้ —</div>';
       } else {
         bodyHtml = '<div class="um-rename-form" style="display:none;margin-bottom:10px">'
           + '<div style="display:flex;gap:8px;align-items:center">'
@@ -5119,7 +5203,7 @@ window.loadUserManagerPage = async function() {
           + '</div></div>'
           + '<div style="display:flex;gap:6px;flex-direction:column">'
           + '<div class="cat-group" style="display:flex;gap:6px">'
-          + '<button class="cat-btn neutral ' + (role==='owner'?'active':'') + '" onclick="setUserRole(\'' + uid + '\',\'owner\',this)" style="flex:1;font-size:13px">Owner</button>'
+          + (viewerIsBizAdmin() ? '' : '<button class="cat-btn neutral ' + (role==='owner'?'active':'') + '" onclick="setUserRole(\'' + uid + '\',\'owner\',this)" style="flex:1;font-size:13px">Owner</button><button class="cat-btn neutral ' + (role==='admin'?'active':'') + '" onclick="setUserRole(\'' + uid + '\',\'admin\',this)" style="flex:1;font-size:13px">ผู้ดูแล</button>')
           + '<button class="cat-btn neutral ' + (role==='supervisor'?'active':'') + '" onclick="setUserRole(\'' + uid + '\',\'supervisor\',this)" style="flex:1;font-size:13px">หัวหน้า</button>'
           + '<button class="cat-btn neutral ' + (role==='staff'?'active':'') + '" onclick="setUserRole(\'' + uid + '\',\'staff\',this)" style="flex:1;font-size:13px">Staff</button>'
           + '<button class="cat-btn neutral ' + (role==='staff_trial'?'active':'') + '" onclick="setUserRole(\'' + uid + '\',\'staff_trial\',this)" style="flex:1;font-size:13px">Staff (ทดลอง)</button>'
@@ -5185,6 +5269,7 @@ window.closeSettingsPage = function(name) {
 
 window.openPlatformAdminPage = function() {
   if(!isMasterDev()) { showToast('คุณไม่มีสิทธิ์เข้าถึงส่วนนี้', 'error'); return; }
+  if(!window.__devUnlocked) { showDevGate(); return; }
   document.getElementById('page-platform-admin').style.display = 'block';
   document.body.style.overflow = 'hidden';
   bmOpenPage('platform-admin', () => {
@@ -5198,16 +5283,44 @@ window.closePlatformAdminPage = function() {
   bmClosePage('platform-admin');
 };
 window.switchPlatformAdminTab = function(tab) {
-  document.getElementById('pa-overview-panel').style.display = tab==='overview' ? 'block' : 'none';
-  document.getElementById('pa-bugs-panel').style.display = tab==='bugs' ? 'block' : 'none';
-  const ov = document.getElementById('pa-tab-overview');
-  const bg = document.getElementById('pa-tab-bugs');
-  ov.style.background = tab==='overview' ? 'var(--accent)' : '';
-  ov.style.color = tab==='overview' ? '#fff' : '';
-  ov.classList.toggle('btn-ghost', tab!=='overview');
-  bg.style.background = tab==='bugs' ? 'var(--accent)' : '';
-  bg.style.color = tab==='bugs' ? '#fff' : '';
-  bg.classList.toggle('btn-ghost', tab!=='bugs');
+  ['overview','bugs','users','security'].forEach(t => {
+    const p = document.getElementById('pa-' + t + '-panel'); if(p) p.style.display = (t === tab) ? 'block' : 'none';
+    const b = document.getElementById('pa-tab-' + t);
+    if(b) { b.style.background = (t === tab) ? 'var(--accent)' : ''; b.style.color = (t === tab) ? '#fff' : ''; b.classList.toggle('btn-ghost', t !== tab); }
+  });
+  const d = document.getElementById('pa-business-detail-panel'); if(d) d.style.display = 'none';
+  if(tab === 'users') loadPlatformUsers();
+  if(tab === 'security') renderPlatformSecurity();
+};
+async function loadPlatformUsers() {
+  const el = document.getElementById('pa-users-panel');
+  el.innerHTML = '<div class="loading-wrap"><div class="spinner"></div> กำลังโหลด...</div>';
+  try {
+    const snap = await getDocs(collection(db, 'users'));
+    const rows = snap.docs.map(d => d.data()).sort((a, b) => String(a.email || '').localeCompare(String(b.email || '')));
+    el.innerHTML = '<div style="font-size:12px;color:var(--text2);margin-bottom:10px">' + rows.length + ' บัญชีในระบบ</div>'
+      + rows.map(u => '<div style="background:var(--surface2);border:1px solid var(--border);border-radius:14px;padding:12px 14px;margin-bottom:8px">'
+        + '<div style="font-weight:700;font-size:14px">' + escHtml(u.name || 'ไม่ระบุชื่อ') + '</div>'
+        + '<div style="font-size:11px;color:var(--text2);word-break:break-all">' + escHtml(u.email || '') + '</div>'
+        + '<div style="font-size:11px;color:var(--text3);margin-top:4px">ธุรกิจ ' + ((u.businesses || []).length) + ' แห่ง' + (MASTER_DEV_EMAILS.includes(u.email) ? ' · นักพัฒนา' : '') + '</div></div>').join('');
+  } catch(e) { el.innerHTML = '<div class="empty">เกิดข้อผิดพลาด: ' + escHtml(e.code || e.message) + '</div>'; }
+}
+async function renderPlatformSecurity() {
+  const el = document.getElementById('pa-security-panel');
+  let until = '-';
+  try { const s = await getDoc(doc(db, 'devSessions', currentUser.uid)); if(s.exists()) until = s.data().unlockedUntil.toDate().toLocaleString('th-TH'); } catch(e) {}
+  el.innerHTML = '<div style="background:var(--surface2);border:1px solid var(--border);border-radius:14px;padding:14px;margin-bottom:10px">'
+    + '<div style="font-size:12px;color:var(--text2)">บัญชีนักพัฒนา</div><div style="font-weight:700;word-break:break-all">' + escHtml(currentUser.email) + '</div>'
+    + '<div style="font-size:12px;color:var(--text2);margin-top:8px">ปลดล็อกถึง</div><div style="font-weight:700">' + escHtml(until) + '</div></div>'
+    + '<button class="btn btn-ghost btn-full mt8" onclick="openDevSetup()">ตั้ง/เปลี่ยนรหัสนักพัฒนา</button>'
+    + '<button class="btn btn-full mt8" style="background:rgba(255,61,113,.12);color:#ff3d71;font-weight:700" onclick="lockDevModeNow()">ล็อกโหมดนักพัฒนาทันที</button>'
+    + '<div style="font-size:11px;color:var(--text3);margin-top:12px;line-height:1.6">รายชื่ออีเมลนักพัฒนาต้องตรงกันทั้งใน index.html (MASTER_DEV_EMAILS) และ firestore.rules ทุกครั้งที่เปลี่ยน</div>';
+}
+window.lockDevModeNow = async function() {
+  try { await deleteDoc(doc(db, 'devSessions', currentUser.uid)); } catch(e) {}
+  window.__devUnlocked = false;
+  closePlatformAdminPage();
+  showDevGate();
 };
 window.loadPlatformAdminPage = async function() {
   await loadPlatformOverview();
@@ -5299,6 +5412,8 @@ async function loadPlatformOverview() {
 window.viewBusinessReadonly = async function(bizId) {
   document.getElementById('pa-overview-panel').style.display = 'none';
   document.getElementById('pa-bugs-panel').style.display = 'none';
+  document.getElementById('pa-users-panel').style.display = 'none';
+  document.getElementById('pa-security-panel').style.display = 'none';
   const panel = document.getElementById('pa-business-detail-panel');
   panel.style.display = 'block';
   panel.innerHTML = '<div class="loading-wrap"><div class="spinner"></div> กำลังโหลด...</div>';
