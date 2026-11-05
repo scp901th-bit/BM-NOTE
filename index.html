@@ -962,11 +962,32 @@
     <div id="invite-result" style="display:none;margin-top:12px">
       <div style="font-size:12px;color:var(--text2);margin-bottom:8px" data-i18n="invite_code_note">รหัสเชิญ (ใช้ได้ครั้งเดียว หมดอายุใน 24 ชม.)</div>
       <div style="background:var(--surface2);border-radius:14px;padding:18px;text-align:center;font-family:'JetBrains Mono',monospace;font-size:24px;font-weight:700;color:var(--accent);letter-spacing:2px" id="invite-pin-display"></div>
+      <div style="font-size:12px;color:var(--text2);margin:14px 0 6px" data-i18n="invite_link_note">หรือส่งเป็นลิงก์ (ผู้รับเปิดแล้วระบบกรอกรหัสให้เอง)</div>
+      <div style="background:var(--surface2);border-radius:12px;padding:10px 12px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text2);word-break:break-all;max-height:64px;overflow:auto" id="invite-link-display"></div>
+      <div style="display:flex;gap:8px;margin-top:8px">
+        <button class="btn btn-primary" style="flex:1" onclick="copyInviteLink()"><span data-i18n="copy_link">คัดลอกลิงก์</span></button>
+        <button class="btn btn-ghost" style="flex:1" id="btn-share-invite" onclick="shareInviteLink()"><span data-i18n="share_link">แชร์ลิงก์</span></button>
+      </div>
       <button class="btn btn-ghost btn-full mt8" onclick="copyInvitePin()">
         <svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> <span data-i18n="copy_code">คัดลอกรหัส</span>
       </button>
     </div>
     <button class="btn btn-ghost btn-full mt8" onclick="closeModal('modal-create-invite')" data-i18n="close">ปิด</button>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-join-invite">
+  <div class="modal-box">
+    <div class="modal-handle"></div>
+    <div class="modal-title"><span data-i18n="join_invite_title">คำเชิญเข้าร่วมธุรกิจ</span></div>
+    <div style="margin-top:12px;background:var(--surface2);border-radius:14px;padding:16px;text-align:center">
+      <div style="font-size:12px;color:var(--text2)" data-i18n="join_invite_biz">ธุรกิจ</div>
+      <div style="font-weight:700;font-size:18px;margin:2px 0 10px;word-break:break-word" id="join-invite-biz"></div>
+      <div style="font-size:12px;color:var(--text2)" data-i18n="role_to_grant">สิทธิ์ที่จะได้รับ</div>
+      <div style="font-weight:700;color:var(--accent)" id="join-invite-role"></div>
+    </div>
+    <button class="btn btn-primary btn-full mt8" id="btn-join-confirm" onclick="confirmJoinInvite()" data-i18n="join_invite_confirm">เข้าร่วมธุรกิจนี้</button>
+    <button class="btn btn-ghost btn-full mt8" onclick="cancelJoinInvite()" data-i18n="cancel">ยกเลิก</button>
   </div>
 </div>
 
@@ -1764,7 +1785,7 @@ async function deleteBusinessCascade(businessId) {
 // ============================================================
 function genInviteCode() {
   // 9-digit PIN, grouped as XXX-XXX-XXX for readability
-  const digits = Array.from({length:9}, () => Math.floor(Math.random()*10)).join('');
+  const buf = new Uint32Array(9); crypto.getRandomValues(buf); const digits = Array.from(buf, n => n % 10).join('');
   return digits.slice(0,3) + '-' + digits.slice(3,6) + '-' + digits.slice(6,9);
 }
 
@@ -1835,6 +1856,50 @@ window.doRegisterOwner = async function() {
   }
 };
 
+// ---------- Invite helpers (PIN or link) ----------
+function parseInviteInput(raw) {
+  const s = String(raw || '').trim();
+  let bizId = null, code = null;
+  try { const u = new URL(s); bizId = u.searchParams.get('b'); code = u.searchParams.get('join'); } catch(e) {}
+  if(!code) { const m = s.match(/join\/([A-Za-z0-9_-]+)\/([0-9-]+)/); if(m) { bizId = m[1]; code = m[2]; } }
+  if(!code) code = s;
+  code = String(code).replace(/\D/g, '');
+  if(bizId && !/^[A-Za-z0-9_-]{1,64}$/.test(bizId)) bizId = null;
+  return { code: /^\d{9}$/.test(code) ? code : null, bizId };
+}
+async function fetchInvite(code, bizId) {
+  // Direct document gets only (rules forbid listing invites): PIN-only goes through inviteCodes/{pin}
+  if(!bizId) {
+    const l = await getDoc(doc(db, 'inviteCodes', code));
+    if(!l.exists()) return null;
+    bizId = l.data().bizId;
+  }
+  const snap = await getDoc(doc(db, 'businesses', bizId, 'invites', code));
+  return snap.exists() ? { bizId, ref: snap.ref, id: snap.id, data: snap.data() } : null;
+}
+function inviteProblem(inv) {
+  if(!inv) return 'รหัสเชิญไม่ถูกต้อง หรือไม่พบในระบบ';
+  if(inv.data.used) return 'รหัสเชิญนี้ถูกใช้ไปแล้ว';
+  if(inv.data.expiresAt && inv.data.expiresAt.toMillis() < Date.now()) return 'รหัสเชิญหมดอายุแล้ว กรุณาขอรหัสใหม่';
+  return null;
+}
+// One atomic batch: member doc + invite marked used + user profile. Rules verify all three together.
+async function commitJoin(inv, user, name, email, isNewUser) {
+  const role = inv.data.role === 'supervisor' ? 'supervisor' : 'staff';
+  const batch = writeBatch(db);
+  batch.set(doc(db, 'businesses', inv.bizId, 'members', user.uid), {
+    uid: user.uid, role, joinedAt: serverTimestamp(), name, email, joinedViaInviteCode: inv.id
+  });
+  batch.update(inv.ref, { used: true, usedBy: user.uid, usedAt: serverTimestamp() });
+  if(isNewUser) {
+    batch.set(doc(db, 'users', user.uid), { name, email, role, businesses: [{ internalId: inv.bizId, role }], createdAt: serverTimestamp() });
+  } else {
+    batch.set(doc(db, 'users', user.uid), { businesses: arrayUnion({ internalId: inv.bizId, role }) }, { merge: true });
+  }
+  await batch.commit();
+  return role;
+}
+
 window.doRegisterMember = async function() {
   const name = document.getElementById('member-reg-name').value.trim();
   const email = document.getElementById('member-reg-email').value.trim();
@@ -1844,106 +1909,99 @@ window.doRegisterMember = async function() {
 
   if(!name||!email||!pass||!inviteRaw){ showAuthError('กรุณากรอกข้อมูลให้ครบ', errId); return; }
   if(pass.length<6){ showAuthError('รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร', errId); return; }
-
-  // Extract invite code from raw input — could be a PIN like 482-193-774,
-  // or a URL like https://site/join/BUSINESSID/482193774
-  let inviteCode = inviteRaw;
-  const urlMatch = inviteRaw.match(/join\/[^/]+\/([A-Za-z0-9-]+)/);
-  if(urlMatch) inviteCode = urlMatch[1];
-  inviteCode = inviteCode.replace(/[^0-9A-Za-z]/g, '').toUpperCase();
+  const parsed = parseInviteInput(inviteRaw);
+  if(!parsed.code){ showAuthError('รหัสเชิญไม่ถูกต้อง (ใช้ตัวเลข 9 หลัก หรือวางลิงก์เชิญ)', errId); return; }
+  let bizId = parsed.bizId;
+  if(!bizId && window.__pendingJoin && window.__pendingJoin.code === parsed.code) bizId = window.__pendingJoin.bizId;
 
   const btn = document.getElementById('btn-register-member');
+  const btnHtml = btn.innerHTML;
+  const resetBtn = () => { btn.disabled = false; btn.innerHTML = btnHtml; };
   btn.disabled = true;
   btn.innerHTML = '<span style="display:inline-block;width:16px;height:16px;border:2px solid #000;border-top-color:transparent;border-radius:50%;animation:spin .7s linear infinite"></span> กำลังตรวจสอบ...';
 
   window.__registrationInProgress = true;
-  let cred = null;
+  let cred = null, joined = false;
   try {
-    // IMPORTANT: create the auth account FIRST. Firestore rules require
-    // request.auth != null, so invite lookup must happen AFTER sign-in.
+    // Auth account first: Firestore rules require request.auth != null for the invite lookup.
     cred = await createUserWithEmailAndPassword(auth, email, pass);
     await updateProfile(cred.user, {displayName: name});
 
-    // Find matching invite across businesses (collection group query)
-    const invitesQuery = query(collectionGroup(db,'invites'), where('code','==',inviteCode));
-    const inviteSnap = await getDocs(invitesQuery);
-
-    if(inviteSnap.empty) {
-      await cred.user.delete().catch(()=>{}); // rollback the auth account
+    const inv = await fetchInvite(parsed.code, bizId);
+    const prob = inviteProblem(inv);
+    if(prob) {
+      await cred.user.delete().catch(()=>{}); cred = null;
       window.__registrationInProgress = false;
-      showAuthError('รหัสเชิญไม่ถูกต้อง หรือไม่พบในระบบ', errId);
-      btn.disabled=false; btn.innerHTML='<svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> สมัคร + เข้าร่วมธุรกิจ';
+      showAuthError(prob, errId); resetBtn();
       return;
     }
 
-    const inviteDoc = inviteSnap.docs[0];
-    const inviteData = inviteDoc.data();
-    const businessId = inviteDoc.ref.parent.parent.id;
-
-    if(inviteData.used) {
-      await cred.user.delete().catch(()=>{});
-      window.__registrationInProgress = false;
-      showAuthError('รหัสเชิญนี้ถูกใช้ไปแล้ว', errId);
-      btn.disabled=false; btn.innerHTML='<svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> สมัคร + เข้าร่วมธุรกิจ';
-      return;
-    }
-    if(inviteData.expiresAt && inviteData.expiresAt.toMillis() < Date.now()) {
-      await cred.user.delete().catch(()=>{});
-      window.__registrationInProgress = false;
-      showAuthError('รหัสเชิญหมดอายุแล้ว กรุณาขอรหัสใหม่', errId);
-      btn.disabled=false; btn.innerHTML='<svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> สมัคร + เข้าร่วมธุรกิจ';
-      return;
-    }
-
-    const memberRole = inviteData.role || 'staff';
-    const legacyRole = memberRole; // pass through directly: 'staff' | 'supervisor' (owner is never invited, only the creator)
-
-    // Personal-purpose businesses are capped at 10 members total — final check right
-    // before actually joining, since this is the real enforcement point (invite
-    // generation only pre-checks as a courtesy and could be stale/raced).
-    const bizDocSnap = await getDoc(doc(db,'businesses',businessId));
-    const bizData = bizDocSnap.data();
-    if(bizData?.memberLimit) {
-      const memberSnap = await getDocs(collection(db,'businesses',businessId,'members'));
-      if(memberSnap.size >= bizData.memberLimit) {
-        await cred.user.delete().catch(()=>{});
-        window.__registrationInProgress = false;
-        showAuthError(`กลุ่มนี้เต็มแล้ว (สูงสุด ${bizData.memberLimit} คนสำหรับใช้ส่วนบุคคล)`, errId);
-        btn.disabled=false; btn.innerHTML='<svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> สมัคร + เข้าร่วมธุรกิจ';
-        return;
-      }
-    }
-
-    await setDoc(doc(db,'businesses',businessId,'members',cred.user.uid), {
-      uid: cred.user.uid, role: memberRole, joinedAt: serverTimestamp(), name, email,
-      joinedViaInviteCode: inviteDoc.id
-    });
-
-    await setDoc(doc(db,'users',cred.user.uid), {
-      name, email, role: legacyRole,
-      businesses: [{ internalId: businessId, role: memberRole }],
-      createdAt: serverTimestamp()
-    });
-
-    // Mark invite as used
-    await updateDoc(inviteDoc.ref, { used: true, usedBy: cred.user.uid, usedAt: serverTimestamp() });
-
-    localStorage.setItem('lastBusinessId', businessId);
+    await commitJoin(inv, cred.user, name, email, true);
+    joined = true;   // from here on never delete the account, even if app init hiccups
+    window.__pendingJoin = null;
+    localStorage.setItem('lastBusinessId', inv.bizId);
     window.__registrationInProgress = false;
     await manualResolveAndInit(cred.user);
   } catch(e) {
     window.__registrationInProgress = false;
-    if(cred?.user) await cred.user.delete().catch(()=>{}); // rollback on any failure
+    if(cred?.user && !joined) await cred.user.delete().catch(()=>{}); // rollback only if the join did not complete
     console.error('Register member error:', e.code, e.message);
     const msgs = {
-      'auth/email-already-in-use':'อีเมลนี้ถูกใช้แล้ว กรุณาเข้าสู่ระบบแทน',
+      'auth/email-already-in-use':'อีเมลนี้ถูกใช้แล้ว หากมีบัญชีอยู่แล้วให้เข้าสู่ระบบ แล้วเปิดลิงก์เชิญอีกครั้งเพื่อเข้าร่วม',
       'auth/invalid-email':'อีเมลไม่ถูกต้อง',
       'auth/weak-password':'รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร',
-      'auth/network-request-failed':'ไม่มีการเชื่อมต่ออินเทอร์เน็ต'
+      'auth/network-request-failed':'ไม่มีการเชื่อมต่ออินเทอร์เน็ต',
+      'permission-denied':'เข้าร่วมไม่สำเร็จ: รหัสเชิญอาจถูกใช้ไปแล้วหรือหมดอายุ'
     };
-    showAuthError(msgs[e.code]||'เกิดข้อผิดพลาด ['+e.code+']: '+e.message, errId);
-    btn.disabled=false;
-    btn.innerHTML='<svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> สมัคร + เข้าร่วมธุรกิจ';
+    showAuthError(msgs[e.code]||'เกิดข้อผิดพลาด ['+(e.code||'')+']: '+e.message, errId);
+    resetBtn();
+  }
+};
+
+// ---------- Invite link opened ----------
+window.openMemberRegisterFromLink = function() {
+  const pj = window.__pendingJoin; if(!pj) return;
+  showAuthScreen('register-member');
+  const el = document.getElementById('member-reg-invite');
+  if(el) el.value = pj.code.slice(0,3)+'-'+pj.code.slice(3,6)+'-'+pj.code.slice(6,9);
+};
+window.showJoinConfirm = async function() {
+  const pj = window.__pendingJoin; if(!pj || !currentUser) return;
+  try {
+    const inv = await fetchInvite(pj.code, pj.bizId);
+    const prob = inviteProblem(inv);
+    if(prob) { window.__pendingJoin = null; showToast(prob, 'error'); return; }
+    const mine = (typeof userBusinessList !== 'undefined' && userBusinessList) ? userBusinessList : [];
+    if(mine.some(b => b.internalId === inv.bizId)) { window.__pendingJoin = null; showToast('คุณอยู่ในธุรกิจนี้อยู่แล้ว'); return; }
+    window.__joinInv = inv;
+    document.getElementById('join-invite-biz').textContent = inv.data.bizName || 'ธุรกิจ';
+    document.getElementById('join-invite-role').textContent = inv.data.role === 'supervisor' ? 'หัวหน้าพนักงาน (Supervisor)' : 'พนักงาน (Staff)';
+    document.getElementById('btn-join-confirm').disabled = false;
+    document.getElementById('modal-join-invite').classList.add('show');
+  } catch(e) {
+    console.error('Join link check failed:', e);
+    window.__pendingJoin = null;
+    showToast('ตรวจสอบลิงก์เชิญไม่สำเร็จ', 'error');
+  }
+};
+window.cancelJoinInvite = function() { window.__pendingJoin = null; window.__joinInv = null; closeModal('modal-join-invite'); };
+window.confirmJoinInvite = async function() {
+  const cur = window.__joinInv; if(!cur || !currentUser) return;
+  const btn = document.getElementById('btn-join-confirm');
+  btn.disabled = true;
+  try {
+    const inv = await fetchInvite(cur.id, cur.bizId);   // re-check right before writing
+    const prob = inviteProblem(inv);
+    if(prob) { showToast(prob, 'error'); cancelJoinInvite(); return; }
+    await commitJoin(inv, currentUser, currentUser.displayName || currentUser.email, currentUser.email, false);
+    localStorage.setItem('lastBusinessId', inv.bizId);
+    window.__pendingJoin = null; window.__joinInv = null;
+    showToast('เข้าร่วมธุรกิจสำเร็จ', 'success');
+    setTimeout(() => location.reload(), 700);
+  } catch(e) {
+    console.error('Join confirm failed:', e);
+    showToast('เข้าร่วมไม่สำเร็จ: ' + (e.code || e.message), 'error');
+    btn.disabled = false;
   }
 };
 
@@ -2086,6 +2144,7 @@ async function resolveAuthAndInit(user) {
     hideSplash();
     startFavSync();
     await initApp();
+    if(window.__pendingJoin) showJoinConfirm();
     if(window.__openAdminDashboardAfterInit) {
       window.__openAdminDashboardAfterInit = false;
       openPlatformAdminPage();
@@ -2098,9 +2157,23 @@ async function resolveAuthAndInit(user) {
     document.getElementById('app').style.display = 'none';
     allRecords = [];
     hideSplash();
+    if(window.__pendingJoin) openMemberRegisterFromLink();
   }
 }
 
+(function readJoinLink() {
+  try {
+    const p = new URLSearchParams(location.search);
+    const j = (p.get('join') || '').replace(/\D/g, '');
+    const b = p.get('b');
+    if(/^\d{9}$/.test(j)) window.__pendingJoin = { code: j, bizId: (b && /^[A-Za-z0-9_-]{1,64}$/.test(b)) ? b : null };
+    if(p.has('join') || p.has('b')) {
+      p.delete('join'); p.delete('b');
+      const q = p.toString();
+      history.replaceState(null, '', location.pathname + (q ? '?' + q : '') + location.hash);
+    }
+  } catch(e) {}
+})();
 onAuthStateChanged(auth, resolveAuthAndInit);
 initLiff(); // init LINE LIFF in parallel; safe no-op if LIFF_ID not configured yet
 
@@ -2162,7 +2235,7 @@ function setupRoleUI() {
         ${currentUser.displayName?currentUser.displayName[0].toUpperCase():'U'}
       </div>
       <div style="flex:1;min-width:0">
-        <div style="font-weight:700;font-size:15px" id="my-display-name">${currentUser.displayName||'ผู้ใช้'}</div>
+        <div style="font-weight:700;font-size:15px" id="my-display-name">${escHtml(currentUser.displayName||'ผู้ใช้')}</div>
         <div style="font-size:12px;color:var(--text2)">${escHtml(currentUser.email)}</div>
         <span class="badge ${currentRole==='owner'?'badge-admin':'badge-income'}" style="margin-top:4px">${currentRole==='owner'?'<svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 20h20M4 20l2-10 6 5 6-5 2 10"/><circle cx="12" cy="7" r="2"/></svg> Owner':'<svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> Staff'}</span>
       </div>
@@ -2405,12 +2478,16 @@ window.submitBugReport = async function() {
 
 window.generateInvite = async function() {
   if(!currentBusinessId) { showToast('ฟีเจอร์นี้ใช้ได้เฉพาะโหมด Multi-Business', 'error'); return; }
+  if(currentRole !== 'owner' && currentRole !== 'supervisor' && !(typeof isMasterDev === 'function' && isMasterDev())) {
+    showToast('เฉพาะเจ้าของหรือหัวหน้าพนักงานเท่านั้น', 'error'); return;
+  }
 
-  // Personal-purpose businesses are capped at 10 members total.
+  let bizName = '';
   try {
     const bizDoc = await getDoc(doc(db,'businesses',currentBusinessId));
-    const bizData = bizDoc.data();
-    if(bizData?.memberLimit) {
+    const bizData = bizDoc.data() || {};
+    bizName = bizData.name || '';
+    if(bizData.memberLimit) {
       const memberSnap = await getDocs(bizUsersCol());
       if(memberSnap.size >= bizData.memberLimit) {
         showToast(`กลุ่มนี้เต็มแล้ว (สูงสุด ${bizData.memberLimit} คนสำหรับใช้ส่วนบุคคล)`, 'error');
@@ -2419,27 +2496,37 @@ window.generateInvite = async function() {
     }
   } catch(e) { console.error(e); }
 
-  const role = document.getElementById('invite-role').value;
-  const code = genInviteCode();
-  const expiresAt = new Date(Date.now() + 24*60*60*1000); // 24 hours
-
+  const role = document.getElementById('invite-role').value === 'supervisor' ? 'supervisor' : 'staff';
   try {
-    await setDoc(doc(db,'businesses',currentBusinessId,'invites',code.replace(/-/g,'')), {
-      code: code.replace(/-/g,''),
-      role,
-      used: false,
-      createdBy: currentUser.uid,
-      createdAt: serverTimestamp(),
-      expiresAt
-    });
+    // pick a PIN that is not already taken (lookup docs are direct-get only)
+    let code = null;
+    for(let i = 0; i < 8 && !code; i++) {
+      const c = genInviteCode().replace(/-/g, '');
+      const taken = await getDoc(doc(db, 'inviteCodes', c));
+      if(!taken.exists()) code = c;
+    }
+    if(!code) { showToast('สร้างรหัสไม่สำเร็จ ลองใหม่อีกครั้ง', 'error'); return; }
+    const expiresAt = new Date(Date.now() + 24*60*60*1000); // 24 hours
 
+    const batch = writeBatch(db);
+    batch.set(doc(db,'businesses',currentBusinessId,'invites',code), {
+      code, role, used: false, createdBy: currentUser.uid, createdAt: serverTimestamp(), expiresAt, bizName
+    });
+    batch.set(doc(db,'inviteCodes',code), { bizId: currentBusinessId, expiresAt, createdBy: currentUser.uid });
+    await batch.commit();
+
+    const pin = code.slice(0,3)+'-'+code.slice(3,6)+'-'+code.slice(6,9);
+    const link = location.origin + location.pathname + '?b=' + encodeURIComponent(currentBusinessId) + '&join=' + code;
     document.getElementById('invite-create-form').style.display = 'none';
     document.getElementById('invite-result').style.display = 'block';
-    document.getElementById('invite-pin-display').textContent = code;
-    document.getElementById('invite-pin-display').dataset.raw = code;
+    document.getElementById('invite-pin-display').textContent = pin;
+    document.getElementById('invite-pin-display').dataset.raw = pin;
+    const ld = document.getElementById('invite-link-display');
+    ld.textContent = link; ld.dataset.raw = link;
+    document.getElementById('btn-share-invite').style.display = navigator.share ? '' : 'none';
   } catch(e) {
     console.error(e);
-    showToast('สร้างรหัสเชิญไม่สำเร็จ: ' + e.message, 'error');
+    showToast('สร้างรหัสเชิญไม่สำเร็จ: ' + (e.code || e.message), 'error');
   }
 };
 
@@ -2451,6 +2538,25 @@ window.copyInvitePin = function() {
   }).catch(() => {
     showToast('คัดลอกไม่สำเร็จ ลองคัดลอกด้วยตนเอง', 'error');
   });
+};
+
+function copyText(text, okMsg) {
+  const fallback = () => {
+    try { const t = document.createElement('textarea'); t.value = text; t.style.position='fixed'; t.style.opacity='0';
+      document.body.appendChild(t); t.select(); const ok = document.execCommand('copy'); document.body.removeChild(t);
+      showToast(ok ? okMsg : 'คัดลอกไม่สำเร็จ ลองคัดลอกด้วยตนเอง', ok ? 'success' : 'error'); } catch(e) { showToast('คัดลอกไม่สำเร็จ ลองคัดลอกด้วยตนเอง', 'error'); }
+  };
+  if(navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(() => showToast(okMsg, 'success')).catch(fallback);
+  else fallback();
+}
+window.copyInviteLink = function() {
+  const l = document.getElementById('invite-link-display').dataset.raw; if(!l) return;
+  copyText(l, 'คัดลอกลิงก์เชิญแล้ว');
+};
+window.shareInviteLink = function() {
+  const l = document.getElementById('invite-link-display').dataset.raw; if(!l) return;
+  if(navigator.share) navigator.share({ title: 'BM NOTE', text: 'ลิงก์เชิญเข้าร่วมธุรกิจ (ใช้ได้ครั้งเดียว หมดอายุใน 24 ชม.)', url: l }).catch(()=>{});
+  else copyText(l, 'คัดลอกลิงก์เชิญแล้ว');
 };
 
 // ============================================================
@@ -3097,7 +3203,7 @@ const I18N = {
     delete_requests: 'คำขอลบรายการ', no_pending_requests: 'ไม่มีคำขอรอการอนุมัติ',
     messages_from_members: 'ข้อความจากสมาชิก', no_messages_yet: 'ยังไม่มีข้อความ',
 
-    create_invite_code2: 'สร้างรหัสเชิญ'
+    create_invite_code2: 'สร้างรหัสเชิญ', invite_link_note: 'หรือส่งเป็นลิงก์ (ผู้รับเปิดแล้วระบบกรอกรหัสให้เอง)', copy_link: 'คัดลอกลิงก์', share_link: 'แชร์ลิงก์', join_invite_title: 'คำเชิญเข้าร่วมธุรกิจ', join_invite_biz: 'ธุรกิจ', join_invite_confirm: 'เข้าร่วมธุรกิจนี้', cancel: 'ยกเลิก'
   },
   en: {
     tagline: 'Income & Expense Tracker',
@@ -3200,7 +3306,7 @@ const I18N = {
     delete_requests: 'Delete Requests', no_pending_requests: 'No pending requests',
     messages_from_members: 'Messages From Members', no_messages_yet: 'No messages yet',
 
-    create_invite_code2: 'Create Invite Code'
+    create_invite_code2: 'Create Invite Code', invite_link_note: 'Or send a link (the code is filled in for the recipient)', copy_link: 'Copy Link', share_link: 'Share Link', join_invite_title: 'Invitation to join a business', join_invite_biz: 'Business', join_invite_confirm: 'Join this business', cancel: 'Cancel'
   }
 };
 
@@ -4084,7 +4190,7 @@ window.confirmSave = function(){
   document.getElementById('mc-content').innerHTML=`
     <div style="margin-bottom:12px;display:flex;gap:8px;flex-wrap:wrap;align-items:center">
       <span class="text-mono" style="font-size:12px;color:var(--text2)">${data.date.d}/${data.date.m}/${data.date.y}</span>
-      <span class="badge badge-${data.cashier.toLowerCase()}">${data.cashier}</span>
+      <span class="badge badge-${escHtml(String(data.cashier).toLowerCase())}">${escHtml(data.cashier)}</span>
       <span class="badge ${data.type==='income'?'badge-income':'badge-expense'}">${data.type==='income'?'<svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="14" height="14" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M12 21.593c-.525-.438-9.993-8.008-9.993-13.368 0-3.397 2.75-6.225 6.243-6.225 2.021 0 3.799.95 4.75 2.393C14 2.95 15.778 2 17.75 2c3.493 0 6.25 2.828 6.25 6.225 0 5.36-9.467 12.93-10 13.368z"/></svg> รายรับ':'<svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="14" height="14" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M12 21.593c-.525-.438-9.993-8.008-9.993-13.368 0-3.397 2.75-6.225 6.243-6.225 2.021 0 3.799.95 4.75 2.393C14 2.95 15.778 2 17.75 2c3.493 0 6.25 2.828 6.25 6.225 0 5.36-9.467 12.93-10 13.368z"/></svg> รายเบิก'}</span>
     </div>
     ${rows}
@@ -4761,8 +4867,8 @@ window.openUserManager = async function() {
             ${(u.name||'U')[0].toUpperCase()}
           </div>
           <div style="flex:1;min-width:0">
-            <div style="font-weight:700;font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${u.name||'ไม่ระบุชื่อ'}</div>
-            <div style="font-size:11px;color:var(--text2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${u.email||''}</div>
+            <div style="font-weight:700;font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escHtml(u.name||'ไม่ระบุชื่อ')}</div>
+            <div style="font-size:11px;color:var(--text2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escHtml(u.email||'')}</div>
           </div>
           <span style="font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;background:rgba(0,0,0,.2);color:${roleColors[role]||'var(--text2)'}">
             ${roleLabels[role]||role}
@@ -4778,7 +4884,7 @@ window.openUserManager = async function() {
       </div>`;
     }).join('');
   } catch(e) {
-    el.innerHTML = `<div class="empty">เกิดข้อผิดพลาด: ${e.message}</div>`;
+    el.innerHTML = `<div class="empty">เกิดข้อผิดพลาด: ${escHtml(e.message)}</div>`;
     console.error(e);
   }
 }
@@ -5219,7 +5325,7 @@ window.viewBusinessReadonly = async function(bizId) {
       return `<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border)">
         <div>
           <div style="font-size:13px;font-weight:600">${safeName}</div>
-          <div style="font-size:11px;color:var(--text2)">${(m.email||'').replace(/</g,'&lt;')}</div>
+          <div style="font-size:11px;color:var(--text2)">${escHtml(m.email||'')}</div>
         </div>
         <span style="font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;background:${roleBg[m.role]||'rgba(0,0,0,.1)'};color:${roleColors[m.role]||'var(--text2)'}">${roleLabels[m.role]||m.role||'-'}</span>
       </div>`;
@@ -5233,7 +5339,7 @@ window.viewBusinessReadonly = async function(bizId) {
       <div style="font-size:11px;color:var(--yellow);background:rgba(245,158,11,.12);padding:8px 12px;border-radius:10px;margin-bottom:12px">
         โหมดดูอย่างเดียว — Admin โปรแกรมไม่สามารถแก้ไขข้อมูลธุรกิจนี้ได้
       </div>
-      <div style="font-weight:700;font-size:17px;margin-bottom:2px">${(b.name||'').replace(/</g,'&lt;')}</div>
+      <div style="font-weight:700;font-size:17px;margin-bottom:2px">${escHtml(b.name||'')}</div>
       <div style="font-size:12px;color:var(--text2);margin-bottom:14px">รหัส: ${b.businessCode||'-'}</div>
       <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:16px">
         <div style="background:var(--green-dim);border-radius:14px;padding:10px;text-align:center">
