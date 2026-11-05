@@ -4661,13 +4661,14 @@ window.deleteMsg = async function(msgId) {
 
 async function loadMyMessages(){
   try {
-    const q=query(bizMessagesCol(),where('sentBy','==',currentUser.uid),orderBy('createdAt','desc'));
+    // no orderBy here: where+orderBy on different fields needs a composite index; sort in the app instead
+    const q=query(bizMessagesCol(),where('sentBy','==',currentUser.uid));
     const snap=await getDocs(q);
     const list=document.getElementById('my-messages-list');
     if(!list)return;
     if(snap.empty){list.innerHTML='<div class="empty">ยังไม่มีประวัติการส่ง</div>';return;}
     const typeLabels={'suggestion':'<svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="9" y1="18" x2="15" y2="18"/><line x1="10" y1="22" x2="14" y2="22"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14"/></svg> ข้อเสนอแนะ','question':'<svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> คำถาม','report':'<svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> รายงานปัญหา','other':'<svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg> อื่นๆ'};
-    list.innerHTML=snap.docs.map(d=>{
+    list.innerHTML=snap.docs.slice().sort((x,y)=>((y.data().createdAt&&y.data().createdAt.toMillis?y.data().createdAt.toMillis():0)-(x.data().createdAt&&x.data().createdAt.toMillis?x.data().createdAt.toMillis():0))).map(d=>{
       const msg=d.data();
       return `<div class="inbox-item">
         <div class="inbox-header">
