@@ -902,11 +902,13 @@
     <div style="display:flex;gap:8px;padding:16px 16px 0;flex-wrap:wrap">
       <button class="btn btn-sm" id="pa-tab-overview" style="flex:1;background:var(--accent);color:#fff;font-weight:700" onclick="switchPlatformAdminTab('overview')" data-i18n="business_overview">ภาพรวมธุรกิจ</button>
       <button class="btn btn-sm btn-ghost" id="pa-tab-bugs" style="flex:1" onclick="switchPlatformAdminTab('bugs')"><span data-i18n="report_bug_btn_short">แจ้งบัค</span> <span id="pa-bug-count" style="display:none"></span></button>
+      <button class="btn btn-sm btn-ghost" id="pa-tab-signups" style="flex:1" onclick="switchPlatformAdminTab('signups')">สมัครใหม่ <span id="pa-signup-badge" style="display:none;background:#ff3d71;color:#fff;border-radius:10px;padding:1px 7px;font-size:10px;font-weight:700;margin-left:4px"></span></button>
       <button class="btn btn-sm btn-ghost" id="pa-tab-users" style="flex:1" onclick="switchPlatformAdminTab('users')">ผู้ใช้</button>
       <button class="btn btn-sm btn-ghost" id="pa-tab-security" style="flex:1" onclick="switchPlatformAdminTab('security')">ความปลอดภัย</button>
     </div>
     <div id="pa-overview-panel" style="padding:16px"></div>
     <div id="pa-bugs-panel" style="padding:16px;display:none"></div>
+    <div id="pa-signups-panel" style="padding:16px;display:none"></div>
     <div id="pa-users-panel" style="padding:16px;display:none"></div>
     <div id="pa-security-panel" style="padding:16px;display:none"></div>
     <div id="pa-business-detail-panel" style="padding:16px;display:none"></div>
@@ -1238,7 +1240,7 @@
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, updateProfile, GoogleAuthProvider, signInWithPopup, EmailAuthProvider, reauthenticateWithCredential, updatePassword, sendPasswordResetEmail, sendEmailVerification } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-import { getFirestore, collection, collectionGroup, doc, addDoc, getDoc, getDocs, setDoc, updateDoc, deleteDoc, onSnapshot, query, orderBy, where, serverTimestamp, writeBatch, arrayUnion } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { getFirestore, collection, collectionGroup, doc, addDoc, getDoc, getDocs, setDoc, updateDoc, deleteDoc, onSnapshot, query, orderBy, limit, where, serverTimestamp, writeBatch, arrayUnion } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyB7BoM5MgfzJGQhQxiKims1wxl0Ok-jkO4",
@@ -1622,6 +1624,7 @@ window.doRegister = async function() {
       await setDoc(doc(db,'users',cred.user.uid), {
         name, email, role:'staff', createdAt: serverTimestamp()
       });
+      logSignupEvent(cred.user, 'new_account', { name });
     } catch(dbErr) {
       console.warn('Firestore write failed (non-critical):', dbErr);
     }
@@ -1826,6 +1829,7 @@ window.doRegisterOwner = async function() {
       createdAt: serverTimestamp()
     });
 
+    await logSignupEvent(cred.user, 'new_owner', { name, bizId: internalId, bizName, role: 'owner' });
     localStorage.setItem('lastBusinessId', internalId);
     window.__registrationInProgress = false;
     await manualResolveAndInit(cred.user);
@@ -1843,6 +1847,27 @@ window.doRegisterOwner = async function() {
     btn.innerHTML='<svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> สร้างบัญชี + ธุรกิจ';
   }
 };
+
+// ---------- Sign-up notification events (read only by the platform developer) ----------
+async function logSignupEvent(user, type, extra) {
+  try {
+    if(!user) return;
+    extra = extra || {};
+    const bizId = (extra.bizId && /^[A-Za-z0-9_-]{1,64}$/.test(extra.bizId)) ? extra.bizId : null;
+    const id = user.uid + '_' + type + (bizId ? '_' + bizId : '');
+    const data = {
+      uid: user.uid, type,
+      name: String(extra.name || user.displayName || user.email || '').slice(0, 120),
+      email: String(user.email || '').slice(0, 160),
+      provider: String((user.providerData && user.providerData[0] && user.providerData[0].providerId) || 'password').slice(0, 40),
+      createdAt: serverTimestamp(), seen: false
+    };
+    if(bizId) data.bizId = bizId;
+    if(extra.bizName) data.bizName = String(extra.bizName).slice(0, 120);
+    if(extra.role) data.role = String(extra.role).slice(0, 20);
+    await setDoc(doc(db, 'signupEvents', id), data);   // create-only: a repeat is simply refused
+  } catch(e) { /* best-effort: must never block a sign-up */ }
+}
 
 // ---------- Invite helpers (PIN or link) ----------
 function parseInviteInput(raw) {
@@ -1885,6 +1910,7 @@ async function commitJoin(inv, user, name, email, isNewUser) {
     batch.set(doc(db, 'users', user.uid), { businesses: arrayUnion({ internalId: inv.bizId, role }) }, { merge: true });
   }
   await batch.commit();
+  await logSignupEvent(user, isNewUser ? 'new_member' : 'joined_business', { name, bizId: inv.bizId, bizName: inv.data.bizName, role });
   return role;
 }
 
@@ -2012,6 +2038,7 @@ window.doGoogleLogin = async function() {
         role: 'staff',
         createdAt: serverTimestamp()
       });
+      logSignupEvent(user, 'new_account', { name: user.displayName });
     }
   } catch(e) {
     const msgs = {
@@ -2109,6 +2136,7 @@ window.unlockDevMode = async function() {
     devFailCount = 0;
     window.__devGateDone = true; window.__devUnlocked = true;
     hideDevGate();
+    startSignupWatcher();
     if(window.__appInitialized) { openPlatformAdminPage(); }
     else { window.__openAdminDashboardAfterInit = true; await resolveAuthAndInit(user); }
   } catch(e) {
@@ -2197,7 +2225,7 @@ async function resolveAuthAndInit(user) {
           email: user.email,
           role: newRole,
           createdAt: serverTimestamp()
-        }).catch(()=>{});
+        }).then(() => logSignupEvent(user, 'new_account', { name: user.displayName })).catch(()=>{});
         if(isMasterDev && isMasterDev()) console.log('[AUTH] Created new user doc with role:', newRole);
       }
     } catch(e){
@@ -2264,6 +2292,7 @@ async function resolveAuthAndInit(user) {
     currentMemberRole = null;
     window.__devGateDone = false; window.__devUnlocked = false; window.__appInitialized = false;
     hideDevGate(); hideNoAccess();
+    if(window.stopSignupWatcher) stopSignupWatcher();
     stopFavSync();
     document.getElementById('auth-screen').style.display = 'flex';
     document.getElementById('app').style.display = 'none';
@@ -2529,6 +2558,7 @@ window.doCreateBusiness = async function() {
       await setDoc(doc(db,'users',currentUser.uid), { businesses: [{ internalId, role: 'owner' }] }, { merge: true });
     }
 
+    logSignupEvent(currentUser, 'created_business', { name: currentUser.displayName || currentUser.email, bizId: internalId, bizName: name, role: 'owner' });
     closeModal('modal-create-biz');
     showToast('สร้างธุรกิจ "' + name + '" สำเร็จ — กำลังสลับไปใช้งาน', 'success');
     await switchBusiness(internalId);
@@ -5319,12 +5349,13 @@ window.closePlatformAdminPage = function() {
   bmClosePage('platform-admin');
 };
 window.switchPlatformAdminTab = function(tab) {
-  ['overview','bugs','users','security'].forEach(t => {
+  ['overview','bugs','signups','users','security'].forEach(t => {
     const p = document.getElementById('pa-' + t + '-panel'); if(p) p.style.display = (t === tab) ? 'block' : 'none';
     const b = document.getElementById('pa-tab-' + t);
     if(b) { b.style.background = (t === tab) ? 'var(--accent)' : ''; b.style.color = (t === tab) ? '#fff' : ''; b.classList.toggle('btn-ghost', t !== tab); }
   });
   const d = document.getElementById('pa-business-detail-panel'); if(d) d.style.display = 'none';
+  if(tab === 'signups') renderSignups();
   if(tab === 'users') loadPlatformUsers();
   if(tab === 'security') renderPlatformSecurity();
 };
@@ -5385,6 +5416,70 @@ window.auditFixStale = async function(i) {
     showToast('แก้ไขแล้ว', 'success'); auditMemberships();
   } catch(e) { showToast('ไม่สำเร็จ: ' + (e.code || e.message), 'error'); }
 };
+let unsubSignups = null, signupFirstLoad = true;
+window.__signupEvents = [];
+function signupTypeLabel(e) {
+  const b = e.bizName ? ' "' + e.bizName + '"' : '';
+  const r = e.role ? ' (' + roleLabel(e.role) + ')' : '';
+  return ({ new_account: 'สมัครบัญชีใหม่', new_owner: 'สมัครพร้อมสร้างธุรกิจ' + b, new_member: 'สมัครและเข้าร่วมธุรกิจ' + b + r, joined_business: 'เข้าร่วมธุรกิจ' + b + r, created_business: 'สร้างธุรกิจใหม่' + b })[e.type] || String(e.type || '');
+}
+function updateSignupBadge(n) {
+  const el = document.getElementById('pa-signup-badge'); if(!el) return;
+  el.textContent = n > 99 ? '99+' : String(n);
+  el.style.display = n > 0 ? 'inline-block' : 'none';
+}
+window.startSignupWatcher = function() {
+  stopSignupWatcher(); signupFirstLoad = true;
+  try {
+    unsubSignups = onSnapshot(query(collection(db, 'signupEvents'), orderBy('createdAt', 'desc'), limit(100)), snap => {
+      window.__signupEvents = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      const unseen = window.__signupEvents.filter(e => !e.seen).length;
+      updateSignupBadge(unseen);
+      if(signupFirstLoad) {
+        signupFirstLoad = false;
+        if(unseen) showToast('มีผู้สมัครใหม่ที่ยังไม่ได้ดู ' + unseen + ' รายการ', 'info');
+      } else {
+        snap.docChanges().forEach(c => {
+          if(c.type === 'added' && !c.doc.metadata.hasPendingWrites) {
+            const e = c.doc.data();
+            showToast('สมัครใหม่: ' + escHtml(e.name || e.email || '') + ' · ' + escHtml(signupTypeLabel(e)), 'info');
+          }
+        });
+      }
+      const p = document.getElementById('pa-signups-panel');
+      if(p && p.style.display !== 'none') renderSignups();
+    }, err => console.warn('signup watcher unavailable:', err && err.code));
+  } catch(e) { console.warn('signup watcher failed', e); }
+};
+window.stopSignupWatcher = function() {
+  if(unsubSignups) { unsubSignups(); unsubSignups = null; }
+  window.__signupEvents = []; updateSignupBadge(0);
+};
+function renderSignups() {
+  const el = document.getElementById('pa-signups-panel'); if(!el) return;
+  const list = window.__signupEvents || [];
+  const unseen = list.filter(e => !e.seen).length;
+  if(!list.length) { el.innerHTML = '<div class="empty">ยังไม่มีผู้สมัครใหม่</div>'; return; }
+  el.innerHTML = (unseen ? '<button class="btn btn-primary btn-full" style="margin-bottom:10px" onclick="markSignupsSeen()">ทำเครื่องหมายอ่านแล้วทั้งหมด (' + unseen + ')</button>' : '')
+    + list.map(e => {
+      const t = e.createdAt && e.createdAt.toDate ? e.createdAt.toDate().toLocaleString('th-TH') : 'กำลังบันทึก...';
+      return '<div style="background:var(--surface2);border:1px solid ' + (e.seen ? 'var(--border)' : 'var(--accent)') + ';border-radius:14px;padding:12px 14px;margin-bottom:8px">'
+        + '<div style="display:flex;justify-content:space-between;gap:8px"><div style="font-weight:700;font-size:14px">' + escHtml(e.name || 'ไม่ระบุชื่อ') + '</div>' + (e.seen ? '' : '<span style="font-size:10px;font-weight:700;color:var(--accent)">ใหม่</span>') + '</div>'
+        + '<div style="font-size:11px;color:var(--text2);word-break:break-all">' + escHtml(e.email || '') + '</div>'
+        + '<div style="font-size:12px;margin-top:4px">' + escHtml(signupTypeLabel(e)) + '</div>'
+        + '<div style="font-size:11px;color:var(--text3);margin-top:2px">' + escHtml(t) + ' · ' + (e.provider === 'google.com' ? 'Google' : 'อีเมล') + '</div></div>';
+    }).join('');
+}
+window.markSignupsSeen = async function() {
+  const unseen = (window.__signupEvents || []).filter(e => !e.seen);
+  if(!unseen.length) return;
+  try {
+    const batch = writeBatch(db);
+    unseen.slice(0, 400).forEach(e => batch.update(doc(db, 'signupEvents', e.id), { seen: true }));
+    await batch.commit();
+    showToast('ทำเครื่องหมายอ่านแล้ว', 'success');
+  } catch(e) { showToast('ไม่สำเร็จ: ' + escHtml(e.code || e.message), 'error'); }
+};
 async function renderPlatformSecurity() {
   const el = document.getElementById('pa-security-panel');
   let until = '-';
@@ -5399,6 +5494,7 @@ async function renderPlatformSecurity() {
 window.lockDevModeNow = async function() {
   try { await deleteDoc(doc(db, 'devSessions', currentUser.uid)); } catch(e) {}
   window.__devUnlocked = false;
+  stopSignupWatcher();
   closePlatformAdminPage();
   showDevGate();
 };
@@ -5493,6 +5589,7 @@ window.viewBusinessReadonly = async function(bizId) {
   document.getElementById('pa-overview-panel').style.display = 'none';
   document.getElementById('pa-bugs-panel').style.display = 'none';
   document.getElementById('pa-users-panel').style.display = 'none';
+  document.getElementById('pa-signups-panel').style.display = 'none';
   document.getElementById('pa-security-panel').style.display = 'none';
   const panel = document.getElementById('pa-business-detail-panel');
   panel.style.display = 'block';
