@@ -1210,6 +1210,22 @@
   </div>
 </div>
 
+<div id="no-access" style="display:none;position:fixed;inset:0;z-index:340;background:var(--bg);align-items:center;justify-content:center;padding:20px;overflow-y:auto">
+  <div class="auth-card" style="width:100%;max-width:420px">
+    <div class="auth-logo">BM NOTE</div>
+    <div class="auth-sub">บัญชีนี้ยังเข้าถึงข้อมูลธุรกิจไม่ได้</div>
+    <div style="font-size:13px;color:var(--text2);line-height:1.7;margin:10px 0">ระบบไม่พบสิทธิ์สมาชิกของบัญชีนี้ในธุรกิจที่ผูกไว้ จึงโหลดข้อมูลไม่ได้ กรุณาแจ้งเจ้าของหรือผู้ดูแลระบบ พร้อมส่งรหัสด้านล่างให้</div>
+    <div style="font-size:11px;color:var(--text2)">อีเมล</div>
+    <div id="no-access-email" style="font-size:13px;word-break:break-all;margin-bottom:8px"></div>
+    <div style="font-size:11px;color:var(--text2)">รหัสบัญชี (UID)</div>
+    <div id="no-access-uid" style="background:var(--surface2);border-radius:10px;padding:8px 10px;font-family:'JetBrains Mono',monospace;font-size:11px;word-break:break-all;margin-bottom:8px"></div>
+    <div id="no-access-detail" style="font-size:11px;color:var(--text3);word-break:break-all;margin-bottom:10px"></div>
+    <button class="btn btn-primary btn-full" onclick="location.reload()">ลองใหม่</button>
+    <button class="btn btn-ghost btn-full mt8" id="no-access-dev" style="display:none" onclick="document.getElementById('no-access').style.display='none';window.__devGateDone=false;showDevGate()">เปิดโหมดนักพัฒนา</button>
+    <button class="btn btn-ghost btn-full mt8" onclick="doLogout()">ออกจากระบบ</button>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
@@ -2049,6 +2065,16 @@ function hideSplash() {
 // The passcode is turned into a PBKDF2 proof; Firestore rules compare it with the
 // value only the project owner holds, so the check is enforced server-side.
 // ============================================================
+window.showNoAccess = function(user, bad) {
+  document.getElementById('auth-screen').style.display = 'none';
+  document.getElementById('no-access-email').textContent = user.email || '';
+  document.getElementById('no-access-uid').textContent = user.uid;
+  document.getElementById('no-access-detail').textContent = (bad || []).join(' · ');
+  document.getElementById('no-access-dev').style.display = MASTER_DEV_EMAILS.includes(user.email) ? '' : 'none';
+  document.getElementById('no-access').style.display = 'flex';
+};
+window.hideNoAccess = function() { const e = document.getElementById('no-access'); if(e) e.style.display = 'none'; };
+
 async function devProof(passcode, email) {
   const enc = new TextEncoder();
   const key = await crypto.subtle.importKey('raw', enc.encode(passcode), 'PBKDF2', false, ['deriveBits']);
@@ -2201,16 +2227,25 @@ async function resolveAuthAndInit(user) {
 
     currentMemberRole = null;
     if(currentBusinessId) {
-      try {
-        const ms = await getDoc(doc(db,'businesses',currentBusinessId,'members',user.uid));
-        if(ms.exists()) {
-          const mr = ms.data().role;
-          currentMemberRole = mr;
-          // admin gets the full management UI (mapped to owner); owner-only actions are guarded separately
-          currentRole = mr === 'admin' ? 'owner' : (['owner','supervisor','staff','staff_trial'].includes(mr) ? mr : 'staff');
-        }
-      } catch(e) { console.warn('member role lookup failed', e && e.code); }
+      // Try the preferred business first, then the rest of the user's list; use the first
+      // one whose member document is really readable (stale/deleted entries are skipped).
+      const order = [currentBusinessId].concat((userBusinessList || []).map(b => b.internalId).filter(id => id && id !== currentBusinessId));
+      let found = null; const bad = [];
+      for(const id of order) {
+        try {
+          const ms = await getDoc(doc(db,'businesses',id,'members',user.uid));
+          if(ms.exists()) { found = { id, role: ms.data().role }; break; }
+          bad.push(id + ' (ไม่มีรายชื่อสมาชิก)');
+        } catch(e) { bad.push(id + ' (' + (e && e.code || 'error') + ')'); }
+      }
+      if(!found) { showNoAccess(user, bad); hideSplash(); return; }
+      if(found.id !== currentBusinessId) { console.warn('[BIZ] fell back to', found.id, 'skipped:', bad.join(', ')); currentBusinessId = found.id; }
+      try { localStorage.setItem('lastBusinessId', found.id); } catch(e) {}
+      currentMemberRole = found.role;
+      // admin gets the full management UI (mapped to owner); owner-only actions are guarded separately
+      currentRole = found.role === 'admin' ? 'owner' : (['owner','supervisor','staff','staff_trial'].includes(found.role) ? found.role : 'staff');
     }
+    hideNoAccess();
 
     document.getElementById('auth-screen').style.display = 'none';
     document.getElementById('app').style.display = 'block';
@@ -2228,7 +2263,7 @@ async function resolveAuthAndInit(user) {
     currentBusinessId = null;
     currentMemberRole = null;
     window.__devGateDone = false; window.__devUnlocked = false; window.__appInitialized = false;
-    hideDevGate();
+    hideDevGate(); hideNoAccess();
     stopFavSync();
     document.getElementById('auth-screen').style.display = 'flex';
     document.getElementById('app').style.display = 'none';
@@ -5298,13 +5333,57 @@ async function loadPlatformUsers() {
   try {
     const snap = await getDocs(collection(db, 'users'));
     const rows = snap.docs.map(d => d.data()).sort((a, b) => String(a.email || '').localeCompare(String(b.email || '')));
-    el.innerHTML = '<div style="font-size:12px;color:var(--text2);margin-bottom:10px">' + rows.length + ' บัญชีในระบบ</div>'
+    el.innerHTML = '<button class="btn btn-full" style="background:rgba(255,170,0,.12);color:#ffaa00;border:1px solid rgba(255,170,0,.3);font-weight:700;margin-bottom:10px" onclick="auditMemberships()">ตรวจสิทธิ์สมาชิก (ซ่อมบัญชีที่โหลดข้อมูลไม่ได้)</button><div id="pa-audit-result"></div>'
+      + '<div style="font-size:12px;color:var(--text2);margin-bottom:10px">' + rows.length + ' บัญชีในระบบ</div>'
       + rows.map(u => '<div style="background:var(--surface2);border:1px solid var(--border);border-radius:14px;padding:12px 14px;margin-bottom:8px">'
         + '<div style="font-weight:700;font-size:14px">' + escHtml(u.name || 'ไม่ระบุชื่อ') + '</div>'
         + '<div style="font-size:11px;color:var(--text2);word-break:break-all">' + escHtml(u.email || '') + '</div>'
         + '<div style="font-size:11px;color:var(--text3);margin-top:4px">ธุรกิจ ' + ((u.businesses || []).length) + ' แห่ง' + (MASTER_DEV_EMAILS.includes(u.email) ? ' · นักพัฒนา' : '') + '</div></div>').join('');
   } catch(e) { el.innerHTML = '<div class="empty">เกิดข้อผิดพลาด: ' + escHtml(e.code || e.message) + '</div>'; }
 }
+window.auditMemberships = async function() {
+  const out = document.getElementById('pa-audit-result');
+  out.innerHTML = '<div class="loading-wrap"><div class="spinner"></div> กำลังตรวจ...</div>';
+  try {
+    const usersSnap = await getDocs(collection(db, 'users'));
+    const bizName = {}, issues = [];
+    for(const ud of usersSnap.docs) {
+      const u = ud.data();
+      for(const b of (u.businesses || [])) {
+        const id = b && b.internalId; if(!id) continue;
+        if(!(id in bizName)) { const s = await getDoc(doc(db, 'businesses', id)); bizName[id] = s.exists() ? (s.data().name || id) : null; }
+        if(bizName[id] === null) { issues.push({ type: 'nobiz', uid: ud.id, u, id }); continue; }
+        const m = await getDoc(doc(db, 'businesses', id, 'members', ud.id));
+        if(!m.exists()) issues.push({ type: 'nomember', uid: ud.id, u, id, name: bizName[id], role: b.role });
+      }
+    }
+    window.__auditIssues = issues;
+    if(!issues.length) { out.innerHTML = '<div style="color:var(--green);font-size:13px;margin-bottom:10px">ไม่พบความผิดปกติของสิทธิ์สมาชิก</div>'; return; }
+    out.innerHTML = '<div style="font-size:12px;color:var(--yellow);margin-bottom:8px">พบ ' + issues.length + ' รายการที่ผิดปกติ (ตรวจแต่ละรายการก่อนกด)</div>' + issues.map((x, i) => {
+      const who = escHtml((x.u.name || 'ไม่ระบุชื่อ') + ' · ' + (x.u.email || x.uid));
+      if(x.type === 'nomember') return '<div style="background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:10px 12px;margin-bottom:8px;font-size:12px"><div style="font-weight:700">' + who + '</div><div style="color:var(--text2);margin:2px 0 6px">อยู่ในรายการของธุรกิจ "' + escHtml(x.name) + '" แต่ไม่มีรายชื่อสมาชิก จึงโหลดข้อมูลไม่ได้</div><div style="display:flex;gap:6px"><select class="form-select" id="audit-role-' + i + '" style="flex:1"><option value="staff">Staff</option><option value="staff_trial">Staff (ทดลอง)</option><option value="supervisor">หัวหน้า</option><option value="admin">ผู้ดูแลระบบ</option><option value="owner">Owner</option></select><button class="btn btn-primary btn-sm" onclick="auditFixMember(' + i + ')">เพิ่มเป็นสมาชิก</button></div></div>';
+      return '<div style="background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:10px 12px;margin-bottom:8px;font-size:12px"><div style="font-weight:700">' + who + '</div><div style="color:var(--text2);margin:2px 0 6px">ผูกกับธุรกิจที่ไม่มีอยู่แล้ว (' + escHtml(x.id) + ')</div><button class="btn btn-ghost btn-sm" onclick="auditFixStale(' + i + ')">เอาธุรกิจนี้ออกจากรายการของบัญชี</button></div>';
+    }).join('');
+  } catch(e) { out.innerHTML = '<div class="empty">ตรวจไม่สำเร็จ: ' + escHtml(e.code || e.message) + '</div>'; }
+};
+window.auditFixMember = async function(i) {
+  const x = (window.__auditIssues || [])[i]; if(!x || x.type !== 'nomember') return;
+  const role = document.getElementById('audit-role-' + i).value;
+  if(!['staff','staff_trial','supervisor','admin','owner'].includes(role)) return;
+  if(!confirm('เพิ่ม ' + (x.u.email || x.uid) + ' เป็น ' + roleLabel(role) + ' ของธุรกิจ "' + x.name + '" ?')) return;
+  try {
+    await setDoc(doc(db, 'businesses', x.id, 'members', x.uid), { uid: x.uid, role, joinedAt: serverTimestamp(), name: x.u.name || x.u.email || '', email: x.u.email || '', repairedBy: currentUser.uid });
+    showToast('เพิ่มสมาชิกแล้ว', 'success'); auditMemberships();
+  } catch(e) { showToast('ไม่สำเร็จ: ' + (e.code || e.message), 'error'); }
+};
+window.auditFixStale = async function(i) {
+  const x = (window.__auditIssues || [])[i]; if(!x || x.type !== 'nobiz') return;
+  if(!confirm('เอาธุรกิจที่ไม่มีอยู่แล้วออกจากรายการของ ' + (x.u.email || x.uid) + ' ?')) return;
+  try {
+    await updateDoc(doc(db, 'users', x.uid), { businesses: (x.u.businesses || []).filter(b => b && b.internalId !== x.id) });
+    showToast('แก้ไขแล้ว', 'success'); auditMemberships();
+  } catch(e) { showToast('ไม่สำเร็จ: ' + (e.code || e.message), 'error'); }
+};
 async function renderPlatformSecurity() {
   const el = document.getElementById('pa-security-panel');
   let until = '-';
