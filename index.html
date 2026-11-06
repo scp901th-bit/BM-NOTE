@@ -40,6 +40,9 @@
 .tc-prev{display:block;max-width:100%;max-height:160px;border-radius:12px;margin-top:8px}
 .tc-photo{margin-bottom:10px}
 .tc-flag{font-size:11px;color:var(--yellow);margin-top:2px}
+.tc-ident{text-align:center;background:var(--surface2);border:1px solid var(--border);border-radius:16px;padding:14px;margin-bottom:12px}
+.tc-ident-name{font-weight:700;font-size:16px;word-break:break-word}
+.tc-ident-time{font-family:'JetBrains Mono',monospace;font-size:34px;font-weight:700;color:var(--accent);letter-spacing:1px;margin:4px 0}
 .tc-item{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:12px 14px;margin-bottom:8px}
 @media (pointer:coarse){.btn:not(.btn-sm){min-height:44px}}
 :focus-visible{outline:2px solid var(--accent);outline-offset:2px}
@@ -2011,7 +2014,7 @@ window.renderTimeclockHome = async function() {
     const myAssigned = activeCashiers().filter(c => assign[c.id] && assign[c.id].uid === me);
     const usedToday = new Set(mine.map(x => x.cashierId));
 
-    let h = '<div class="tc-card"><div class="tc-head"><div class="tc-title">กะของฉัน</div><a class="tc-link" onclick="openTimeclockPage()">ประวัติเวลา</a></div>';
+    let h = '<div class="tc-card"><div class="tc-head"><div><div class="tc-title">กะของฉัน</div><div class="tc-sub">' + tcE(currentUser.displayName || currentUser.email || '') + '</div></div><a class="tc-link" onclick="openTimeclockPage()">ประวัติเวลา</a></div>';
     offers.forEach(o => {
       h += '<div class="tc-offer"><div><b>' + tcE(o.name) + '</b> ส่งกะ “' + tcE(o.cashierName || tcCashierName(o.cashierId)) + '” ให้คุณ<div class="tc-sub">ส่งเมื่อ ' + tcHM(o.outAt) + '</div></div><button class="btn btn-primary btn-sm" onclick="tcOpen(\'accept\',\'' + o.id + '\')">รับกะ</button></div>';
     });
@@ -2089,6 +2092,24 @@ window.tcPickPhoto = async function(kind, input) {
   } catch(e) { showToast('อ่านรูปไม่สำเร็จ', 'error'); }
   input.value = '';
 };
+function tcIdentityHtml(mode) {
+  const nm = currentUser.displayName || currentUser.email || '';
+  const note = mode === 'accept' ? 'เวลาเข้าของคุณจะตรงกับเวลาออกของผู้ส่งกะ' : 'เวลาที่บันทึกจริงใช้เวลาเซิร์ฟเวอร์ ณ วินาทีที่กดยืนยัน';
+  return '<div class="tc-ident"><div class="tc-ident-name">' + tcE(nm) + '</div><div class="tc-ident-time" id="tc-live-time">--:--:--</div><div class="tc-sub" id="tc-live-date"></div><div class="tc-sub" style="margin-top:4px">' + note + '</div></div>';
+}
+let tcClockTimer = null;
+function tcStopClock() { if(tcClockTimer) { clearInterval(tcClockTimer); tcClockTimer = null; } }
+function tcStartClock() {
+  tcStopClock();
+  const tick = () => {
+    const t = document.getElementById('tc-live-time'), m = document.getElementById('modal-tc');
+    if(!t || !m || !m.classList.contains('show')) { tcStopClock(); return; }
+    const n = new Date();
+    t.textContent = n.toLocaleTimeString('th-TH', { hour12: false });
+    document.getElementById('tc-live-date').textContent = n.toLocaleDateString('th-TH', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+  };
+  tick(); tcClockTimer = setInterval(tick, 1000);
+}
 window.tcOpen = async function(mode, arg) {
   if(!currentBusinessId || !currentUser) return;
   tcPending = {}; tcCtx = { mode, arg };
@@ -2132,7 +2153,8 @@ window.tcOpen = async function(mode, arg) {
       h += '<div class="form-row"><div class="form-label">หมายเหตุ (ไม่บังคับ)</div><input class="form-input" id="tc-note" maxlength="120" placeholder="เช่น เงินสดครบ ส่งต่อให้..."/></div>';
       h += tcPhotoBtn('out') + tcPhotoBtn('slip');
     }
-    body.innerHTML = h;
+    body.innerHTML = tcIdentityHtml(mode) + h;
+    tcStartClock();
   } catch(e) { console.error(e); body.innerHTML = '<div class="empty">เกิดข้อผิดพลาด: ' + tcE(e.code || e.message) + '</div>'; }
 };
 async function tcUploadPhotos(sid) {
@@ -2163,6 +2185,7 @@ window.tcConfirm = async function() {
       if(mode === 'in') {
         await setDoc(ref, { ...base, inAt: serverTimestamp(), handoverFrom: null });
         msg = 'เข้ากะแล้ว';
+        try { const sn = await getDoc(ref); const t = sn.data().inAt; if(t && t.toDate) msg = 'เข้ากะแล้ว · ' + escHtml(myName) + ' · ' + t.toDate().toLocaleTimeString('th-TH', { hour12: false }); } catch(e) {}
       } else {
         const prevRef = doc(tcCol(), arg);
         const prev = await getDoc(prevRef);
@@ -2189,6 +2212,7 @@ window.tcConfirm = async function() {
       await updateDoc(doc(tcCol(), cur.id), upd);
       sid = cur.id;
       msg = mode === 'handover' ? 'ส่งต่อกะแล้ว รอผู้รับกดรับกะ' : 'ออกกะแล้ว';
+      try { const sn = await getDoc(doc(tcCol(), cur.id)); const t = sn.data().outAt; if(t && t.toDate) msg += ' · ' + escHtml(myName) + ' · ' + t.toDate().toLocaleTimeString('th-TH', { hour12: false }); } catch(e) {}
     }
     await tcUploadPhotos(sid);
     closeModal('modal-tc');
