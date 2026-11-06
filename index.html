@@ -31,6 +31,7 @@
 
 <!-- AUTH SCREEN -->
 <div id="auth-screen" class="auth-screen">
+  <div style="position:fixed;bottom:10px;left:0;right:0;text-align:center;font-size:12px;z-index:5"><a onclick="openPrivacy()" style="color:var(--text2);cursor:pointer;text-decoration:underline">นโยบายความเป็นส่วนตัว</a></div>
 
   <!-- ADMIN ENTRY (Platform Admin login — top-right corner, visible on every auth screen) -->
   <!-- LANDING -->
@@ -1215,8 +1216,8 @@
 <div id="no-access" style="display:none;position:fixed;inset:0;z-index:340;background:var(--bg);align-items:center;justify-content:center;padding:20px;overflow-y:auto">
   <div class="auth-card" style="width:100%;max-width:420px">
     <div class="auth-logo">BM NOTE</div>
-    <div class="auth-sub">บัญชีนี้ยังเข้าถึงข้อมูลธุรกิจไม่ได้</div>
-    <div style="font-size:13px;color:var(--text2);line-height:1.7;margin:10px 0">ระบบไม่พบสิทธิ์สมาชิกของบัญชีนี้ในธุรกิจที่ผูกไว้ จึงโหลดข้อมูลไม่ได้ กรุณาแจ้งเจ้าของหรือผู้ดูแลระบบ พร้อมส่งรหัสด้านล่างให้</div>
+    <div class="auth-sub" id="no-access-title">บัญชีนี้ยังเข้าถึงข้อมูลธุรกิจไม่ได้</div>
+    <div id="no-access-msg" style="font-size:13px;color:var(--text2);line-height:1.7;margin:10px 0">ระบบไม่พบสิทธิ์สมาชิกของบัญชีนี้ในธุรกิจที่ผูกไว้ จึงโหลดข้อมูลไม่ได้ กรุณาแจ้งเจ้าของหรือผู้ดูแลระบบ พร้อมส่งรหัสด้านล่างให้</div>
     <div style="font-size:11px;color:var(--text2)">อีเมล</div>
     <div id="no-access-email" style="font-size:13px;word-break:break-all;margin-bottom:8px"></div>
     <div style="font-size:11px;color:var(--text2)">รหัสบัญชี (UID)</div>
@@ -1225,6 +1226,20 @@
     <button class="btn btn-primary btn-full" onclick="location.reload()">ลองใหม่</button>
     <button class="btn btn-ghost btn-full mt8" id="no-access-dev" style="display:none" onclick="document.getElementById('no-access').style.display='none';window.__devGateDone=false;showDevGate()">เปิดโหมดนักพัฒนา</button>
     <button class="btn btn-ghost btn-full mt8" onclick="doLogout()">ออกจากระบบ</button>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-privacy">
+  <div class="modal-box" style="max-height:88vh;display:flex;flex-direction:column">
+    <div class="modal-handle"></div>
+    <div class="modal-title">นโยบายความเป็นส่วนตัว</div>
+    <div style="font-size:11px;color:var(--text3);margin:2px 0 8px" id="privacy-version"></div>
+    <div id="privacy-body" style="overflow-y:auto;flex:1;font-size:13px;line-height:1.75;color:var(--text2);padding-right:4px"></div>
+    <div id="privacy-consent-actions" style="display:none;gap:8px;margin-top:12px">
+      <button class="btn btn-ghost" style="flex:1" onclick="privacyDecline()">ไม่ยอมรับ</button>
+      <button class="btn btn-primary" style="flex:1" onclick="privacyAccept()">ยอมรับและดำเนินการต่อ</button>
+    </div>
+    <button class="btn btn-ghost btn-full mt8" id="privacy-close-btn" onclick="closeModal('modal-privacy')">ปิด</button>
   </div>
 </div>
 
@@ -1615,6 +1630,7 @@ window.doRegister = async function() {
   const pass = document.getElementById('reg-pass').value;
   if(!name||!email||!pass){showAuthError('กรุณากรอกข้อมูลให้ครบ');return}
   if(pass.length<6){showAuthError('รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร');return}
+  if(!(await requirePrivacyConsent())) return;
   const btn = document.getElementById('btn-register');
   btn.disabled=true; btn.innerHTML='<span style="display:inline-block;width:16px;height:16px;border:2px solid #000;border-top-color:transparent;border-radius:50%;animation:spin .7s linear infinite"></span> กำลังสมัคร...';
   try {
@@ -1799,6 +1815,7 @@ window.doRegisterOwner = async function() {
 
   if(!name||!email||!pass||!bizName){ showAuthError('กรุณากรอกข้อมูลให้ครบ', errId); return; }
   if(pass.length<6){ showAuthError('รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร', errId); return; }
+  if(!(await requirePrivacyConsent())) return;
 
   const btn = document.getElementById('btn-register-owner');
   btn.disabled = true;
@@ -1925,6 +1942,7 @@ window.doRegisterMember = async function() {
   if(pass.length<6){ showAuthError('รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร', errId); return; }
   const parsed = parseInviteInput(inviteRaw);
   if(!parsed.code){ showAuthError('รหัสเชิญไม่ถูกต้อง (ใช้ตัวเลข 9 หลัก หรือวางลิงก์เชิญ)', errId); return; }
+  if(!(await requirePrivacyConsent())) return;
   let bizId = parsed.bizId;
   if(!bizId && window.__pendingJoin && window.__pendingJoin.code === parsed.code) bizId = window.__pendingJoin.bizId;
 
@@ -2093,12 +2111,20 @@ function hideSplash() {
 // value only the project owner holds, so the check is enforced server-side.
 // ============================================================
 window.showNoAccess = function(user, bad) {
+  document.getElementById('no-access-title').textContent = 'บัญชีนี้ยังเข้าถึงข้อมูลธุรกิจไม่ได้';
+  document.getElementById('no-access-msg').textContent = 'ระบบไม่พบสิทธิ์สมาชิกของบัญชีนี้ในธุรกิจที่ผูกไว้ จึงโหลดข้อมูลไม่ได้ กรุณาแจ้งเจ้าของหรือผู้ดูแลระบบ พร้อมส่งรหัสด้านล่างให้';
   document.getElementById('auth-screen').style.display = 'none';
   document.getElementById('no-access-email').textContent = user.email || '';
   document.getElementById('no-access-uid').textContent = user.uid;
   document.getElementById('no-access-detail').textContent = (bad || []).join(' · ');
   document.getElementById('no-access-dev').style.display = MASTER_DEV_EMAILS.includes(user.email) ? '' : 'none';
   document.getElementById('no-access').style.display = 'flex';
+};
+window.showBanned = function(user, ban) {
+  showNoAccess(user, []);
+  document.getElementById('no-access-title').textContent = 'บัญชีนี้ถูกระงับการใช้งาน';
+  document.getElementById('no-access-msg').textContent = (ban && ban.type === 'deleted' ? 'บัญชีนี้ถูกลบออกจากระบบแล้ว' : 'ผู้ดูแลระบบระงับการเข้าใช้บัญชีนี้')
+    + (ban && ban.reason ? ' — เหตุผล: ' + ban.reason : '') + ' หากคิดว่าเกิดความผิดพลาด กรุณาติดต่อผู้ดูแลระบบพร้อมแจ้งรหัสด้านล่าง';
 };
 window.hideNoAccess = function() { const e = document.getElementById('no-access'); if(e) e.style.display = 'none'; };
 
@@ -2108,6 +2134,67 @@ async function devProof(passcode, email) {
   const bits = await crypto.subtle.deriveBits({ name: 'PBKDF2', hash: 'SHA-256', salt: enc.encode('bmnote-dev-v1:' + String(email || '').toLowerCase()), iterations: 200000 }, key, 256);
   return Array.from(new Uint8Array(bits)).map(b => b.toString(16).padStart(2, '0')).join('');
 }
+// ============================================================
+// PRIVACY POLICY + CONSENT
+// Bump PRIVACY_VERSION whenever the policy text changes in a material way:
+// every user is then asked to accept again on their next sign-in.
+// ============================================================
+const PRIVACY_VERSION = '2026-11-06';
+const PRIVACY_CONTACT = '';   // put a contact e-mail here once you have one (shown in the policy)
+function privacyHtml() {
+  const sec = (t, body) => '<div style="font-weight:700;color:var(--text);margin:12px 0 2px">' + t + '</div><div>' + body + '</div>';
+  const contact = PRIVACY_CONTACT ? 'ติดต่อ: ' + escHtml(PRIVACY_CONTACT) : 'ติดต่อผ่านปุ่มแจ้งบั๊กในแอป หรือแจ้งเจ้าของ/ผู้ดูแลธุรกิจของคุณ';
+  return sec('1. ใครเป็นผู้ให้บริการ', 'BM NOTE พัฒนาและดูแลโดยผู้พัฒนาระบบ ส่วนข้อมูลรายรับ-รายจ่ายของแต่ละธุรกิจ เจ้าของธุรกิจเป็นผู้กำหนดการใช้งานภายในธุรกิจของตน')
+    + sec('2. ข้อมูลที่เก็บ', 'ชื่อที่แสดง อีเมล รหัสผู้ใช้ในระบบ วิธีเข้าสู่ระบบ (อีเมลหรือ Google) บทบาทและธุรกิจที่เข้าร่วม วันเวลาที่สมัครหรือเข้าร่วม รายการรายรับ-รายจ่ายพร้อมบันทึกและรูปประกอบที่ถูกบันทึก ข้อความและคำขอภายในธุรกิจ ตารางงาน รายงานบั๊ก และหากเชื่อมต่อ LINE จะเก็บรหัสผู้ใช้ LINE ชื่อที่แสดงและรูปโปรไฟล์ LINE รวมทั้งบันทึกการยอมรับนโยบายนี้')
+    + sec('3. ใช้ข้อมูลเพื่ออะไร', 'ให้บริการและยืนยันตัวตน กำหนดสิทธิ์ตามบทบาท จัดการรายการและตารางงานของธุรกิจ แจ้งผู้ดูแลระบบเมื่อมีผู้สมัครใหม่ แก้ไขปัญหา ป้องกันการใช้งานผิดปกติ และระงับบัญชีที่ละเมิดการใช้งาน')
+    + sec('4. ใครเห็นข้อมูลของคุณได้บ้าง', 'เจ้าของ ผู้ดูแลระบบธุรกิจ และหัวหน้าพนักงานในธุรกิจเดียวกันเห็นรายชื่อสมาชิก (ชื่อ อีเมล บทบาท) และรายการตามสิทธิ์ของตน พนักงานเห็นเฉพาะส่วนที่ได้รับสิทธิ์ ผู้พัฒนาเข้าถึงข้อมูลเท่าที่จำเป็นเพื่อดูแลระบบ โดยต้องยืนยันตัวตนเพิ่มเติม ระบบไม่มีการขายข้อมูลส่วนบุคคลหรือใช้เพื่อการโฆษณา')
+    + sec('5. ที่เก็บข้อมูลและความปลอดภัย', 'ข้อมูลเก็บบนบริการ Google Firebase (Authentication และ Firestore) ซึ่งเซิร์ฟเวอร์อาจอยู่นอกประเทศไทย การเข้าถึงถูกควบคุมด้วยกฎความปลอดภัยของฐานข้อมูลตามบทบาท อย่างไรก็ตามไม่มีระบบใดปลอดภัยสมบูรณ์')
+    + sec('6. ข้อมูลที่เก็บในเครื่องของคุณ', 'เบราว์เซอร์เก็บค่าที่จำเป็นต่อการใช้งาน เช่น สถานะการเข้าสู่ระบบ ภาษา ธีม ธุรกิจที่เปิดล่าสุด และการตั้งค่าบางส่วน ไม่ใช้เพื่อติดตามเพื่อการโฆษณา')
+    + sec('7. ระยะเวลาเก็บ', 'เก็บตราบที่บัญชีและธุรกิจยังใช้งาน หรือจนกว่าจะมีคำขอลบ รายการที่บันทึกในนามธุรกิจเป็นข้อมูลของธุรกิจและอาจยังคงอยู่แม้บัญชีสมาชิกถูกลบ')
+    + sec('8. สิทธิของเจ้าของข้อมูล', 'คุณมีสิทธิขอเข้าถึงและขอสำเนา ขอแก้ไข ขอลบหรือระงับการใช้ คัดค้าน และถอนความยินยอมได้ (การถอนไม่กระทบการประมวลผลที่ทำไปแล้ว) และมีสิทธิร้องเรียนต่อสำนักงานคณะกรรมการคุ้มครองข้อมูลส่วนบุคคล ' + contact)
+    + sec('9. การเปลี่ยนแปลงนโยบาย', 'หากมีการเปลี่ยนแปลงสาระสำคัญ ระบบจะให้คุณอ่านและยอมรับใหม่ก่อนใช้งานต่อ');
+}
+function showPrivacyModal(consentMode) {
+  const m = document.getElementById('modal-privacy');
+  document.getElementById('privacy-version').textContent = 'เวอร์ชัน ' + PRIVACY_VERSION;
+  document.getElementById('privacy-body').innerHTML = privacyHtml();
+  document.getElementById('privacy-consent-actions').style.display = consentMode ? 'flex' : 'none';
+  document.getElementById('privacy-close-btn').style.display = consentMode ? 'none' : '';
+  if(consentMode) m.dataset.nodismiss = '1'; else delete m.dataset.nodismiss;
+  m.classList.add('show');
+}
+let _privacyResolve = null;
+window.__privacyAcceptedThisSession = false;
+window.openPrivacy = function() { _privacyResolve = null; showPrivacyModal(false); };
+window.requirePrivacyConsent = function() {
+  if(window.__privacyAcceptedThisSession) return Promise.resolve(true);
+  return new Promise(res => { _privacyResolve = res; showPrivacyModal(true); });
+};
+window.privacyAccept = function() {
+  window.__privacyAcceptedThisSession = true;
+  closeModal('modal-privacy');
+  if(_privacyResolve) { _privacyResolve(true); _privacyResolve = null; }
+};
+window.privacyDecline = function() {
+  closeModal('modal-privacy');
+  if(_privacyResolve) { _privacyResolve(false); _privacyResolve = null; }
+};
+// After sign-in: anyone without a recorded acceptance of the current version is asked once.
+async function ensurePrivacyConsent(user) {
+  try {
+    const snap = await getDoc(doc(db, 'users', user.uid));
+    const c = snap.exists() ? snap.data().privacyConsent : null;
+    if(c && c.version === PRIVACY_VERSION) return true;
+    if(!window.__privacyAcceptedThisSession) {
+      hideSplash();
+      const ok = await requirePrivacyConsent();
+      if(!ok) { await signOut(auth); return false; }
+    }
+    await setDoc(doc(db, 'users', user.uid), { privacyConsent: { version: PRIVACY_VERSION, acceptedAt: serverTimestamp() } }, { merge: true });
+    return true;
+  } catch(e) { console.warn('consent check failed', e && e.code); return true; }  // a network hiccup must not lock people out
+}
+
 let devFailCount = 0, devLockedUntil = 0;
 window.showDevGate = function() {
   const g = document.getElementById('dev-gate');
@@ -2193,6 +2280,10 @@ async function resolveAuthAndInit(user) {
   if(user) {
     currentUser = user;
     if(MASTER_DEV_EMAILS.includes(user.email) && !window.__devGateDone) { showDevGate(); hideSplash(); return; }
+    try {
+      const bs = await getDoc(doc(db, 'bans', user.uid));
+      if(bs.exists()) { showBanned(user, bs.data()); hideSplash(); return; }
+    } catch(e) { /* ban lookup failed: rules still block a banned account */ }
     // Check role
     // ADMIN_EMAILS always wins — cannot be demoted via Firestore
     const isHardAdmin = ADMIN_EMAILS.includes(user.email);
@@ -2274,6 +2365,7 @@ async function resolveAuthAndInit(user) {
       currentRole = found.role === 'admin' ? 'owner' : (['owner','supervisor','staff','staff_trial'].includes(found.role) ? found.role : 'staff');
     }
     hideNoAccess();
+    if(!(await ensurePrivacyConsent(user))) return;
 
     document.getElementById('auth-screen').style.display = 'none';
     document.getElementById('app').style.display = 'block';
@@ -2390,7 +2482,8 @@ function setupRoleUI() {
     </div>
     <button class="btn btn-ghost btn-sm" id="btn-rename-self" onclick="openRenameSelf()">
       <svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg> เปลี่ยนชื่อ
-    </button>`;
+    </button>
+    <div style="margin-top:8px"><a onclick="openPrivacy()" style="font-size:12px;color:var(--accent);cursor:pointer;text-decoration:underline">นโยบายความเป็นส่วนตัว</a></div>`;
 
   // Admin settings
   document.getElementById('admin-settings').style.display = currentRole==='owner'?'block':'none';
@@ -4647,6 +4740,12 @@ window.sendMessage = async function(){
   } catch(e){showToast('เกิดข้อผิดพลาด','error');}
 }
 
+window.markRead = async function(id) {
+  try {
+    await updateDoc(doc(db, 'businesses', currentBusinessId, 'messages', id), { status: 'read' });
+    loadMessages();
+  } catch(e) { showToast('ทำเครื่องหมายไม่สำเร็จ: ' + escHtml(e.code || e.message), 'error'); }
+};
 async function loadMessages(){
   try {
     let snap;
@@ -5359,20 +5458,100 @@ window.switchPlatformAdminTab = function(tab) {
   if(tab === 'users') loadPlatformUsers();
   if(tab === 'security') renderPlatformSecurity();
 };
+function renderHelpPage() {
+  const rows = [['/บันทึก','เปิดหน้าเพิ่มรายการ'],['/รายการ','ไปหน้ารายการ'],['/ตั้งค่า','ไปหน้าตั้งค่า'],['/inbox','ไปกล่องข้อความ'],['/c1 /c2 /c3','กรองรายการตามแคชเชียร์'],['/ช่วยหน่อย','แสดงคำสั่งทั้งหมด']];
+  return '<div style="padding:8px 4px">' + rows.map(r => '<div style="display:flex;justify-content:space-between;gap:12px;padding:10px 12px;border-bottom:1px solid var(--border);font-size:13px"><b>' + r[0] + '</b><span style="color:var(--text2)">' + r[1] + '</span></div>').join('') + '</div>';
+}
+let paUsersCache = [], paBansMap = {};
 async function loadPlatformUsers() {
   const el = document.getElementById('pa-users-panel');
   el.innerHTML = '<div class="loading-wrap"><div class="spinner"></div> กำลังโหลด...</div>';
   try {
-    const snap = await getDocs(collection(db, 'users'));
-    const rows = snap.docs.map(d => d.data()).sort((a, b) => String(a.email || '').localeCompare(String(b.email || '')));
+    const [uSnap, bSnap] = await Promise.all([getDocs(collection(db, 'users')), getDocs(collection(db, 'bans'))]);
+    paUsersCache = uSnap.docs.map(d => ({ uid: d.id, ...d.data() }));
+    paBansMap = {}; bSnap.docs.forEach(d => { paBansMap[d.id] = d.data(); });
     el.innerHTML = '<button class="btn btn-full" style="background:rgba(255,170,0,.12);color:#ffaa00;border:1px solid rgba(255,170,0,.3);font-weight:700;margin-bottom:10px" onclick="auditMemberships()">ตรวจสิทธิ์สมาชิก (ซ่อมบัญชีที่โหลดข้อมูลไม่ได้)</button><div id="pa-audit-result"></div>'
-      + '<div style="font-size:12px;color:var(--text2);margin-bottom:10px">' + rows.length + ' บัญชีในระบบ</div>'
-      + rows.map(u => '<div style="background:var(--surface2);border:1px solid var(--border);border-radius:14px;padding:12px 14px;margin-bottom:8px">'
-        + '<div style="font-weight:700;font-size:14px">' + escHtml(u.name || 'ไม่ระบุชื่อ') + '</div>'
-        + '<div style="font-size:11px;color:var(--text2);word-break:break-all">' + escHtml(u.email || '') + '</div>'
-        + '<div style="font-size:11px;color:var(--text3);margin-top:4px">ธุรกิจ ' + ((u.businesses || []).length) + ' แห่ง' + (MASTER_DEV_EMAILS.includes(u.email) ? ' · นักพัฒนา' : '') + '</div></div>').join('');
+      + '<input class="form-input" id="pa-user-search" placeholder="ค้นหาชื่อ / อีเมล / UID" oninput="renderPlatformUserList()" style="margin-bottom:10px"/>'
+      + '<div id="pa-user-list"></div>';
+    renderPlatformUserList();
   } catch(e) { el.innerHTML = '<div class="empty">เกิดข้อผิดพลาด: ' + escHtml(e.code || e.message) + '</div>'; }
 }
+window.renderPlatformUserList = function() {
+  const box = document.getElementById('pa-user-list'); if(!box) return;
+  const q = ((document.getElementById('pa-user-search') || {}).value || '').trim().toLowerCase();
+  const known = new Set(paUsersCache.map(u => u.uid));
+  const rows = paUsersCache.concat(Object.keys(paBansMap).filter(id => !known.has(id)).map(id => ({ uid: id, name: paBansMap[id].name, email: paBansMap[id].email, businesses: [], _orphanBan: true })));
+  const list = rows.filter(u => !q || [u.name, u.email, u.uid].some(v => String(v || '').toLowerCase().includes(q)))
+    .sort((a, b) => String(a.email || '').localeCompare(String(b.email || '')));
+  if(!list.length) { box.innerHTML = '<div class="empty">ไม่พบบัญชีที่ตรงกับคำค้น</div>'; return; }
+  box.innerHTML = '<div style="font-size:12px;color:var(--text2);margin-bottom:10px">' + list.length + ' จาก ' + rows.length + ' บัญชี</div>' + list.map(u => {
+    const ban = paBansMap[u.uid];
+    const isDev = MASTER_DEV_EMAILS.includes(u.email) || u.uid === currentUser.uid;
+    const consent = u.privacyConsent && u.privacyConsent.version ? 'ยอมรับนโยบาย ' + u.privacyConsent.version : 'ยังไม่ได้ยอมรับนโยบาย';
+    const badge = ban ? '<span style="font-size:10px;font-weight:700;color:#ff3d71;background:rgba(255,61,113,.12);padding:2px 8px;border-radius:10px">' + (ban.type === 'deleted' ? 'ลบแล้ว' : 'ถูกระงับ') + '</span>' : '';
+    const uid = escHtml(u.uid);
+    const actions = isDev
+      ? '<div style="font-size:11px;color:var(--text3);margin-top:6px">บัญชีนักพัฒนา แบน/ลบไม่ได้</div>'
+      : '<div style="display:flex;gap:6px;margin-top:8px">'
+        + (ban ? '<button class="btn btn-ghost btn-sm" style="flex:1" onclick="paUnbanUser(\'' + uid + '\')">ปลดแบน</button>' : '<button class="btn btn-ghost btn-sm" style="flex:1" onclick="paBanUser(\'' + uid + '\')">แบน</button>')
+        + (u._orphanBan ? '' : '<button class="btn btn-sm" style="flex:1;background:rgba(255,61,113,.12);color:#ff3d71;font-weight:700" onclick="paDeleteUser(\'' + uid + '\')">ลบข้อมูล</button>') + '</div>';
+    return '<div style="background:var(--surface2);border:1px solid var(--border);border-radius:14px;padding:12px 14px;margin-bottom:8px">'
+      + '<div style="display:flex;justify-content:space-between;gap:8px;align-items:center"><div style="font-weight:700;font-size:14px">' + escHtml(u.name || 'ไม่ระบุชื่อ') + '</div>' + badge + '</div>'
+      + '<div style="font-size:11px;color:var(--text2);word-break:break-all">' + escHtml(u.email || '') + '</div>'
+      + '<div style="font-size:11px;color:var(--text3);margin-top:4px">ธุรกิจ ' + ((u.businesses || []).length) + ' แห่ง' + (MASTER_DEV_EMAILS.includes(u.email) ? ' · นักพัฒนา' : '') + ' · ' + escHtml(consent) + '</div>'
+      + (ban && ban.reason ? '<div style="font-size:11px;color:#ff3d71;margin-top:2px">เหตุผล: ' + escHtml(ban.reason) + '</div>' : '')
+      + actions + '</div>';
+  }).join('');
+};
+function paTarget(uid) {
+  const u = paUsersCache.find(x => x.uid === uid) || (paBansMap[uid] ? { uid, email: paBansMap[uid].email, name: paBansMap[uid].name, businesses: [] } : null);
+  if(!u) return null;
+  if(uid === currentUser.uid || MASTER_DEV_EMAILS.includes(u.email)) { showToast('ไม่สามารถแบน/ลบบัญชีนักพัฒนา', 'error'); return null; }
+  return u;
+}
+window.paBanUser = async function(uid) {
+  const u = paTarget(uid); if(!u) return;
+  const reason = prompt('ระงับบัญชี ' + (u.email || uid) + '\nเหตุผล (ไม่บังคับ):', '');
+  if(reason === null) return;
+  try {
+    await setDoc(doc(db, 'bans', uid), { email: u.email || '', name: u.name || '', reason: String(reason).slice(0, 200), type: 'banned', createdAt: serverTimestamp(), by: currentUser.uid });
+    showToast('ระงับบัญชีแล้ว', 'success'); loadPlatformUsers();
+  } catch(e) { showToast('ไม่สำเร็จ: ' + escHtml(e.code || e.message), 'error'); }
+};
+window.paUnbanUser = async function(uid) {
+  const u = paTarget(uid); if(!u) return;
+  if(!confirm('ปลดแบน ' + (u.email || uid) + ' ?')) return;
+  try { await deleteDoc(doc(db, 'bans', uid)); showToast('ปลดแบนแล้ว', 'success'); loadPlatformUsers(); }
+  catch(e) { showToast('ไม่สำเร็จ: ' + escHtml(e.code || e.message), 'error'); }
+};
+window.paDeleteUser = async function(uid) {
+  const u = paTarget(uid); if(!u) return;
+  try {
+    const refs = [];
+    for(const b of (u.businesses || [])) {
+      const id = b && b.internalId; if(!id) continue;
+      const m = await getDoc(doc(db, 'businesses', id, 'members', uid));
+      if(!m.exists()) continue;
+      if(m.data().role === 'owner') { alert('บัญชีนี้เป็นเจ้าของธุรกิจ จึงลบตรง ๆ ไม่ได้\nให้โอนสิทธิ์หรือลบธุรกิจนั้นก่อน หรือใช้ "แบน" แทน'); return; }
+      refs.push(m.ref);
+    }
+    const typed = prompt('จะลบโปรไฟล์และรายชื่อสมาชิกของ ' + (u.email || uid) + ' แล้วระงับการเข้าใช้\n(รายการเงินที่บัญชีนี้เคยบันทึกยังอยู่กับธุรกิจ)\n\nพิมพ์อีเมลของบัญชีนี้เพื่อยืนยัน:');
+    if(typed === null) return;
+    if(String(typed).trim().toLowerCase() !== String(u.email || '').toLowerCase()) { showToast('อีเมลไม่ตรง ยกเลิกการลบ', 'error'); return; }
+    const evSnap = await getDocs(query(collection(db, 'signupEvents'), where('uid', '==', uid)));
+    const batch = writeBatch(db);
+    refs.forEach(r => batch.delete(r));
+    evSnap.docs.forEach(d => batch.delete(d.ref));
+    batch.delete(doc(db, 'users', uid, 'prefs', 'favorites'));
+    batch.delete(doc(db, 'users', uid));
+    batch.set(doc(db, 'bans', uid), { email: u.email || '', name: u.name || '', reason: 'ลบบัญชีโดยผู้ดูแลระบบ', type: 'deleted', createdAt: serverTimestamp(), by: currentUser.uid });
+    await batch.commit();
+    showToast('ลบข้อมูลและระงับบัญชีแล้ว', 'success');
+    alert('ลบข้อมูลเสร็จแล้ว\nหมายเหตุ: อีเมลนี้ยังลงทะเบียนอยู่ในระบบล็อกอินของ Firebase ถ้าต้องการให้สมัครใหม่ด้วยอีเมลเดิมได้ ให้ลบที่ Firebase Console > Authentication');
+    loadPlatformUsers();
+  } catch(e) { showToast('ไม่สำเร็จ: ' + escHtml(e.code || e.message), 'error'); }
+};
+
 window.auditMemberships = async function() {
   const out = document.getElementById('pa-audit-result');
   out.innerHTML = '<div class="loading-wrap"><div class="spinner"></div> กำลังตรวจ...</div>';
@@ -5556,7 +5735,7 @@ async function loadPlatformOverview() {
       const purposeLabel = b.purpose === 'personal' ? `ส่วนบุคคล (สูงสุด ${b.memberLimit||10})` : 'ธุรกิจ';
       return `<div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:16px;margin-bottom:12px">
         <div style="font-weight:700;font-size:15px;margin-bottom:2px">${safeName}</div>
-        <div style="font-size:11px;color:var(--text2);margin-bottom:10px">รหัส: ${b.businessCode||'-'} · ${purposeLabel}</div>
+        <div style="font-size:11px;color:var(--text2);margin-bottom:10px">รหัส: ${escHtml(b.businessCode||'-')} · ${purposeLabel}</div>
         <div style="display:flex;gap:16px;margin-bottom:12px;flex-wrap:wrap">
           <div><div style="font-size:16px;font-weight:700;color:var(--accent)">${memberCounts[bizId]||0}</div><div style="font-size:10px;color:var(--text2)">สมาชิก</div></div>
           <div><div style="font-size:16px;font-weight:700;color:var(--accent)">${recordCounts[bizId]||0}</div><div style="font-size:10px;color:var(--text2)">รายการ</div></div>
@@ -5611,6 +5790,9 @@ window.viewBusinessReadonly = async function(bizId) {
     });
     const fmtPA = n => Number(n||0).toLocaleString('th-TH', {maximumFractionDigits:0});
 
+    const roleColors = { owner:'var(--yellow)', admin:'#f97316', supervisor:'#2dd4bf', staff:'var(--accent)', staff_trial:'var(--purple)' };
+    const roleLabels = { owner:'Owner', admin:'ผู้ดูแลระบบ', supervisor:'หัวหน้าพนักงาน', staff:'Staff', staff_trial:'Staff (ทดลอง)' };
+    const roleBg = { owner:'rgba(255,170,0,.12)', admin:'rgba(249,115,22,.15)', supervisor:'rgba(45,212,191,.15)', staff:'var(--accent-dim)', staff_trial:'rgba(140,60,255,.15)' };
     const memberRows = membersSnap.docs.map(d => {
       const m = d.data();
       const safeName = (m.name||m.email||d.id).replace(/</g,'&lt;');
@@ -5632,7 +5814,7 @@ window.viewBusinessReadonly = async function(bizId) {
         โหมดดูอย่างเดียว — Admin โปรแกรมไม่สามารถแก้ไขข้อมูลธุรกิจนี้ได้
       </div>
       <div style="font-weight:700;font-size:17px;margin-bottom:2px">${escHtml(b.name||'')}</div>
-      <div style="font-size:12px;color:var(--text2);margin-bottom:14px">รหัส: ${b.businessCode||'-'}</div>
+      <div style="font-size:12px;color:var(--text2);margin-bottom:14px">รหัส: ${escHtml(b.businessCode||'-')}</div>
       <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:16px">
         <div style="background:var(--green-dim);border-radius:14px;padding:10px;text-align:center">
           <div style="font-size:15px;font-weight:700;color:var(--green)">${fmtPA(income)}</div>
@@ -6504,7 +6686,7 @@ async function importRecords(data,mode){
 // ============================================================
 window.showModal = function(id){document.getElementById(id).classList.add('show');}
 window.closeModal = function(id){document.getElementById(id).classList.remove('show');}
-document.querySelectorAll('.modal-overlay').forEach(o=>o.addEventListener('click',e=>{if(e.target===o)o.classList.remove('show');}));
+document.querySelectorAll('.modal-overlay').forEach(o=>o.addEventListener('click',e=>{if(e.target===o&&!o.dataset.nodismiss)o.classList.remove('show');}));
 
 let _tt=null;
 window.showToast = function(msg,type=''){
