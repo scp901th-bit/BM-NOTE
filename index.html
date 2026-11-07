@@ -1322,6 +1322,7 @@
         <div style="font-weight:700" id="tc-page-date"></div>
         <button class="btn btn-ghost btn-sm" onclick="tcShiftDay(1)">วันถัดไป ›</button>
       </div>
+      <div id="tc-settings"></div>
       <div id="tc-page-list"></div>
     </div>
   </div>
@@ -1990,38 +1991,57 @@ function tcCompress(file, maxSide, quality) {
   });
 }
 
-let tcState = { open: null, offers: [], assign: {}, mine: [] };
+let tcState = { opens: [], offers: [], assign: {}, mine: [], namesMode: 'any' };
 let tcTicker = null, tcPending = {}, tcCtx = null, tcPageKey = null, tcPageRows = [], tcEditId = null;
 
+async function tcMyOpens() {
+  const me = currentUser.uid;
+  const [a, b] = await Promise.all([
+    getDocs(query(tcCol(), where('uid', '==', me), where('status', '==', 'open'))),
+    getDocs(query(tcCol(), where('personUid', '==', me), where('status', '==', 'open')))
+  ]);
+  const m = new Map();
+  a.docs.concat(b.docs).forEach(d => m.set(d.id, { id: d.id, ...d.data() }));
+  return Array.from(m.values()).sort((x, y) => tcMs(x.inAt) - tcMs(y.inAt));
+}
 window.renderTimeclockHome = async function() {
   const el = document.getElementById('tc-home'); if(!el) return;
   if(tcTicker) { clearInterval(tcTicker); tcTicker = null; }
   if(!currentBusinessId || !currentUser) { el.innerHTML = ''; return; }
+  const isDevAcct = MASTER_DEV_EMAILS.includes(currentUser.email);
+  const host = el.parentNode;
+  if(isDevAcct) { if(host.lastElementChild !== el) host.appendChild(el); }                       // bottom of the dashboard
+  else if(host.firstElementChild !== el) host.insertBefore(el, host.firstElementChild);           // top for everyone else
   const key = tcTodayKey(), me = currentUser.uid;
   const isMgr = currentRole === 'owner' || currentRole === 'supervisor';
   try {
-    const [openSnap, mineSnap, offerSnap, schedSnap] = await Promise.all([
-      getDocs(query(tcCol(), where('uid', '==', me), where('status', '==', 'open'))),
+    const [opens, mineSnap, offerSnap, schedSnap, bizSnap] = await Promise.all([
+      tcMyOpens(),
       getDocs(query(tcCol(), where('uid', '==', me), where('dateKey', '==', key))),
       getDocs(query(tcCol(), where('handoverToUid', '==', me), where('handoverClaimedBy', '==', null))),
-      getDoc(bizScheduleDoc(key)).catch(() => null)
+      getDoc(bizScheduleDoc(key)).catch(() => null),
+      getDoc(doc(db, 'businesses', currentBusinessId)).catch(() => null)
     ]);
-    const open = openSnap.docs.map(d => ({ id: d.id, ...d.data() }))[0] || null;
     const mine = mineSnap.docs.map(d => ({ id: d.id, ...d.data() })).sort((a, b) => tcMs(a.inAt) - tcMs(b.inAt));
     const offers = offerSnap.docs.map(d => ({ id: d.id, ...d.data() })).filter(o => o.status === 'closed');
     const assign = (schedSnap && schedSnap.exists()) ? (schedSnap.data().assignments || {}) : {};
-    tcState = { open, offers, assign, mine };
+    const nm = bizSnap && bizSnap.exists() ? bizSnap.data().timeclockNames : null;
+    const namesMode = ['self', 'members', 'any'].includes(nm) ? nm : 'any';
+    tcState = { opens, offers, assign, mine, namesMode };
     const myAssigned = activeCashiers().filter(c => assign[c.id] && assign[c.id].uid === me);
-    const usedToday = new Set(mine.map(x => x.cashierId));
+    const usedToday = new Set(mine.filter(x => (x.personKey || x.uid) === me).map(x => x.cashierId));
 
     let h = '<div class="tc-card"><div class="tc-head"><div><div class="tc-title">กะของฉัน</div><div class="tc-sub">' + tcE(currentUser.displayName || currentUser.email || '') + '</div></div><a class="tc-link" onclick="openTimeclockPage()">ประวัติเวลา</a></div>';
     offers.forEach(o => {
       h += '<div class="tc-offer"><div><b>' + tcE(o.name) + '</b> ส่งกะ “' + tcE(o.cashierName || tcCashierName(o.cashierId)) + '” ให้คุณ<div class="tc-sub">ส่งเมื่อ ' + tcHM(o.outAt) + '</div></div><button class="btn btn-primary btn-sm" onclick="tcOpen(\'accept\',\'' + o.id + '\')">รับกะ</button></div>';
     });
-    if(open) {
-      h += '<div class="tc-now"><span class="tc-dot on"></span><div><div class="tc-state">กำลังทำงาน · ' + tcE(open.cashierName || tcCashierName(open.cashierId)) + '</div><div class="tc-sub">เข้างาน ' + tcHM(open.inAt) + ' · ผ่านไป <span id="tc-elapsed">' + tcDuration(Date.now() - tcMs(open.inAt)) + '</span></div></div></div>'
-        + '<div class="tc-actions"><button class="btn btn-primary" onclick="tcOpen(\'out\')">ออกกะ</button><button class="btn btn-ghost" onclick="tcOpen(\'handover\')">ส่งต่อกะ</button></div>';
-      tcTicker = setInterval(() => { const e = document.getElementById('tc-elapsed'); if(e) e.textContent = tcDuration(Date.now() - tcMs(open.inAt)); }, 30000);
+    if(opens.length) {
+      opens.forEach(o => {
+        h += '<div class="tc-now"><span class="tc-dot on"></span><div><div class="tc-state">' + tcE(o.personName || o.name) + ' · กำลังทำงาน</div><div class="tc-sub">' + tcE(o.cashierName || tcCashierName(o.cashierId)) + ' · เข้างาน ' + tcHM(o.inAt) + ' · ผ่านไป <span class="tc-elapsed" data-in="' + tcMs(o.inAt) + '">' + tcDuration(Date.now() - tcMs(o.inAt)) + '</span></div></div></div>'
+          + '<div class="tc-actions"><button class="btn btn-primary" onclick="tcOpen(\'out\',\'' + o.id + '\')">ออกกะ</button><button class="btn btn-ghost" onclick="tcOpen(\'handover\',\'' + o.id + '\')">ส่งต่อกะ</button></div>';
+      });
+      if(namesMode !== 'self') h += '<div class="tc-actions" style="margin-top:10px"><button class="btn btn-ghost" onclick="tcOpen(\'in\')">+ ลงเวลาเข้ากะให้อีกคน</button></div>';
+      tcTicker = setInterval(() => { document.querySelectorAll('.tc-elapsed').forEach(e => { e.textContent = tcDuration(Date.now() - Number(e.dataset.in)); }); }, 30000);
     } else {
       const todo = myAssigned.filter(c => !usedToday.has(c.id));
       h += '<div class="tc-now"><span class="tc-dot"></span><div><div class="tc-state">ยังไม่ได้เข้ากะ</div><div class="tc-sub">' + (myAssigned.length ? 'วันนี้คุณประจำ: ' + myAssigned.map(c => tcE(c.name)).join(', ') : 'วันนี้ไม่มีกะที่กำหนดให้คุณ') + '</div></div></div><div class="tc-actions">'
@@ -2029,11 +2049,13 @@ window.renderTimeclockHome = async function() {
         + '</div>';
     }
     if(mine.length) {
-      h += '<div class="tc-list">' + mine.map(x => '<div class="tc-row"><span>' + tcE(x.cashierName || tcCashierName(x.cashierId)) + '</span><span class="tc-sub">' + tcHM(x.inAt) + ' – ' + (x.status === 'open' ? 'ยังไม่ออก' : tcHM(x.outAt) + ' · ' + tcDuration(tcMs(x.outAt) - tcMs(x.inAt))) + '</span></div>').join('') + '</div>';
+      h += '<div class="tc-list">' + mine.map(x => '<div class="tc-row"><span>' + tcE(x.personName || x.name) + ' · ' + tcE(x.cashierName || tcCashierName(x.cashierId)) + '</span><span class="tc-sub">' + tcHM(x.inAt) + ' – ' + (x.status === 'open' ? 'ยังไม่ออก' : tcHM(x.outAt) + ' · ' + tcDuration(tcMs(x.outAt) - tcMs(x.inAt))) + '</span></div>').join('') + '</div>';
     }
     h += '</div>';
-    if(isMgr) h += await tcBoardHtml(key, assign);
-    el.innerHTML = h;
+    const board = isMgr ? await tcBoardHtml(key, assign) : '';
+    // a developer account does not work shifts: hide the clock card, but never strand an open shift or a pending handover
+    const hidePersonal = isDevAcct && !opens.length && !offers.length;
+    el.innerHTML = (hidePersonal ? '' : h) + board;
   } catch(e) {
     console.warn('timeclock home unavailable:', e && e.code);
     el.innerHTML = '';
@@ -2092,11 +2114,26 @@ window.tcPickPhoto = async function(kind, input) {
   } catch(e) { showToast('อ่านรูปไม่สำเร็จ', 'error'); }
   input.value = '';
 };
-function tcIdentityHtml(mode) {
-  const nm = currentUser.displayName || currentUser.email || '';
+function tcIdentityHtml(mode, cur, namesMode) {
+  const me = currentUser, own = me.displayName || me.email || '';
+  let top = '', name = own, sub = 'ชื่อผู้ลงเวลา';
+  if(cur) { name = cur.personName || cur.name || own; sub = 'กะของ'; }
+  if(mode === 'in' && namesMode !== 'self') {
+    top = '<select class="form-select" id="tc-name-sel" onchange="tcNameChanged()" style="margin:6px 0"><option value="self">ฉัน — ' + tcE(own) + '</option>'
+      + scheduleMembers.filter(m => m.uid !== me.uid).map(m => '<option value="m:' + tcE(m.uid) + '">' + tcE(m.name) + '</option>').join('')
+      + (namesMode === 'any' ? '<option value="__new__">➕ ชื่อใหม่ (ยังไม่ได้ลงทะเบียน)</option>' : '') + '</select>'
+      + '<input class="form-input" id="tc-name-new" maxlength="60" placeholder="พิมพ์ชื่อใหม่" oninput="tcNameChanged()" style="display:none;margin-bottom:6px"/>';
+  }
   const note = mode === 'accept' ? 'เวลาเข้าของคุณจะตรงกับเวลาออกของผู้ส่งกะ' : 'เวลาที่บันทึกจริงใช้เวลาเซิร์ฟเวอร์ ณ วินาทีที่กดยืนยัน';
-  return '<div class="tc-ident"><div class="tc-ident-name">' + tcE(nm) + '</div><div class="tc-ident-time" id="tc-live-time">--:--:--</div><div class="tc-sub" id="tc-live-date"></div><div class="tc-sub" style="margin-top:4px">' + note + '</div></div>';
+  return '<div class="tc-ident"><div class="tc-sub">' + sub + '</div>' + top + '<div class="tc-ident-name" id="tc-ident-name">' + tcE(name) + '</div><div class="tc-ident-time" id="tc-live-time">--:--:--</div><div class="tc-sub" id="tc-live-date"></div><div class="tc-sub" style="margin-top:4px">' + note + '</div></div>';
 }
+window.tcNameChanged = function() {
+  const sel = document.getElementById('tc-name-sel'), inp = document.getElementById('tc-name-new'), out = document.getElementById('tc-ident-name');
+  if(!sel || !out) return;
+  const isNew = sel.value === '__new__';
+  if(inp) inp.style.display = isNew ? 'block' : 'none';
+  out.textContent = isNew ? ((inp && inp.value.trim()) || 'ชื่อใหม่') : sel.options[sel.selectedIndex].text.replace(/^ฉัน — /, '');
+};
 let tcClockTimer = null;
 function tcStopClock() { if(tcClockTimer) { clearInterval(tcClockTimer); tcClockTimer = null; } }
 function tcStartClock() {
@@ -2121,6 +2158,10 @@ window.tcOpen = async function(mode, arg) {
   try {
     const cs = activeCashiers();
     const assign = tcState.assign || {};
+    const namesMode = tcState.namesMode || 'any';
+    if(mode === 'in' && namesMode !== 'self') await loadScheduleMembers();
+    const cur = (mode === 'out' || mode === 'handover') ? (tcState.opens || []).find(o => o.id === arg) : null;
+    if((mode === 'out' || mode === 'handover') && !cur) { body.innerHTML = '<div class="empty">ไม่พบกะนี้ (อาจถูกปิดไปแล้ว)</div>'; return; }
     let h = '';
     if(mode === 'in' || mode === 'accept') {
       let pre = arg && mode === 'in' ? arg : '';
@@ -2142,18 +2183,17 @@ window.tcOpen = async function(mode, arg) {
     }
     if(mode === 'handover') {
       await loadScheduleMembers();
-      const cur = tcState.open;
-      const idx = cs.findIndex(c => c.id === (cur && cur.cashierId));
+      const idx = cs.findIndex(c => c.id === cur.cashierId);
       const next = cs[idx + 1];
       const pre = next && assign[next.id] ? assign[next.id].uid : '';
-      h += '<div class="form-row"><div class="form-label">ส่งต่อให้</div><select class="form-select" id="tc-recipient"><option value="">— เลือกผู้รับกะ —</option>'
+      h += '<div class="form-row"><div class="form-label">ส่งต่อให้ (บัญชีที่ลงทะเบียน)</div><select class="form-select" id="tc-recipient"><option value="">— เลือกผู้รับกะ —</option>'
         + scheduleMembers.filter(m => m.uid !== currentUser.uid).map(m => '<option value="' + tcE(m.uid) + '" ' + (m.uid === pre ? 'selected' : '') + '>' + tcE(m.name) + '</option>').join('') + '</select></div>';
     }
     if(mode === 'out' || mode === 'handover') {
       h += '<div class="form-row"><div class="form-label">หมายเหตุ (ไม่บังคับ)</div><input class="form-input" id="tc-note" maxlength="120" placeholder="เช่น เงินสดครบ ส่งต่อให้..."/></div>';
       h += tcPhotoBtn('out') + tcPhotoBtn('slip');
     }
-    body.innerHTML = tcIdentityHtml(mode) + h;
+    body.innerHTML = tcIdentityHtml(mode, cur, namesMode) + h;
     tcStartClock();
   } catch(e) { console.error(e); body.innerHTML = '<div class="empty">เกิดข้อผิดพลาด: ' + tcE(e.code || e.message) + '</div>'; }
 };
@@ -2178,14 +2218,28 @@ window.tcConfirm = async function() {
     if(mode === 'in' || mode === 'accept') {
       const cid = document.getElementById('tc-cashier').value;
       if(!cid) { showToast('กรุณาเลือกแคชเชียร์', 'error'); return; }
-      const dup = await getDocs(query(tcCol(), where('uid', '==', me.uid), where('status', '==', 'open')));
-      if(!dup.empty) { showToast('คุณมีกะที่ยังไม่ได้ออกอยู่ ออกกะก่อนจึงจะเข้ากะใหม่ได้', 'error'); return; }
-      const base = { uid: me.uid, name: myName, dateKey: tcTodayKey(), cashierId: cid, cashierName: tcCashierName(cid), inDevice: Date.now(), outAt: null, outDevice: null, outNote: null, status: 'open', handoverToUid: null, handoverToName: null, handoverClaimedBy: null, confirmedAt: serverTimestamp() };
+      // who is this shift for? own account (default), a registered member, or a brand-new name
+      let person = { personUid: me.uid, personName: myName, personKey: me.uid, nameSource: 'self' };
+      const sel = document.getElementById('tc-name-sel');
+      if(mode === 'in' && sel) {
+        if(sel.value.startsWith('m:')) {
+          const u = sel.value.slice(2), mem = scheduleMembers.find(x => x.uid === u);
+          if(!mem) { showToast('ไม่พบชื่อที่เลือก', 'error'); return; }
+          person = { personUid: u, personName: String(mem.name).slice(0, 120), personKey: u, nameSource: 'member' };
+        } else if(sel.value === '__new__') {
+          const nm = (document.getElementById('tc-name-new').value || '').replace(/\s+/g, ' ').trim().slice(0, 60);
+          if(nm.length < 2) { showToast('กรุณาพิมพ์ชื่ออย่างน้อย 2 ตัวอักษร', 'error'); return; }
+          person = { personUid: null, personName: nm, personKey: 'n:' + nm.toLowerCase(), nameSource: 'custom' };
+        }
+      }
+      const opens = await tcMyOpens();
+      if(opens.some(o => (o.personKey || o.uid) === person.personKey)) { showToast(person.personName + ' มีกะที่ยังไม่ได้ออกอยู่ ออกกะก่อนจึงจะเข้ากะใหม่ได้', 'error'); return; }
+      const base = { uid: me.uid, name: person.personName, byName: myName, personUid: person.personUid, personName: person.personName, personKey: person.personKey, nameSource: person.nameSource, dateKey: tcTodayKey(), cashierId: cid, cashierName: tcCashierName(cid), inDevice: Date.now(), outAt: null, outDevice: null, outNote: null, status: 'open', handoverToUid: null, handoverToName: null, handoverClaimedBy: null, confirmedAt: serverTimestamp() };
       const ref = doc(tcCol());
       if(mode === 'in') {
         await setDoc(ref, { ...base, inAt: serverTimestamp(), handoverFrom: null });
         msg = 'เข้ากะแล้ว';
-        try { const sn = await getDoc(ref); const t = sn.data().inAt; if(t && t.toDate) msg = 'เข้ากะแล้ว · ' + escHtml(myName) + ' · ' + t.toDate().toLocaleTimeString('th-TH', { hour12: false }); } catch(e) {}
+        try { const sn = await getDoc(ref); const t = sn.data().inAt; if(t && t.toDate) msg = 'เข้ากะแล้ว · ' + escHtml(person.personName) + ' · ' + t.toDate().toLocaleTimeString('th-TH', { hour12: false }); } catch(e) {}
       } else {
         const prevRef = doc(tcCol(), arg);
         const prev = await getDoc(prevRef);
@@ -2199,7 +2253,7 @@ window.tcConfirm = async function() {
       }
       sid = ref.id;
     } else {
-      const cur = tcState.open;
+      const cur = (tcState.opens || []).find(o => o.id === arg);
       if(!cur) { showToast('ไม่พบกะที่กำลังทำงานอยู่', 'error'); return; }
       const note = (document.getElementById('tc-note').value || '').trim().slice(0, 120) || null;
       const upd = { status: 'closed', outAt: serverTimestamp(), outDevice: Date.now(), outNote: note };
@@ -2212,7 +2266,7 @@ window.tcConfirm = async function() {
       await updateDoc(doc(tcCol(), cur.id), upd);
       sid = cur.id;
       msg = mode === 'handover' ? 'ส่งต่อกะแล้ว รอผู้รับกดรับกะ' : 'ออกกะแล้ว';
-      try { const sn = await getDoc(doc(tcCol(), cur.id)); const t = sn.data().outAt; if(t && t.toDate) msg += ' · ' + escHtml(myName) + ' · ' + t.toDate().toLocaleTimeString('th-TH', { hour12: false }); } catch(e) {}
+      try { const sn = await getDoc(doc(tcCol(), cur.id)); const t = sn.data().outAt; if(t && t.toDate) msg += ' · ' + escHtml(cur.personName || cur.name || myName) + ' · ' + t.toDate().toLocaleTimeString('th-TH', { hour12: false }); } catch(e) {}
     }
     await tcUploadPhotos(sid);
     closeModal('modal-tc');
@@ -2229,6 +2283,7 @@ function tcFlags(list) {
   const out = {};
   const now = Date.now();
   const endOf = x => x.status === 'open' ? now : tcMs(x.outAt);
+  const keyOf = x => x.personKey || x.uid;
   list.forEach(a => {
     const f = [];
     if(a.inDevice && Math.abs(tcMs(a.inAt) - a.inDevice) > 120000 && !a.handoverFrom) f.push('นาฬิกาเครื่องตอนเข้างานไม่ตรงกับเวลาระบบ');
@@ -2236,7 +2291,7 @@ function tcFlags(list) {
     if(a.status === 'open' && a.dateKey < tcTodayKey()) f.push('ยังไม่ได้ออกกะ (ค้างจากวันก่อน)');
     list.forEach(b => {
       if(a === b || tcMs(a.inAt) >= endOf(b) || tcMs(b.inAt) >= endOf(a)) return;
-      if(a.uid === b.uid) f.push('ซ้อนเวลากับกะอื่นของคนเดียวกัน');
+      if(keyOf(a) === keyOf(b)) f.push('ซ้อนเวลากับกะอื่นของคนเดียวกัน');
       else if(a.cashierId === b.cashierId) f.push('ซ้อนเวลากับ ' + (b.name || '') + ' ในช่องเดียวกัน');
     });
     out[a.id] = Array.from(new Set(f));
@@ -2248,13 +2303,30 @@ function tcRowHtml(x, flags, isMgr) {
   const to = x.handoverToName ? '<div class="tc-sub">ส่งต่อกะให้ ' + tcE(x.handoverToName) + (x.handoverClaimedBy ? ' · รับแล้ว' : ' · ยังไม่มีคนรับ') + '</div>' : '';
   const from = x.handoverFrom ? '<div class="tc-sub">รับกะต่อจากผู้ส่ง</div>' : '';
   const ed = (x.edits && x.edits.length) ? '<div class="tc-sub">แก้ไขแล้ว ' + x.edits.length + ' ครั้ง · ล่าสุด: ' + tcE((x.edits[x.edits.length - 1] || {}).reason) + '</div>' : '';
-  return '<div class="tc-item"><div style="display:flex;justify-content:space-between;gap:8px"><div><div style="font-weight:700;font-size:14px">' + tcE(x.name) + '</div><div class="tc-sub">' + tcE(x.cashierName || tcCashierName(x.cashierId)) + '</div></div><span class="tc-chip ' + (open ? 'on' : 'done') + '">' + (open ? 'กำลังทำงาน' : 'ออกแล้ว') + '</span></div>'
+  const by = (x.byName && x.personUid !== x.uid) ? '<div class="tc-sub">ลงเวลาโดยบัญชี ' + tcE(x.byName) + '</div>' : '';
+  const custom = x.nameSource === 'custom' ? '<span class="tc-chip wait" style="margin-left:6px">ชื่อใหม่ ยังไม่ลงทะเบียน</span>' : '';
+  return '<div class="tc-item"><div style="display:flex;justify-content:space-between;gap:8px"><div><div style="font-weight:700;font-size:14px">' + tcE(x.personName || x.name) + custom + '</div><div class="tc-sub">' + tcE(x.cashierName || tcCashierName(x.cashierId)) + '</div></div><span class="tc-chip ' + (open ? 'on' : 'done') + '">' + (open ? 'กำลังทำงาน' : 'ออกแล้ว') + '</span></div>'
     + '<div style="margin-top:6px;font-size:13px">' + tcHM(x.inAt) + ' – ' + (open ? 'ยังไม่ออก' : tcHM(x.outAt)) + (open ? '' : ' · ' + tcDuration(tcMs(x.outAt) - tcMs(x.inAt))) + '</div>'
-    + (x.outNote ? '<div class="tc-sub">หมายเหตุ: ' + tcE(x.outNote) + '</div>' : '') + from + to + ed
+    + (x.outNote ? '<div class="tc-sub">หมายเหตุ: ' + tcE(x.outNote) + '</div>' : '') + by + from + to + ed
     + (flags || []).map(f => '<div class="tc-flag">⚠ ' + tcE(f) + '</div>').join('')
     + '<div style="display:flex;gap:6px;margin-top:8px"><button class="btn btn-ghost btn-sm" onclick="tcShowPhotos(\'' + x.id + '\')">ดูรูป</button>'
     + (isMgr ? '<button class="btn btn-ghost btn-sm" onclick="tcEditOpen(\'' + x.id + '\')">แก้ไขเวลา</button>' : '') + '</div></div>';
 }
+window.tcRenderSettings = async function() {
+  const el = document.getElementById('tc-settings'); if(!el) return;
+  if(currentMemberRole !== 'owner' && currentMemberRole !== 'admin') { el.innerHTML = ''; return; }
+  let mode = 'any';
+  try { const b = await getDoc(doc(db, 'businesses', currentBusinessId)); const v = b.exists() ? b.data().timeclockNames : null; if(['self', 'members', 'any'].includes(v)) mode = v; } catch(e) {}
+  el.innerHTML = '<div class="tc-item"><div class="tc-sub" style="margin-bottom:6px">การเลือกชื่อตอนลงเวลา (เจ้าของ/ผู้ดูแลตั้งได้)</div><select class="form-select" onchange="tcSetNamesMode(this.value)">'
+    + [['self', 'ใช้ชื่อบัญชีของตัวเองเท่านั้น'], ['members', 'เลือกจากชื่อสมาชิกที่ลงทะเบียน'], ['any', 'เลือกจากสมาชิก + พิมพ์ชื่อใหม่ได้']].map(o => '<option value="' + o[0] + '" ' + (o[0] === mode ? 'selected' : '') + '>' + o[1] + '</option>').join('') + '</select></div>';
+};
+window.tcSetNamesMode = async function(v) {
+  if(!['self', 'members', 'any'].includes(v)) return;
+  try {
+    await updateDoc(doc(db, 'businesses', currentBusinessId), { timeclockNames: v });
+    tcState.namesMode = v; showToast('บันทึกการตั้งค่าแล้ว', 'success'); renderTimeclockHome();
+  } catch(e) { showToast('บันทึกไม่สำเร็จ: ' + escHtml(e.code || e.message), 'error'); }
+};
 window.openTimeclockPage = function() {
   if(!currentBusinessId) return;
   const isMgr = currentRole === 'owner' || currentRole === 'supervisor';
@@ -2264,6 +2336,7 @@ window.openTimeclockPage = function() {
   bmOpenPage('timeclock', () => { document.getElementById('page-timeclock').style.display = 'none'; document.body.style.overflow = ''; });
   document.getElementById('tc-page-title').textContent = isMgr ? 'ประวัติเวลาเข้า-ออกกะ' : 'เวลาเข้า-ออกกะของฉัน';
   document.getElementById('tc-page-export').style.display = isMgr ? '' : 'none';
+  tcRenderSettings();
   tcLoadPage();
 };
 window.closeTimeclockPage = function() { bmClosePage('timeclock'); };
@@ -2340,10 +2413,11 @@ window.tcExportMonth = async function() {
   try {
     const snap = await getDocs(query(tcCol(), where('dateKey', '>=', y * 10000 + m * 100 + 1), where('dateKey', '<=', y * 10000 + m * 100 + 31)));
     const rows = snap.docs.map(d => d.data()).sort((a, b) => a.dateKey - b.dateKey || tcMs(a.inAt) - tcMs(b.inAt));
-    const aoa = [['วันที่', 'ชื่อ', 'แคชเชียร์', 'เวลาเข้า', 'เวลาออก', 'ชั่วโมง', 'สถานะ', 'ส่งต่อกะให้', 'หมายเหตุ']];
+    const src = { self: 'บัญชีตัวเอง', member: 'เลือกจากสมาชิก', custom: 'ชื่อใหม่' };
+    const aoa = [['วันที่', 'ชื่อ', 'แคชเชียร์', 'เวลาเข้า', 'เวลาออก', 'ชั่วโมง', 'สถานะ', 'ส่งต่อกะให้', 'หมายเหตุ', 'ลงเวลาโดยบัญชี', 'ที่มาของชื่อ']];
     rows.forEach(x => {
       const ds = String(x.dateKey), closed = x.status === 'closed';
-      aoa.push([ds.slice(6, 8) + '/' + ds.slice(4, 6) + '/' + ds.slice(0, 4), x.name || '', x.cashierName || tcCashierName(x.cashierId), tcFull(x.inAt), closed ? tcFull(x.outAt) : '', closed ? Math.round((tcMs(x.outAt) - tcMs(x.inAt)) / 36000) / 100 : '', closed ? 'ออกแล้ว' : 'ยังไม่ออก', x.handoverToName || '', x.outNote || '']);
+      aoa.push([ds.slice(6, 8) + '/' + ds.slice(4, 6) + '/' + ds.slice(0, 4), x.personName || x.name || '', x.cashierName || tcCashierName(x.cashierId), tcFull(x.inAt), closed ? tcFull(x.outAt) : '', closed ? Math.round((tcMs(x.outAt) - tcMs(x.inAt)) / 36000) / 100 : '', closed ? 'ออกแล้ว' : 'ยังไม่ออก', x.handoverToName || '', x.outNote || '', x.byName || x.name || '', src[x.nameSource] || 'บัญชีตัวเอง']);
     });
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(aoa), 'เวลาเข้า-ออกกะ');
