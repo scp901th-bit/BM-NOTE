@@ -270,10 +270,26 @@
   <div id="tc-home" style="grid-column:1/-1"></div>
   <div class="card dash-filter">
     <div class="card-title"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg> <span data-i18n="date_range">ช่วงวันที่</span></div>
-    <div class="dash-range">
+    <div id="dash-modes" role="tablist" aria-label="มุมมองแดชบอร์ด" style="display:flex;gap:6px;flex-basis:100%;width:100%;grid-column:1/-1;margin:6px 0">
+      <button class="filter-chip active" data-m="day" role="tab" onclick="setDashMode('day')">รายวัน</button>
+      <button class="filter-chip" data-m="month" role="tab" onclick="setDashMode('month')">รายเดือน</button>
+      <button class="filter-chip" data-m="year" role="tab" onclick="setDashMode('year')">รายปี</button>
+    </div>
+    <div id="dash-month-ctl" style="display:none;flex-basis:100%;width:100%;grid-column:1/-1;gap:6px;align-items:center">
+      <button class="btn btn-ghost btn-sm" onclick="dashStep(-1)" aria-label="เดือนก่อนหน้า">‹</button>
+      <select class="form-select" id="dash-month-sel" onchange="dashPick()" style="flex:1" aria-label="เดือน"></select>
+      <select class="form-select" id="dash-year-sel-m" onchange="dashPick()" style="flex:1" aria-label="ปี"></select>
+      <button class="btn btn-ghost btn-sm" onclick="dashStep(1)" aria-label="เดือนถัดไป">›</button>
+    </div>
+    <div id="dash-year-ctl" style="display:none;flex-basis:100%;width:100%;grid-column:1/-1;gap:6px;align-items:center">
+      <button class="btn btn-ghost btn-sm" onclick="dashStep(-1)" aria-label="ปีก่อนหน้า">‹</button>
+      <select class="form-select" id="dash-year-sel-y" onchange="dashPick()" style="flex:1" aria-label="ปี"></select>
+      <button class="btn btn-ghost btn-sm" onclick="dashStep(1)" aria-label="ปีถัดไป">›</button>
+    </div>
+    <div id="dash-day-ctl" style="display:contents"><div class="dash-range">
       <input type="text" id="dash-daterange" class="form-input" placeholder="เลือกช่วงวันที่..." data-i18n-placeholder="pick_date_range" style="cursor:pointer;font-size:14px;width:100%" readonly/>
     </div>
-    <button class="btn btn-primary dash-apply" onclick="renderDashboard()"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg> <span data-i18n="update">อัปเดต</span></button>
+    <button class="btn btn-primary dash-apply" onclick="renderDashboard()"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg> <span data-i18n="update">อัปเดต</span></button></div>
   </div>
   <div id="qs-wrap" class="dash-kpis"></div>
   <div class="card dash-c dash-c-bar"><div class="card-title"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg> <span data-i18n="daily_income">รายรับรายวัน</span></div><div class="chart-wrap"><canvas id="ch-bar" height="200"></canvas></div><div class="chart-legend" id="lg-bar"></div></div>
@@ -5623,8 +5639,110 @@ function themeColors(){
 }
 function destroyCharts(){Object.values(charts).forEach(c=>{try{c.destroy();}catch(e){}});charts={};}
 
+// ============================================================
+// DASHBOARD VIEW MODES: day (custom range, as before) | month | year
+// month: one calendar month, compared with the previous month
+// year : whole year, charts bucketed by month, compared with the previous year
+// ============================================================
+const DASH_MON = ['มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน', 'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม'];
+const DASH_MON_S = ['ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.', 'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.'];
+let dashMode = 'day';
+try { const sm = localStorage.getItem('bm_dash_mode'); if(['day', 'month', 'year'].includes(sm)) dashMode = sm; } catch(e) {}
+const _dn = new Date();
+let dashMonthSel = { y: _dn.getFullYear(), m: _dn.getMonth() + 1 }, dashYearSel = _dn.getFullYear();
+function dmKey(yCE, m, d) { return (yCE + 543) * 10000 + m * 100 + d; }
+function dashModeInfo() {
+  if(dashMode === 'month') {
+    const { y, m } = dashMonthSel, last = new Date(y, m, 0).getDate();
+    const py = m === 1 ? y - 1 : y, pm = m === 1 ? 12 : m - 1, plast = new Date(py, pm, 0).getDate();
+    return { mode: 'month', range: { from: dmKey(y, m, 1), to: dmKey(y, m, last) }, prev: { from: dmKey(py, pm, 1), to: dmKey(py, pm, plast) },
+      title: 'เดือน' + DASH_MON[m - 1] + ' ' + (y + 543), prevLabel: 'เทียบกับเดือนก่อนหน้า (' + DASH_MON[pm - 1] + ')', bucket: 'day' };
+  }
+  if(dashMode === 'year') {
+    const y = dashYearSel;
+    return { mode: 'year', range: { from: dmKey(y, 1, 1), to: dmKey(y, 12, 31) }, prev: { from: dmKey(y - 1, 1, 1), to: dmKey(y - 1, 12, 31) },
+      title: 'รวมทั้งปี ' + (y + 543), prevLabel: 'เทียบกับปีก่อนหน้า (' + (y + 542) + ')', bucket: 'month' };
+  }
+  return { mode: 'day', range: getDateRangeFromPicker('dash-daterange'), prev: null, title: '', prevLabel: '', bucket: 'day' };
+}
+function dashYears() {
+  const ys = new Set([_dn.getFullYear(), dashYearSel, dashMonthSel.y]);
+  allRecords.forEach(r => { const y = r.date && r.date.y ? (r.date.y > 2400 ? r.date.y - 543 : r.date.y) : 0; if(y >= 2000 && y <= 2100) ys.add(y); });
+  return Array.from(ys).sort((a, b) => b - a);
+}
+function dashSyncControls() {
+  document.querySelectorAll('#dash-modes [data-m]').forEach(b => { const on = b.dataset.m === dashMode; b.classList.toggle('active', on); b.setAttribute('aria-selected', on ? 'true' : 'false'); });
+  const dayC = document.getElementById('dash-day-ctl'), mC = document.getElementById('dash-month-ctl'), yC = document.getElementById('dash-year-ctl');
+  if(!dayC || !mC || !yC) return;
+  dayC.style.display = dashMode === 'day' ? 'contents' : 'none';
+  mC.style.display = dashMode === 'month' ? 'flex' : 'none';
+  yC.style.display = dashMode === 'year' ? 'flex' : 'none';
+  const yrOpts = dashYears().map(y => '<option value="' + y + '">' + (y + 543) + '</option>').join('');
+  const ms = document.getElementById('dash-month-sel'), ym = document.getElementById('dash-year-sel-m'), yy = document.getElementById('dash-year-sel-y');
+  if(ms) { ms.innerHTML = DASH_MON.map((n, i) => '<option value="' + (i + 1) + '">' + n + '</option>').join(''); ms.value = String(dashMonthSel.m); }
+  if(ym) { ym.innerHTML = yrOpts; ym.value = String(dashMonthSel.y); }
+  if(yy) { yy.innerHTML = yrOpts; yy.value = String(dashYearSel); }
+}
+window.setDashMode = function(m) {
+  if(!['day', 'month', 'year'].includes(m)) return;
+  dashMode = m;
+  try { localStorage.setItem('bm_dash_mode', m); } catch(e) {}
+  dashSyncControls(); renderDashboard();
+};
+window.dashStep = function(delta) {
+  if(dashMode === 'month') {
+    let { y, m } = dashMonthSel; m += delta;
+    if(m < 1) { m = 12; y--; } else if(m > 12) { m = 1; y++; }
+    if(y > _dn.getFullYear() || (y === _dn.getFullYear() && m > _dn.getMonth() + 1)) return;   // no future months
+    dashMonthSel = { y, m };
+  } else if(dashMode === 'year') {
+    const y = dashYearSel + delta;
+    if(y > _dn.getFullYear() || y < 2000) return;
+    dashYearSel = y;
+  }
+  dashSyncControls(); renderDashboard();
+};
+window.dashPick = function() {
+  if(dashMode === 'month') dashMonthSel = { y: +document.getElementById('dash-year-sel-m').value, m: +document.getElementById('dash-month-sel').value };
+  else if(dashMode === 'year') dashYearSel = +document.getElementById('dash-year-sel-y').value;
+  renderDashboard();
+};
+// "รายวัน" chart titles become "รายเดือน" when the charts are bucketed by month
+function dashRetitle(bucket) {
+  ['.dash-c-bar', '.dash-c-profit', '.dash-c-line'].forEach(sel => {
+    document.querySelectorAll(sel + ' .card-title span').forEach(sp => {
+      const t = sp.textContent;
+      sp.textContent = bucket === 'month' ? t.replace('รายวัน', 'รายเดือน') : t.replace('รายเดือน', 'รายวัน');
+    });
+  });
+}
+function dashMonthTable(recs, DM) {
+  const wrap = document.getElementById('qs-wrap'); if(!wrap || DM.mode !== 'year') return;
+  const inc = Array(12).fill(0), exp = Array(12).fill(0);
+  recs.forEach(r => {
+    const k = r.dateKey || (r.date ? dKey(r.date) : 0), mi = Math.floor(k / 100) % 100 - 1;
+    if(mi < 0 || mi > 11) return;
+    const v = Object.values(r.items || {}).reduce((a, b) => a + b, 0);
+    if(r.type === 'income') inc[mi] += v; else if(r.type === 'expense') exp[mi] += v;
+  });
+  const prof = inc.map((v, i) => v - exp[i]);
+  const best = prof.reduce((b, v, i) => (inc[i] + exp[i] > 0 && v > prof[b]) ? i : b, 0);
+  const sI = inc.reduce((a, b) => a + b, 0), sE = exp.reduce((a, b) => a + b, 0);
+  const rows = DASH_MON.map((n, i) => {
+    const has = inc[i] + exp[i] > 0;
+    return '<tr style="border-top:1px solid var(--border)' + (has && i === best ? ';background:var(--accent-dim)' : '') + '"><td style="padding:6px 4px">' + n + (has && i === best ? ' ★' : '') + '</td><td class="c-up" style="text-align:right">' + (has ? fmtN(inc[i]) : '–') + '</td><td class="c-down" style="text-align:right">' + (has ? fmtN(exp[i]) : '–') + '</td><td style="text-align:right;font-weight:700">' + (has ? fmtN(prof[i]) : '–') + '</td></tr>';
+  }).join('');
+  wrap.insertAdjacentHTML('beforeend', '<section class="kpi-group" aria-label="สรุปเดือนต่อเดือน"><h3 class="kpi-heading">สรุปเดือนต่อเดือน<small>★ = เดือนที่กำไรสูงสุด</small></h3><div style="overflow-x:auto"><table style="width:100%;font-size:13px;border-collapse:collapse"><tr style="color:var(--text3);text-align:left"><th style="padding:4px">เดือน</th><th style="text-align:right">รายรับ</th><th style="text-align:right">รายจ่าย</th><th style="text-align:right">กำไร</th></tr>'
+    + rows + '<tr style="border-top:2px solid var(--border);font-weight:700"><td style="padding:6px 4px">รวม</td><td class="c-up" style="text-align:right">' + fmtN(sI) + '</td><td class="c-down" style="text-align:right">' + fmtN(sE) + '</td><td style="text-align:right">' + fmtN(sI - sE) + '</td></tr></table></div></section>');
+}
+
 function renderDashboard(){
-  const {from,to} = getDateRangeFromPicker('dash-daterange');
+  dashSyncControls();
+  const DM = dashModeInfo();
+  const {from,to} = DM.range;
+  const bkOf = k => DM.bucket==='month' ? Math.floor(k/100) : k;               // chart bucket: a day, or a month in year view
+  const bLabel = k => DM.bucket==='month' ? DASH_MON_S[(k%100)-1] : `${Math.floor(k%100)}/${Math.floor((k/100)%100)}`;
+  dashRetitle(DM.bucket);
   // Items hidden in Settings > Chart display are removed from every record BEFORE anything is calculated,
   // so all cards, totals, comparisons and charts below agree with each other.
   const hid = new Set(appSettings.hiddenChartItems||[]);
@@ -5655,7 +5773,7 @@ function renderDashboard(){
   const spanOk=spanDays>0 && spanDays<=800;
   let prevI=0, prevE=0;
   if(spanOk){
-    const pTo=ymdKey(new Date(D1.getTime()-86400000)), pFrom=ymdKey(new Date(D1.getTime()-spanDays*86400000));
+    const pTo=DM.prev?DM.prev.to:ymdKey(new Date(D1.getTime()-86400000)), pFrom=DM.prev?DM.prev.from:ymdKey(new Date(D1.getTime()-spanDays*86400000));
     allRecords.forEach(r0=>{
       const k=r0.dateKey||(r0.date?dKey(r0.date):0);
       if(k<pFrom||k>pTo) return;
@@ -5671,14 +5789,14 @@ function renderDashboard(){
     const pct=(cur-prev)/Math.abs(prev)*100;
     if(Math.abs(pct)<0.05) return '<div class="kpi-delta">เท่าช่วงก่อน</div>';
     const up=pct>0, good=(up===upIsGood);
-    return `<div class="kpi-delta ${good?'good':'bad'}" title="เทียบกับ ${spanDays} วันก่อนหน้า">${up?ARW.up:ARW.down}${up?'+':'−'}${Math.abs(pct).toFixed(Math.abs(pct)>=100?0:1)}%</div>`;
+    return `<div class="kpi-delta ${good?'good':'bad'}" title="${DM.prevLabel||('เทียบกับ '+spanDays+' วันก่อนหน้า')}">${up?ARW.up:ARW.down}${up?'+':'−'}${Math.abs(pct).toFixed(Math.abs(pct)>=100?0:1)}%</div>`;
   };
   const margin = totalI>0 ? `<div class="kpi-sub">อัตรากำไร ${(profit/totalI*100).toFixed(1)}%</div>` : '';
   const profitLabel = profit>=0 ? 'กำไรสุทธิ' : 'ขาดทุนสุทธิ';
   const todayLabel = todayProfit>=0 ? 'กำไร' : 'ขาดทุน';
   document.getElementById('qs-wrap').innerHTML=`
     <section class="kpi-group kpi-period" aria-label="สรุปช่วงที่เลือก">
-      <h3 class="kpi-heading">ช่วงที่เลือก${spanOk?`<small>เทียบกับ ${spanDays} วันก่อนหน้า</small>`:''}</h3>
+      <h3 class="kpi-heading">${DM.title||'ช่วงที่เลือก'}${spanOk?`<small>${DM.prevLabel||('เทียบกับ '+spanDays+' วันก่อนหน้า')}</small>`:''}</h3>
       <div class="kpi-row">
         <div class="kpi"><div class="kpi-label">รายรับรวม</div><div class="kpi-val c-up">${fmtN(totalI)}</div><div class="kpi-unit">บาท</div>${delta(totalI,prevI,true)}</div>
         <div class="kpi"><div class="kpi-label">รายจ่ายรวม</div><div class="kpi-val c-down">${fmtN(totalE)}</div><div class="kpi-unit">บาท</div>${delta(totalE,prevE,false)}</div>
@@ -5694,6 +5812,7 @@ function renderDashboard(){
       </div>
     </section>`
     + (hid.size ? `<div class="dash-hidden-note">ซ่อน ${hid.size} หัวข้อจากแดชบอร์ด (ตัวเลขและกราฟทุกส่วนไม่รวมหัวข้อเหล่านี้) <button type="button" class="dash-hidden-link" onclick="openSettingsPage('graph')">แก้ไข</button></div>` : '');
+  dashMonthTable(recs, DM);
   destroyCharts();
   const tc=themeColors();
   Chart.defaults.color=tc.text;Chart.defaults.font.family="'IBM Plex Sans Thai',sans-serif";
@@ -5701,9 +5820,9 @@ function renderDashboard(){
 
   // Bar chart
   const CC = cashierColorMap();
-  const dayKeys=[...new Set(inc.map(r=>r.dateKey||(r.date?dKey(r.date):0)))].filter(Boolean).sort();
-  const dayLabels=dayKeys.map(k=>`${Math.floor(k%100)}/${Math.floor((k/100)%100)}`);
-  const barDS=activeCashiers().map(cInfo=>{const c=cInfo.id; return {label:cInfo.name,data:dayKeys.map(k=>inc.filter(r=>(r.dateKey||(r.date?dKey(r.date):0))===k&&r.cashier===c).reduce((s,r)=>s+Object.values(r.items||{}).reduce((a,b)=>a+b,0),0)),backgroundColor:CC[c]+'bb',borderColor:CC[c],borderWidth:1,borderRadius:6};});
+  const dayKeys=[...new Set(inc.map(r=>bkOf(r.dateKey||(r.date?dKey(r.date):0))))].filter(Boolean).sort();
+  const dayLabels=dayKeys.map(bLabel);
+  const barDS=activeCashiers().map(cInfo=>{const c=cInfo.id; return {label:cInfo.name,data:dayKeys.map(k=>inc.filter(r=>bkOf(r.dateKey||(r.date?dKey(r.date):0))===k&&r.cashier===c).reduce((s,r)=>s+Object.values(r.items||{}).reduce((a,b)=>a+b,0),0)),backgroundColor:CC[c]+'bb',borderColor:CC[c],borderWidth:1,borderRadius:6};});
   charts.bar=new Chart(document.getElementById('ch-bar').getContext('2d'),{type:'bar',data:{labels:dayLabels,datasets:barDS},options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},plugins:{legend:{display:false},tooltip:{...ttp,callbacks:{label:ctx=>`${ctx.dataset.label}: ${fmtN(ctx.raw)} ฿`}}},scales:{x:{grid:{color:tc.grid},ticks:{color:tc.text}},y:{grid:{color:tc.grid},ticks:{color:tc.text,callback:v=>fmtN(v)}}}}});
   document.getElementById('lg-bar').innerHTML=activeCashiers().map(cInfo=>`<div class="legend-item"><div class="legend-dot" style="background:${CC[cInfo.id]}"></div>${escHtml(cInfo.name)}</div>`).join('');
 
@@ -5730,10 +5849,10 @@ function renderDashboard(){
   document.getElementById('lg-de').innerHTML=eL.map((l,i)=>`<div class="legend-item"><div class="legend-dot" style="background:${eC[i]||'#888'}"></div>${escHtml(l)}: ${fmtN(eV[i])}</div>`).join('');
 
   // Dual Line chart: income + expense
-  const allDK=[...new Set(recs.map(r=>r.dateKey||(r.date?dKey(r.date):0)))].filter(Boolean).sort();
-  const lineLabels=allDK.map(k=>`${Math.floor(k%100)}/${Math.floor((k/100)%100)}`);
-  const incomeData=allDK.map(k=>recs.filter(r=>(r.dateKey||(r.date?dKey(r.date):0))===k&&r.type==='income').reduce((s,r)=>s+Object.values(r.items||{}).reduce((a,b)=>a+b,0),0));
-  const expenseData=allDK.map(k=>recs.filter(r=>(r.dateKey||(r.date?dKey(r.date):0))===k&&r.type==='expense').reduce((s,r)=>s+Object.values(r.items||{}).reduce((a,b)=>a+b,0),0));
+  const allDK=[...new Set(recs.map(r=>bkOf(r.dateKey||(r.date?dKey(r.date):0))))].filter(Boolean).sort();
+  const lineLabels=allDK.map(bLabel);
+  const incomeData=allDK.map(k=>recs.filter(r=>bkOf(r.dateKey||(r.date?dKey(r.date):0))===k&&r.type==='income').reduce((s,r)=>s+Object.values(r.items||{}).reduce((a,b)=>a+b,0),0));
+  const expenseData=allDK.map(k=>recs.filter(r=>bkOf(r.dateKey||(r.date?dKey(r.date):0))===k&&r.type==='expense').reduce((s,r)=>s+Object.values(r.items||{}).reduce((a,b)=>a+b,0),0));
   const lCtx=document.getElementById('ch-line').getContext('2d');
   const gradI=lCtx.createLinearGradient(0,0,0,220);gradI.addColorStop(0,'rgba(0,214,143,.2)');gradI.addColorStop(1,'rgba(0,214,143,0)');
   const gradE=lCtx.createLinearGradient(0,0,0,220);gradE.addColorStop(0,'rgba(255,61,113,.2)');gradE.addColorStop(1,'rgba(255,61,113,0)');
@@ -5753,11 +5872,11 @@ function renderDashboard(){
   // ---- Daily profit + running (cumulative) profit ----
   const recSum=r=>Object.values(r.items||{}).reduce((a,b)=>a+b,0);
   const recKey=r=>r.dateKey||(r.date?dKey(r.date):0);
-  const allDays=[...new Set(recs.map(recKey))].filter(Boolean).sort();
+  const allDays=[...new Set(recs.map(r=>bkOf(recKey(r))))].filter(Boolean).sort();
   const dayInc={}, dayExp={};
-  recs.forEach(r=>{const k=recKey(r); if(r.type==='income') dayInc[k]=(dayInc[k]||0)+recSum(r); else if(r.type==='expense') dayExp[k]=(dayExp[k]||0)+recSum(r);});
+  recs.forEach(r=>{const k=bkOf(recKey(r)); if(r.type==='income') dayInc[k]=(dayInc[k]||0)+recSum(r); else if(r.type==='expense') dayExp[k]=(dayExp[k]||0)+recSum(r);});
   let run=0;
-  const pLabels=allDays.map(k=>`${k%100}/${Math.floor(k/100)%100}`);
+  const pLabels=allDays.map(bLabel);
   const pDaily=allDays.map(k=>(dayInc[k]||0)-(dayExp[k]||0));
   const pCum=pDaily.map(v=>(run+=v));
   const pColors=pDaily.map(v=>v>=0?'#00d68f':'#ff3d71');
@@ -5775,7 +5894,7 @@ function renderDashboard(){
               y1:{position:'right',grid:{drawOnChartArea:false},ticks:{color:'#00e5ff',callback:v=>fmtN(v)}}}}
   });
   document.getElementById('lg-profit').innerHTML = allDays.length
-    ? `<div class="legend-item"><div class="legend-dot" style="background:#00d68f"></div>กำไรรายวัน (บวก)</div>
+    ? `<div class="legend-item"><div class="legend-dot" style="background:#00d68f"></div>${DM.bucket==='month'?'กำไรรายเดือน':'กำไรรายวัน'} (บวก)</div>
        <div class="legend-item"><div class="legend-dot" style="background:#ff3d71"></div>ขาดทุน (ลบ)</div>
        <div class="legend-item"><div class="legend-dot" style="background:#00e5ff"></div>กำไรสะสม (แกนขวา): ${signed(run)}</div>`
     : '<div class="dash-empty-note">ไม่มีข้อมูลในช่วงที่เลือก</div>';
