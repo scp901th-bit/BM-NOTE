@@ -575,6 +575,17 @@
       </div>
     </div>
 
+    <div class="card" id="xlsx-import-card">
+      <div role="heading" aria-level="2" class="card-title" style="color:var(--accent)">นำเข้ารายการจากไฟล์ XLSX / CSV</div>
+      <div style="font-size:12px;color:var(--text2);line-height:1.6;margin-bottom:10px">ไฟล์ต้องมีคอลัมน์ วันที่ · ประเภท (รายรับ/รายจ่าย) · หัวข้อ · จำนวนเงิน (แคชเชียร์ และหมายเหตุไม่บังคับ) ระบบจะแสดงตัวอย่างและรายการที่มีปัญหาให้ตรวจก่อนนำเข้า และยกเลิกการนำเข้าล่าสุดได้</div>
+      <div class="flex gap8" style="flex-wrap:wrap">
+        <button class="btn btn-ghost btn-sm" onclick="downloadXlsxTemplate()">ดาวน์โหลดไฟล์ตัวอย่าง</button>
+        <button class="btn btn-primary btn-sm" onclick="document.getElementById('xlsx-import-file').click()">เลือกไฟล์เพื่อนำเข้า</button>
+      </div>
+      <input type="file" id="xlsx-import-file" accept=".xlsx,.xls,.csv" style="display:none" onchange="handleXlsxImport(this)"/>
+      <div id="xlsx-import-undo" style="margin-top:10px"></div>
+    </div>
+
     <div class="card" id="dev-exportimport-card" style="display:none">
       <div role="heading" aria-level="2" class="card-title" style="color:var(--accent)"><svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16.5 9.4l-9-5.19"/><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg> Export / Import</div>
       <div class="flex gap8" style="flex-wrap:wrap">
@@ -1325,6 +1336,16 @@
       <div id="tc-settings"></div>
       <div id="tc-page-list"></div>
     </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-xlsx-import">
+  <div class="modal-box" style="max-height:90vh;overflow-y:auto">
+    <div class="modal-handle"></div>
+    <div class="modal-title">ตรวจสอบก่อนนำเข้า</div>
+    <div id="xi-body"></div>
+    <button class="btn btn-primary btn-full mt8" id="btn-xlsx-confirm" onclick="confirmXlsxImport()">นำเข้า</button>
+    <button class="btn btn-ghost btn-full mt8" id="btn-xlsx-cancel" onclick="closeModal('modal-xlsx-import')">ยกเลิก</button>
   </div>
 </div>
 
@@ -2425,6 +2446,225 @@ window.tcExportMonth = async function() {
   } catch(e) { showToast('ส่งออกไม่สำเร็จ: ' + escHtml(e.code || e.message), 'error'); }
 };
 
+// ============================================================
+// XLSX / CSV IMPORT (row-level: one row = one item amount)
+// Columns: วันที่ | ประเภท | หัวข้อ | จำนวนเงิน | แคชเชียร์ (optional) | หมายเหตุ (optional)
+// Rows are grouped into the app's normal records (date + cashier + type -> items map).
+// ============================================================
+const XI_MAX_ROWS = 5000;
+const XI_HEAD = {
+  date: ['วันที่', 'วัน', 'date'], type: ['ประเภท', 'type'],
+  item: ['หัวข้อ', 'รายการ', 'หมวด', 'หมวดหมู่', 'item'],
+  amount: ['จำนวนเงิน', 'จำนวน', 'ยอดเงิน', 'ยอด', 'บาท', 'amount'],
+  cashier: ['แคชเชียร์', 'cashier', 'กะ'], note: ['หมายเหตุ', 'note', 'บันทึก']
+};
+let xlsxImp = null;
+function xiNorm(v) { return String(v == null ? '' : v).replace(/\s+/g, ' ').trim(); }
+function xiFindHeader(rows) {
+  for(let i = 0; i < Math.min(rows.length, 12); i++) {
+    const map = {};
+    (rows[i] || []).forEach((c, ci) => {
+      const t = xiNorm(c).toLowerCase();
+      for(const k in XI_HEAD) if(map[k] === undefined && XI_HEAD[k].includes(t)) map[k] = ci;
+    });
+    if(map.date !== undefined && map.type !== undefined && map.item !== undefined && map.amount !== undefined) return { index: i, map };
+  }
+  return null;
+}
+function xiParseDate(v) {
+  let y, m, d, mm;
+  if(v instanceof Date && !isNaN(v)) { y = v.getFullYear(); m = v.getMonth() + 1; d = v.getDate(); }
+  else if(typeof v === 'number' && v > 20000 && v < 80000) { const p = XLSX.SSF.parse_date_code(v); if(!p) return null; y = p.y; m = p.m; d = p.d; }
+  else {
+    const t = xiNorm(v);
+    if((mm = t.match(/^(\d{4})[-\/.](\d{1,2})[-\/.](\d{1,2})$/))) { y = +mm[1]; m = +mm[2]; d = +mm[3]; }
+    else if((mm = t.match(/^(\d{1,2})[-\/.](\d{1,2})[-\/.](\d{4})$/))) { d = +mm[1]; m = +mm[2]; y = +mm[3]; }
+    else return null;
+  }
+  const ce = y > 2400 ? y - 543 : y;
+  const dt = new Date(ce, m - 1, d);
+  if(isNaN(dt) || dt.getFullYear() !== ce || dt.getMonth() !== m - 1 || dt.getDate() !== d || ce < 2000 || ce > 2100) return null;
+  return { d, m, y: ce + 543 };
+}
+function xiParseType(v) {
+  const t = xiNorm(v).toLowerCase();
+  if(['รายรับ', 'รับ', 'รายได้', 'income', 'in', '+'].includes(t)) return 'income';
+  if(['รายจ่าย', 'จ่าย', 'รายเบิก', 'เบิก', 'expense', 'out', '-'].includes(t)) return 'expense';
+  return null;
+}
+function xiParseAmount(v) {
+  if(typeof v === 'number') return v;
+  const t = xiNorm(v).replace(/บาท|฿|,|\s/g, '');
+  return /^-?\d+(\.\d+)?$/.test(t) ? parseFloat(t) : NaN;
+}
+function xiCleanItem(v) { return xiNorm(v).replace(/[.\/\[\]*`~]/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 60); }
+function xiRecSig(r) {
+  const it = r.items || {};
+  return (r.dateKey || (r.date ? dKey(r.date) : 0)) + '|' + r.cashier + '|' + r.type + '|' + Object.keys(it).sort().map(k => k + ':' + Math.round(it[k] * 100) / 100).join(',');
+}
+window.downloadXlsxTemplate = function() {
+  const t = new Date(), ds = t.getDate() + '/' + (t.getMonth() + 1) + '/' + (t.getFullYear() + 543);
+  const cn = (activeCashiers()[0] || {}).name || '';
+  const aoa = [['วันที่', 'ประเภท', 'หัวข้อ', 'จำนวนเงิน', 'แคชเชียร์', 'หมายเหตุ'],
+    [ds, 'รายรับ', incomeItems[0] || 'เงินสด', 1000, cn, ''],
+    [ds, 'รายจ่าย', expenseItems[0] || 'อื่นๆ', 250, cn, 'ตัวอย่าง']];
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(aoa), 'นำเข้า');
+  XLSX.writeFile(wb, 'bmnote-import-template.xlsx');
+};
+window.handleXlsxImport = async function(input) {
+  const f = input.files && input.files[0]; input.value = '';
+  if(!f) return;
+  if(currentRole !== 'owner' || !currentBusinessId) { showToast('เฉพาะเจ้าของหรือผู้ดูแลระบบเท่านั้น', 'error'); return; }
+  if(f.size > 5 * 1024 * 1024) { showToast('ไฟล์ใหญ่เกิน 5 MB', 'error'); return; }
+  try {
+    const wb = XLSX.read(await f.arrayBuffer(), { type: 'array', codepage: 65001, raw: true });
+    const ws = wb.Sheets[wb.SheetNames[0]];
+    if(!ws) { showToast('ไม่พบข้อมูลในไฟล์', 'error'); return; }
+    const raw = XLSX.utils.sheet_to_json(ws, { header: 1, raw: true, defval: '' });
+    const head = xiFindHeader(raw);
+    if(!head) { showToast('ไม่พบหัวคอลัมน์ ต้องมี: วันที่, ประเภท, หัวข้อ, จำนวนเงิน (โหลดไฟล์ตัวอย่างดูได้)', 'error'); return; }
+    const body = raw.slice(head.index + 1);
+    if(body.length > XI_MAX_ROWS) { showToast('มีมากกว่า ' + XI_MAX_ROWS + ' แถว กรุณาแบ่งไฟล์', 'error'); return; }
+    const rows = [], errors = [];
+    body.forEach((r, i) => {
+      const n = head.index + 2 + i;
+      if(!r.some(c => xiNorm(c) !== '')) return;
+      const g = k => head.map[k] === undefined ? '' : r[head.map[k]];
+      const date = xiParseDate(g('date')), type = xiParseType(g('type')), item = xiCleanItem(g('item')), amt = xiParseAmount(g('amount'));
+      const why = !date ? 'วันที่ไม่ถูกต้อง' : !type ? 'ประเภทต้องเป็น รายรับ หรือ รายจ่าย' : !item ? 'ไม่มีหัวข้อ' : (isNaN(amt) || amt <= 0 || amt > 1e9) ? 'จำนวนเงินต้องเป็นตัวเลขมากกว่า 0' : (/^__.*__$/.test(item) ? 'ชื่อหัวข้อไม่อนุญาต' : '');
+      if(why) { errors.push({ n, why }); return; }
+      rows.push({ n, date, type, item, amt: Math.round(amt * 100) / 100, cashier: xiNorm(g('cashier')), note: xiNorm(g('note')).slice(0, 200) });
+    });
+    const known = { income: new Set(incomeItems), expense: new Set(expenseItems) };
+    const unknown = [], seen = new Set();
+    rows.forEach(r => { const k = r.type + '|' + r.item; if(!known[r.type].has(r.item) && !seen.has(k)) { seen.add(k); unknown.push({ type: r.type, name: r.item }); } });
+    xlsxImp = { fileName: f.name, rows, errors, unknown, busy: false };
+    renderXlsxPreview();
+  } catch(e) {
+    console.error('xlsx import read failed', e);
+    showToast('อ่านไฟล์ไม่ได้ ตรวจสอบว่าเป็นไฟล์ XLSX หรือ CSV', 'error');
+  }
+};
+function renderXlsxPreview() {
+  const st = xlsxImp; if(!st) return;
+  const cs = activeCashiers();
+  const dates = st.rows.map(r => r.date.y * 10000 + r.date.m * 100 + r.date.d);
+  const fmtK = k => { const t = String(k); return +t.slice(6, 8) + '/' + +t.slice(4, 6) + '/' + t.slice(0, 4); };
+  const inc = st.rows.filter(r => r.type === 'income').reduce((a, r) => a + r.amt, 0);
+  const exp = st.rows.filter(r => r.type === 'expense').reduce((a, r) => a + r.amt, 0);
+  let h = '<div style="font-size:12px;color:var(--text2);margin-bottom:6px">' + tcE(st.fileName) + '</div>'
+    + '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px"><span class="tc-chip done">ใช้ได้ ' + st.rows.length + ' แถว</span>'
+    + (st.errors.length ? '<span class="tc-chip wait">มีปัญหา ' + st.errors.length + ' แถว (จะถูกข้าม)</span>' : '') + '</div>';
+  if(st.rows.length) {
+    h += '<div style="font-size:13px;margin-bottom:10px">ช่วงวันที่ ' + fmtK(Math.min(...dates)) + ' – ' + fmtK(Math.max(...dates)) + '<br>รายรับ ' + fmtN(inc) + ' · รายจ่าย ' + fmtN(exp) + ' บาท</div>';
+    h += '<div class="form-row"><div class="form-label">แคชเชียร์เริ่มต้น (เมื่อไฟล์ไม่ระบุหรือไม่ตรงกับในระบบ)</div><select class="form-select" id="xi-cashier">' + cs.map(c => '<option value="' + c.id + '">' + tcE(c.name) + '</option>').join('') + '</select></div>';
+    if(st.unknown.length) {
+      h += '<div class="form-label" style="margin-top:6px">หัวข้อที่ยังไม่มีในระบบ</div>';
+      h += st.unknown.map((u, i) => '<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px"><div style="flex:1;font-size:13px;word-break:break-word">' + (u.type === 'income' ? 'รับ' : 'จ่าย') + ' · ' + tcE(u.name) + '</div><select class="form-select" id="xi-map-' + i + '" style="flex:1"><option value="__new__">➕ เพิ่มเป็นหัวข้อใหม่</option>'
+        + (u.type === 'income' ? incomeItems : expenseItems).map(x => '<option value="' + tcE(x) + '">ใช้ ' + tcE(x) + '</option>').join('') + '</select></div>').join('');
+    }
+    h += '<label style="display:flex;align-items:center;gap:8px;font-size:13px;margin:10px 0"><input type="checkbox" id="xi-skipdup" checked/> ข้ามรายการที่ซ้ำกับที่มีอยู่แล้ว (วันที่ + แคชเชียร์ + ประเภท + หัวข้อ/จำนวนเท่ากัน)</label>';
+    h += '<div style="overflow-x:auto"><table style="width:100%;font-size:12px;border-collapse:collapse"><tr style="color:var(--text3);text-align:left"><th style="padding:4px">วันที่</th><th>ประเภท</th><th>หัวข้อ</th><th style="text-align:right">บาท</th></tr>'
+      + st.rows.slice(0, 6).map(r => '<tr style="border-top:1px solid var(--border)"><td style="padding:4px">' + r.date.d + '/' + r.date.m + '/' + r.date.y + '</td><td>' + (r.type === 'income' ? 'รับ' : 'จ่าย') + '</td><td>' + tcE(r.item) + '</td><td style="text-align:right">' + fmtN(r.amt) + '</td></tr>').join('')
+      + '</table></div>' + (st.rows.length > 6 ? '<div class="tc-sub" style="margin-top:4px">…และอีก ' + (st.rows.length - 6) + ' แถว</div>' : '');
+  }
+  if(st.errors.length) {
+    h += '<div class="form-label" style="margin-top:10px">แถวที่มีปัญหา</div>' + st.errors.slice(0, 8).map(e => '<div class="tc-flag">แถว ' + e.n + ': ' + tcE(e.why) + '</div>').join('') + (st.errors.length > 8 ? '<div class="tc-sub">…และอีก ' + (st.errors.length - 8) + ' แถว</div>' : '');
+  }
+  document.getElementById('xi-body').innerHTML = h;
+  const btn = document.getElementById('btn-xlsx-confirm');
+  btn.disabled = !st.rows.length;
+  btn.textContent = st.rows.length ? 'นำเข้า' : 'ไม่มีแถวที่นำเข้าได้';
+  document.getElementById('modal-xlsx-import').classList.add('show');
+}
+window.confirmXlsxImport = async function() {
+  const st = xlsxImp; if(!st || st.busy || !st.rows.length) return;
+  if(currentRole !== 'owner' || !currentBusinessId) return;
+  st.busy = true;
+  const btn = document.getElementById('btn-xlsx-confirm'), cancel = document.getElementById('btn-xlsx-cancel'), modal = document.getElementById('modal-xlsx-import');
+  btn.disabled = true; cancel.disabled = true; modal.dataset.nodismiss = '1';
+  try {
+    const defC = document.getElementById('xi-cashier').value;
+    const skipDup = document.getElementById('xi-skipdup').checked;
+    const map = {}; let itemsChanged = false;
+    st.unknown.forEach((u, i) => {
+      const v = document.getElementById('xi-map-' + i).value;
+      if(v === '__new__') {
+        const list = u.type === 'income' ? incomeItems : expenseItems;
+        if(!list.includes(u.name)) { list.push(u.name); itemsChanged = true; }
+        map[u.type + '|' + u.name] = u.name;
+      } else map[u.type + '|' + u.name] = v;
+    });
+    const cs = cashiers;
+    const cid = raw => { const t = raw.toLowerCase(); const c = t && cs.find(x => String(x.id).toLowerCase() === t || String(x.name).toLowerCase() === t); return c ? c.id : defC; };
+    const groups = new Map();
+    st.rows.forEach(r => {
+      const c = cid(r.cashier), dk = r.date.y * 10000 + r.date.m * 100 + r.date.d, key = dk + '|' + c + '|' + r.type;
+      if(!groups.has(key)) groups.set(key, { date: r.date, dateKey: dk, cashier: c, type: r.type, items: {}, notes: [] });
+      const g = groups.get(key), name = map[r.type + '|' + r.item] || r.item;
+      g.items[name] = Math.round(((g.items[name] || 0) + r.amt) * 100) / 100;
+      if(r.note && !g.notes.includes(r.note)) g.notes.push(r.note);
+    });
+    const existing = new Set(allRecords.map(xiRecSig));
+    let skipped = 0;
+    const recs = [];
+    groups.forEach(g => {
+      const rec = { date: g.date, dateKey: g.dateKey, cashier: g.cashier, type: g.type, items: g.items, note: g.notes.join(' / ').slice(0, 300) };
+      if(skipDup && existing.has(xiRecSig(rec))) { skipped++; return; }
+      recs.push(rec);
+    });
+    if(!recs.length) { showToast('ทุกรายการซ้ำกับที่มีอยู่แล้ว ไม่มีอะไรให้นำเข้า'); closeModal('modal-xlsx-import'); return; }
+    if(itemsChanged) await saveItemsToFirestore();
+    const batchId = uid();
+    let written = 0;
+    try {
+      for(let i = 0; i < recs.length; i += 400) {
+        const b = writeBatch(db);
+        recs.slice(i, i + 400).forEach(r => b.set(doc(bizRecordsCol()), { ...r, createdBy: currentUser.uid, createdByName: 'นำเข้า XLSX', createdAt: serverTimestamp(), importBatch: batchId }));
+        await b.commit();
+        written += Math.min(400, recs.length - i);
+        btn.textContent = 'กำลังนำเข้า ' + written + '/' + recs.length;
+      }
+    } finally {
+      if(written) localStorage.setItem('bm_last_import_' + currentBusinessId, JSON.stringify({ id: batchId, count: written, at: Date.now() }));
+    }
+    closeModal('modal-xlsx-import');
+    showToast('นำเข้าแล้ว ' + written + ' รายการ' + (skipped ? ' (ข้ามที่ซ้ำ ' + skipped + ')' : ''), 'success');
+    renderXlsxUndo();
+  } catch(e) {
+    console.error('xlsx import failed', e);
+    showToast('นำเข้าไม่สำเร็จ: ' + escHtml(e.code || e.message) + ' (ถ้านำเข้าไปบางส่วนแล้ว กด "ยกเลิกการนำเข้าล่าสุด" ได้)', 'error');
+    renderXlsxUndo();
+  } finally {
+    st.busy = false; cancel.disabled = false; delete modal.dataset.nodismiss; btn.disabled = false; btn.textContent = 'นำเข้า';
+  }
+};
+window.renderXlsxUndo = function() {
+  const el = document.getElementById('xlsx-import-undo'); if(!el || !currentBusinessId) return;
+  let info = null;
+  try { info = JSON.parse(localStorage.getItem('bm_last_import_' + currentBusinessId) || 'null'); } catch(e) {}
+  el.innerHTML = info && info.id ? '<div class="tc-item" style="margin:0"><div class="tc-sub">นำเข้าล่าสุด ' + info.count + ' รายการ เมื่อ ' + tcE(new Date(info.at).toLocaleString('th-TH')) + '</div><button class="btn btn-ghost btn-sm" style="margin-top:6px" onclick="undoLastXlsxImport()">ยกเลิกการนำเข้าล่าสุด</button></div>' : '';
+};
+window.undoLastXlsxImport = async function() {
+  if(currentRole !== 'owner') return;
+  let info = null;
+  try { info = JSON.parse(localStorage.getItem('bm_last_import_' + currentBusinessId) || 'null'); } catch(e) {}
+  if(!info || !info.id) return;
+  if(!confirm('ลบรายการที่นำเข้าล่าสุด (' + info.count + ' รายการ) ออกทั้งหมด? รายการที่เพิ่มเองหลังจากนั้นจะไม่ถูกลบ')) return;
+  try {
+    const snap = await getDocs(query(bizRecordsCol(), where('importBatch', '==', info.id)));
+    for(let i = 0; i < snap.docs.length; i += 400) {
+      const b = writeBatch(db);
+      snap.docs.slice(i, i + 400).forEach(d => b.delete(d.ref));
+      await b.commit();
+    }
+    localStorage.removeItem('bm_last_import_' + currentBusinessId);
+    showToast('ยกเลิกการนำเข้าแล้ว (ลบ ' + snap.size + ' รายการ)', 'success');
+    renderXlsxUndo();
+  } catch(e) { showToast('ยกเลิกไม่สำเร็จ: ' + escHtml(e.code || e.message), 'error'); }
+};
+
 // ---------- Sign-up notification events (read only by the platform developer) ----------
 async function logSignupEvent(user, type, extra) {
   try {
@@ -2934,6 +3174,7 @@ async function resolveAuthAndInit(user) {
     await initApp();
     window.__appInitialized = true;
     renderTimeclockHome();
+    renderXlsxUndo();
     if(window.__pendingJoin) showJoinConfirm();
     if(window.__openAdminDashboardAfterInit) {
       window.__openAdminDashboardAfterInit = false;
